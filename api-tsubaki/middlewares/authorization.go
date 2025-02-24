@@ -36,6 +36,7 @@ func Authorizes(role string) gin.HandlerFunc {
 	}
 }
 
+
 func AuthorizeUser() gin.HandlerFunc {
 	return Authorizes("user")
 }

@@ -22,7 +22,7 @@ type JwtClaim struct {
 	jwt.StandardClaims
 }
 
-// ✅ ส่ง JWT ผ่าน HttpOnly Secure Cookie
+// ✅ ฟังก์ชันสร้าง JWT และส่งผ่าน `HttpOnly Secure Cookie`
 func (j *JwtWrapper) GenerateToken(w http.ResponseWriter, Username string, role string) error {
 	claims := &JwtClaim{
 		Username: Username,
@@ -46,14 +46,12 @@ func (j *JwtWrapper) GenerateToken(w http.ResponseWriter, Username string, role 
 		HttpOnly: true,
 		Secure:   false, // ใช้ HTTPS เท่านั้น
 		SameSite: http.SameSiteStrictMode,
-		Path:     "/",
 		Expires:  time.Now().Add(time.Hour * time.Duration(j.ExpirationHours)),
 	})
 
 	return nil
 }
 
-// ✅ แก้ไขให้รับ `tokenString` เป็น `string` แทน `*http.Request`
 func (j *JwtWrapper) ValidateToken(tokenString string) (*JwtClaim, error) {
 	token, err := jwt.ParseWithClaims(
 		tokenString,

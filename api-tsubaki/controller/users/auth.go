@@ -111,13 +111,12 @@ func SignIn(c *gin.Context) {
 		ExpirationHours: 24,
 	}
 
-	jwtWrapper.GenerateToken(c.Writer, user.Username, user.Role)
+	err = jwtWrapper.GenerateToken(c.Writer, user.Username, user.Role)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Error signing token"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error setting token"})
 		return
 	}
 
-	// ✅ ตรวจสอบ Role และกำหนด Redirect URL
 	var redirectURL string
 	if user.Role == "admin" {
 		redirectURL = "/admin/file"
