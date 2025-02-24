@@ -36,6 +36,7 @@ func SetupDatabase() {
 		&entity.Link{},
 		&entity.Section{},
 		&entity.Formgen{},
+		&entity.Regulation{},
 	)
 }
 

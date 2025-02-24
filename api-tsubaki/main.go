@@ -15,6 +15,7 @@ import (
 	"github.com/webapp/controller/formgen"
 	"github.com/webapp/controller/knowledge"
 	"github.com/webapp/controller/link"
+	"github.com/webapp/controller/regulation"
 	"github.com/webapp/controller/section"
 	"github.com/webapp/controller/users"
 	"github.com/webapp/middlewares"
@@ -73,6 +74,10 @@ func main() {
 		router.POST("/form", formgen.UploadForm)
 		router.PUT("/form/:id", formgen.Update)
 		router.DELETE("/form/:id", formgen.Delete)
+		// Regulation Route
+		router.POST("/regulation", regulation.UploadRegulation)
+		router.PUT("/regulation/:id", regulation.Update)
+		router.DELETE("/regulation/:id", regulation.Delete)
 	}
 	fileRouter := r.Group("/")
 	{
@@ -82,7 +87,7 @@ func main() {
 	// User Route
 	r.GET("/nusers", users.GetNotAll)
 	// File Route
-	r.GET("/download/:id", files.DownloadFile)
+	r.GET("/downloadfile/:id", files.DownloadFile)
 	r.GET("/files", files.GetAll)
 	r.GET("/file/:id", files.GetID)
 	// Announce Route
@@ -106,6 +111,11 @@ func main() {
 	// Form General Route
 	r.GET("/forms", formgen.GetAll)
 	r.GET("/form/:id", formgen.GetID)
+	r.GET("/downloadform/:id", formgen.DownloadFile)
+	// Regulation Route
+	r.GET("/regulations", regulation.GetAll)
+	r.GET("/regulation/:id", regulation.GetID)
+	r.GET("/downloadregulation/:id", regulation.DownloadFile)
 
 	r.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "API RUNNING...")
