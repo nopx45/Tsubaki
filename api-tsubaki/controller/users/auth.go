@@ -111,7 +111,7 @@ func SignIn(c *gin.Context) {
 		ExpirationHours: 24,
 	}
 
-	signedToken, err := jwtWrapper.GenerateToken(user.Username, user.Role)
+	jwtWrapper.GenerateToken(c.Writer, user.Username, user.Role)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Error signing token"})
 		return
@@ -127,7 +127,7 @@ func SignIn(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"token_type":   "Bearer",
-		"token":        signedToken,
+		"token":        jwtWrapper,
 		"id":           user.ID,
 		"role":         user.Role,
 		"redirect_url": redirectURL,

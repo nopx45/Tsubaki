@@ -21,6 +21,8 @@ func ConnectionDB() {
 	}
 	fmt.Println("connected database")
 	db = database
+	SetupDatabase()
+	SeedUser()
 }
 
 func SetupDatabase() {
@@ -33,5 +35,30 @@ func SetupDatabase() {
 		&entity.Knowledge{},
 		&entity.Link{},
 		&entity.Section{},
+		&entity.Formgen{},
 	)
+}
+
+func SeedUser() {
+	hashedPassword, _ := HashPassword("admin123")
+	adminUser := entity.Users{
+		FirstName: "Admin",
+		LastName:  "User",
+		Username:  "admin",
+		Email:     "admin@example.com",
+		Phone:     "1234567890",
+		Password:  hashedPassword,
+		Role:      "admin",
+	}
+
+	// ตรวจสอบว่ามี Admin ในฐานข้อมูลหรือยัง
+	var existingUser entity.Users
+	result := db.Where("username = ?", "admin").First(&existingUser)
+	if result.Error != nil {
+		// ถ้าไม่มี ให้สร้าง Admin ใหม่
+		db.Create(&adminUser)
+		fmt.Println("Admin user created successfully!")
+	} else {
+		fmt.Println("Admin user already exists.")
+	}
 }

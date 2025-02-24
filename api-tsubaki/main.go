@@ -12,6 +12,7 @@ import (
 	announcetment "github.com/webapp/controller/announcements"
 	"github.com/webapp/controller/article"
 	"github.com/webapp/controller/files"
+	"github.com/webapp/controller/formgen"
 	"github.com/webapp/controller/knowledge"
 	"github.com/webapp/controller/link"
 	"github.com/webapp/controller/section"
@@ -68,6 +69,10 @@ func main() {
 		router.POST("/section", section.Upload)
 		router.PUT("/section/:id", section.Update)
 		router.DELETE("/section/:id", section.Delete)
+		// Form General Route
+		router.POST("/form", formgen.UploadForm)
+		router.PUT("/form/:id", formgen.Update)
+		router.DELETE("/form/:id", formgen.Delete)
 	}
 	fileRouter := r.Group("/")
 	{
@@ -98,6 +103,9 @@ func main() {
 	// Section Route
 	r.GET("/sections", section.GetAll)
 	r.GET("/section/:id", section.GetID)
+	// Form General Route
+	r.GET("/forms", formgen.GetAll)
+	r.GET("/form/:id", formgen.GetID)
 
 	r.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "API RUNNING...")
