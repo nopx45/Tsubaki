@@ -27,10 +27,19 @@ const ArticleEdit = Loadable(lazy(() => import("../pages/adminpage/article/edit"
 const Regulation = Loadable(lazy(() => import("../pages/adminpage/regulation")));
 const RegulationCreate = Loadable(lazy(() => import("../pages/adminpage/regulation/create")));
 const RegulationEdit = Loadable(lazy(() => import("../pages/adminpage/regulation/edit")));
+///////////////////////////////
+const Central = Loadable(lazy(() => import("../pages/adminpage/central-web")));
+const CentralCreate = Loadable(lazy(() => import("../pages/adminpage/central-web/create")));
+const CentralEdit = Loadable(lazy(() => import("../pages/adminpage/central-web/edit")));
+const Section = Loadable(lazy(() => import("../pages/adminpage/section-web")));
+const SectionCreate = Loadable(lazy(() => import("../pages/adminpage/section-web/create")));
+const SectionEdit = Loadable(lazy(() => import("../pages/adminpage/section-web/edit")));
 
 //logs
 const LogVisitor = Loadable(lazy(() => import("../pages/adminpage/logs/visitor_logs")));
 const LogUserSocket = Loadable(lazy(() => import("../pages/adminpage/logs/user_socket_log")));
+const LogPageVisitor = Loadable(lazy(() => import("../pages/adminpage/logs/page_visitor_log")));
+const LogMessage = Loadable(lazy(() => import("../pages/adminpage/logs/massage_socket_log")));
 
 const UploadFileWrapper = () => {
   const navigate = useNavigate();
@@ -168,12 +177,54 @@ const AdminRoutes = (isLoggedIn: boolean): RouteObject => {
         ],
       },
       {
+        path: "central-web",
+        children: [
+          {
+            index: true,
+            element: <Central />,
+          },
+          {
+            path: "create",
+            element: <CentralCreate />,
+          },
+          {
+            path: "edit/:id",
+            element: <CentralEdit />,
+          },
+        ],
+      },
+      {
+        path: "section-web",
+        children: [
+          {
+            index: true,
+            element: <Section />,
+          },
+          {
+            path: "create",
+            element: <SectionCreate />,
+          },
+          {
+            path: "edit/:id",
+            element: <SectionEdit />,
+          },
+        ],
+      },
+      {
         path: "log-visitor",
         element: <LogVisitor />,
       },
       {
         path: "log-user-socket",
         element: <LogUserSocket />,
+      },
+      {
+        path: "log-page-visitor",
+        element: <LogPageVisitor />,
+      },
+      {
+        path: "log-message",
+        element: <LogMessage />,
       },
       {
         path: "*",

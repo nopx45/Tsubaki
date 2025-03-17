@@ -26,7 +26,7 @@ function SignUpPages() {
         content: res.data.message,
       });
       setTimeout(function () {
-        navigate("/");
+        navigate("/signin");
       }, 2000);
     } else {
       messageApi.open({

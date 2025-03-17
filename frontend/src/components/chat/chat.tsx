@@ -77,7 +77,17 @@ const Chat: React.FC<ChatComponentProps> = ({ isLoggedIn }) => {
   const handleSendMessage = () => {
     if (newMessage.trim() === "") return;
     
-    sendMessage(JSON.stringify({ type: "send_message", from: sendto || "admin", role: role,  content: newMessage }));
+    let messageToSend = newMessage;
+    let recipient = sendto || "admin";
+    
+    // ตรวจสอบว่าข้อความมีรูปแบบชาร์ป (#) ตามด้วยชื่อผู้ใช้หรือไม่
+    const match = newMessage.match(/#(\w+)/);
+    if (match) {
+      recipient = match[1]; // ดึงชื่อผู้ใช้ที่อยู่หลัง #
+      messageToSend = newMessage.replace(/#(\w+)/, "").trim(); // ลบ #ชื่อผู้ใช้ออกจากข้อความ
+    }
+  
+    sendMessage(JSON.stringify({ type: "send_message", from: recipient, role: role, content: messageToSend}));
     
     setNewMessage("");
   };

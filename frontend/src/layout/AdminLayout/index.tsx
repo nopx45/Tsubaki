@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, Outlet } from "react-router-dom";
-import { UserOutlined, FileOutlined, NotificationOutlined, ReadOutlined, BulbOutlined, RocketOutlined, WarningOutlined, DashboardOutlined, ExceptionOutlined } from "@ant-design/icons";
+import { UserOutlined, FileOutlined, NotificationOutlined, ReadOutlined, BulbOutlined, RocketOutlined, WarningOutlined, DashboardOutlined, ExceptionOutlined, IeOutlined, GlobalOutlined } from "@ant-design/icons";
 import { Layout, Menu, Button, message, Typography } from "antd";
 import logo from "../../assets/logo.png";
 import { stopvisit, Logouts } from "../../services/https";
@@ -62,21 +62,28 @@ const AdminLayout: React.FC = () => {
           <Menu.Item key="regulation" icon={<WarningOutlined />}>
             <Link to="/admin/regulation">ระเบียบข้อบังคับ</Link>
           </Menu.Item>
-          <SubMenu key="logs" icon={<ExceptionOutlined />} title = "ระบบเช็ค logs">
+          
+          <SubMenu key="links" icon={<IeOutlined />} title = "ลิงก์ & เว็บไซต์">
+            <Menu.Item key="central" icon={<GlobalOutlined />}>
+              <Link to="/admin/central-web">Central Web</Link>
+            </Menu.Item>
+            <Menu.Item key="Section Web" icon={<GlobalOutlined />}>
+              <Link to="/admin/section-web">Section Web</Link>
+            </Menu.Item>
+          </SubMenu>
+
+          <SubMenu key="logs" icon={<ExceptionOutlined />} title = "log">
             <Menu.Item key="visitor" icon={<ExceptionOutlined />}>
               <Link to="/admin/log-visitor">Visitor logs</Link>
             </Menu.Item>
-            <Menu.Item key="regulation" icon={<ExceptionOutlined />}>
-              <Link to="/admin/regulation">Page visit logs</Link>
-            </Menu.Item>
-            <Menu.Item key="regulation" icon={<ExceptionOutlined />}>
-              <Link to="/admin/regulation">Login logs</Link>
+            <Menu.Item key="pagevisitor" icon={<ExceptionOutlined />}>
+              <Link to="/admin/log-page-visitor">Page visit logs</Link>
             </Menu.Item>
             <Menu.Item key="user_socket" icon={<ExceptionOutlined />}>
               <Link to="/admin/log-user-socket">User socket logs</Link>
             </Menu.Item>
             <Menu.Item key="message_socket" icon={<ExceptionOutlined />}>
-              <Link to="/admin/regulation">Message logs</Link>
+              <Link to="/admin/log-message">Message logs</Link>
             </Menu.Item>
           </SubMenu>
         </Menu>

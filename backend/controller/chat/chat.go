@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/webapp/config"
 	"github.com/webapp/entity"
+	"gopkg.in/gomail.v2"
 	"gorm.io/gorm"
 )
 
@@ -59,11 +60,69 @@ func Delete(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Deleted successful"})
 }
 
+// // Message /////
+func GetMessages(c *gin.Context) {
+	var messages []entity.Message
+	db := config.DB()
+	results := db.Find(&messages)
+	if results.Error != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": results.Error.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, messages)
+}
+
+func GetMessageByID(c *gin.Context) {
+	ID := c.Param("id")
+	var message entity.Message
+	db := config.DB()
+	results := db.First(&message, ID)
+	if results.Error != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": results.Error.Error()})
+		return
+	}
+
+	if message.ID == 0 {
+		c.JSON(http.StatusNoContent, gin.H{})
+		return
+	}
+	c.JSON(http.StatusOK, message)
+}
+
+func DeleteMessage(c *gin.Context) {
+	id := c.Param("id")
+	db := config.DB()
+	if tx := db.Exec("DELETE FROM messages WHERE id = ?", id); tx.RowsAffected == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "id not found"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Deleted successful"})
+}
+
 ////////////////////////////////
 
 type ChatService struct {
 	Users   map[*websocket.Conn]entity.UserSocket
 	UsersMu sync.Mutex
+}
+
+// ฟังก์ชันส่งอีเมลแจ้งเตือน
+func SendEmailNotification(toEmail, subject, body string) error {
+	m := gomail.NewMessage()
+	m.SetHeader("From", "nopziio02@gmail.com") // เปลี่ยนเป็นอีเมลของคุณ
+	m.SetHeader("To", toEmail)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/plain", body)
+
+	d := gomail.NewDialer("smtp.gmail.com", 587, "nopziio02@gmail.com", "lcyp rlit ieee miei")
+
+	if err := d.DialAndSend(m); err != nil {
+		log.Println("Error sending email:", err)
+		return err
+	}
+
+	log.Println("Email sent successfully to", toEmail)
+	return nil
 }
 
 func (s *ChatService) AddUser(conn *websocket.Conn, user entity.UserSocket) {
@@ -146,7 +205,7 @@ func (c *ChatController) HandleWebSocket(w http.ResponseWriter, r *http.Request)
 				"type":    "send_message",
 				"from":    "admin",
 				"role":    "admin",
-				"content": "Hello, Can I help you?",
+				"content": "สวัสดีครับ/ค่ะ หากมีข้อสงสัย กรุณาพิมพ์คำถามไว้ เมื่อ admin ออนไลน์ จะรีบตอบกลับโดยเร็วที่สุด.",
 			}
 			messageJSON, err := json.Marshal(greetingMessage)
 			if err != nil {
@@ -232,8 +291,17 @@ func (c *ChatController) handleIncomingMessage(_ *websocket.Conn, senderUsername
 		return
 	}
 
+	// ตรวจสอบว่ามี admin ออนไลน์อยู่หรือไม่
+	adminOnline := false
+	for _, user := range c.ChatService.Users {
+		if user.Role == "admin" {
+			adminOnline = true
+			break
+		}
+	}
+
+	// ส่งข้อความให้ผู้ส่ง (sender) และ admin (แต่ไม่ให้ส่งซ้ำ)
 	for wsConn, user := range c.ChatService.Users {
-		// ส่งข้อความให้ผู้ส่ง (sender) และ admin (แต่ไม่ให้ส่งซ้ำ)
 		if user.Username == senderUsername || (user.Role == "admin" && user.Username != senderUsername) {
 			err := wsConn.WriteMessage(websocket.TextMessage, []byte(message.Content+"-"+message.From+"-"+message.Role))
 			if err != nil {
@@ -242,4 +310,12 @@ func (c *ChatController) handleIncomingMessage(_ *websocket.Conn, senderUsername
 		}
 	}
 
+	// หากไม่มี admin ออนไลน์ ส่งอีเมลแจ้งเตือน
+	if !adminOnline {
+		emailBody := "New message received from " + senderUsername + ":\n\n" + message.Content
+		err := SendEmailNotification("nopziio01@gmail.com", "New Chat Message !!", emailBody)
+		if err != nil {
+			log.Println("Failed to send email notification:", err)
+		}
+	}
 }

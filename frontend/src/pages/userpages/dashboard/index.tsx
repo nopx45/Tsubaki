@@ -151,6 +151,17 @@ export default function Announcements() {
                 }}>
                   {item.title}
                 </span>
+                <Badge
+                count={isNew ? "New" : 0}
+                offset={[10, -5]}
+
+                style={{
+                  backgroundColor: "#ff4d4f",
+                  color: "#fff",
+                  fontSize: "10px",
+                  boxShadow: "0 0 0 1px #fff"
+                }}
+                />
               </Button>
               {hoveredId === index && (
                 <Card

@@ -569,6 +569,27 @@ async function DeleteUserSocketsById(id: string) {
     .catch((e) => e.response);
 }
 
+async function GetMessages() {
+  return await axios
+    .get(`${apiUrl}/messages`)
+    .then((res) => res)
+    .catch((e) => e.response);
+}
+
+async function GetMessagesById(id: string) {
+  return await axios
+    .get(`${apiUrl}/message/${id}`, { withCredentials: true })
+    .then((res) => res)
+    .catch((e) => e.response);
+}
+
+async function DeleteMessagesById(id: string) {
+  return await axios
+    .delete(`${apiUrl}/message/${id}`)
+    .then((res) => res)
+    .catch((e) => e.response);
+}
+
 export {
   // User API
   getAuthToken,
@@ -656,4 +677,8 @@ export {
   GetUserSockets,
   GetUserSocketsById,
   DeleteUserSocketsById,
+
+  GetMessages,
+  GetMessagesById,
+  DeleteMessagesById,
 };

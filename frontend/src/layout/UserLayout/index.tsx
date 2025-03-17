@@ -18,7 +18,7 @@ import ChatComponent from "../../components/chat-component/chat";
 
 const { Content, Footer } = Layout;
 const { Title } = Typography;
-const categories = ["HR", "ACC", "QA", "MKT"];
+const categories = ["HR", "IT", "ACC", "QA", "MKT", "ME/PE", "Safety", "WH", "PC"];
 
 const UserLayout: React.FC = () => {
   const navigate = useNavigate();
@@ -237,7 +237,7 @@ const UserLayout: React.FC = () => {
       </Modal>
       <AppHeader />
       <Layout style={{background: "transparent", backdropFilter: "blur(10px)"}}>
-        <Sider style={{backgroundColor: "rgba(0, 21, 41, 0.9)"}} collapsible collapsed={collapsed} onCollapse={setCollapsed}>
+        <Sider style={{lineHeight: '100px',backgroundColor: "rgba(0, 21, 41, 0.9)"}} collapsible collapsed={collapsed} onCollapse={setCollapsed}>
         <Menu theme="dark" style={{ backgroundColor: "rgba(0, 21, 41, 0.4)" }} mode="inline">
             <SubMenu
               key="link"

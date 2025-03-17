@@ -83,6 +83,11 @@ func main() {
 		// User Socket
 		adminRouter.GET("/usersocket", chat.GetUserSocketID)
 		adminRouter.DELETE("/usersocket/:id", chat.Delete)
+
+		// User Socket
+		adminRouter.GET("/messages", chat.GetMessages)
+		adminRouter.GET("/message", chat.GetMessageByID)
+		adminRouter.DELETE("/message/:id", chat.DeleteMessage)
 	}
 
 	adminITRouter := r.Group("/")
