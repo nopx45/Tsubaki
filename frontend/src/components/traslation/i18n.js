@@ -1,0 +1,85 @@
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import Cookies from "js-cookie";
+
+const resources = {
+    en: {
+      translation: {
+        welcome: "Welcome",
+        logout: "Logout",
+        login: "Login",
+        search_user: "Search User",
+        announcement : "Announcement",
+        activity : "Activity",
+        article : "Article",
+        regulation: "Regulation",
+        it_knowledge: "IT Knowledge",
+        other_web: "Other Web",
+        weblink: "Web link",
+        section: "Section Web",
+        nodata : "No data",
+        user_detail : "User Detail",
+        close : "close",
+        email : "Email",
+        phone : "Phone",
+        select : "Select",
+        number : "No.",
+        file_name : "File Name",
+        upload_date : "Upload date",
+        collapse_text : "Collapse Text",
+        read_more : "Read More",
+        more : "More",
+        open_file : "Open File",
+        view_all_articles : "View all articles",
+        topic : "Topic",
+        detail : "Detail",
+        loading : "Loading...",
+        back : "Back",
+        visit : "Visitors",
+      },
+    },
+    th: {
+      translation: {
+        welcome: "ยินดีต้อนรับ",
+        logout: "ออกจากระบบ",
+        login: "เข้าสู่ระบบ",
+        search_user: "ค้นหาผู้ใช้",
+        announcement : "ประกาศจากบริษัท",
+        activity : "กิจกรรม",
+        article : "บทความ",
+        regulation: "กฎระเบียบ",
+        it_knowledge: "ความรู้ด้าน IT",
+        other_web: "เว็บไซต์อื่น",
+        weblink: "ลิงก์เว็บ",
+        section: "หมวดหมู่",
+        nodata : "ไม่มีข้อมูล",
+        user_detail : "รายละเอียดผู้ใช้",
+        close : "ปิด",
+        email : "อีเมลล์",
+        phone : "โทรศัพท์",
+        select : "เลือก",
+        number : "ฉบับที่",
+        file_name : "ชื่อไฟล์",
+        upload_date : "วันที่อัพโหลด",
+        collapse_text : "ย่อข้อความ",
+        read_more : "อ่านเพิ่มเติม",
+        more : "เพิ่มเติม",
+        open_file : "เปิดไฟล์",
+        view_all_articles : "ดูบทความทั้งหมด",
+        topic : "หัวข้อ",
+        detail : "รายละเอียด",
+        loading : "กำลังโหลดข้อมูล...",
+        back : "กลับ",
+        visit : "ผู้เข้าชมทั้งหมด",
+      },
+    },
+  };
+
+i18n.use(initReactI18next).init({
+  resources,
+  lng: Cookies.get("language") || "en",
+  fallbackLng: "en",
+  interpolation: { escapeValue: false }
+});
+
+export default i18n;

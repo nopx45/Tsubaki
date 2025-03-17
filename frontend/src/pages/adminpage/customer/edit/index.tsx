@@ -1,0 +1,190 @@
+import { useEffect } from "react";
+import {
+  Space,
+  Button,
+  Col,
+  Row,
+  Divider,
+  Form,
+  Input,
+  Card,
+  message,
+  Select,
+  Typography,
+} from "antd";
+import { PlusOutlined } from "@ant-design/icons";
+import { UsersInterface } from "../../../../interfaces/IUser";
+import { GetUsersById, UpdateUsersById } from "../../../../services/https/index";
+import { useNavigate, Link, useParams } from "react-router-dom";
+
+const { Title } = Typography;
+
+function CustomerEdit() {
+  const navigate = useNavigate();
+  const { id } = useParams<{ id: any }>();
+  const [messageApi, contextHolder] = message.useMessage();
+  const [form] = Form.useForm();
+
+  const getUserById = async (id: string) => {
+    let res = await GetUsersById(id);
+    if (res.status == 200) {
+      form.setFieldsValue({
+        first_name: res.data.first_name,
+        last_name: res.data.last_name,
+        email: res.data.email,
+        username: res.data.username,
+        role: res.data.role,
+      });
+    } else {
+      messageApi.open({
+        type: "error",
+        content: "ไม่พบข้อมูลผู้ใช้",
+      });
+      setTimeout(() => {
+        navigate("/admin/customer");
+      }, 2000);
+    }
+  };
+
+  const onFinish = async (values: UsersInterface) => {
+    let payload = {
+      ...values,
+    };
+
+    const res = await UpdateUsersById(id, payload);
+    if (res.status == 200) {
+      messageApi.open({
+        type: "success",
+        content: res.data.message,
+      });
+      setTimeout(() => {
+        navigate("/admin/customer");
+      }, 2000);
+    } else {
+      messageApi.open({
+        type: "error",
+        content: res.data.error,
+      });
+    }
+  };
+
+  useEffect(() => {
+    getUserById(id);
+  }, []);
+
+  return (
+    <div style={{ background: "#E3F2FD", minHeight: "100vh", padding: "30px" }}>
+      {contextHolder}
+      <Card
+        style={{
+          borderRadius: "12px",
+          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+          background: "white",
+          padding: "20px",
+          maxWidth: "800px",
+          margin: "auto",
+        }}
+      >
+        <Title level={3} style={{ color: "#0D47A1", textAlign: "center" }}>
+          แก้ไขข้อมูลผู้ใช้
+        </Title>
+        <Divider />
+
+        <Form name="basic" form={form} layout="vertical" onFinish={onFinish} autoComplete="off">
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="ชื่อจริง"
+                name="first_name"
+                rules={[{ required: true, message: "กรุณากรอกชื่อ !" }]}
+              >
+                <Input placeholder="กรอกชื่อจริง" />
+              </Form.Item>
+            </Col>
+
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="นามสกุล"
+                name="last_name"
+                rules={[{ required: true, message: "กรุณากรอกนามสกุล !" }]}
+              >
+                <Input placeholder="กรอกนามสกุล" />
+              </Form.Item>
+            </Col>
+
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="อีเมล"
+                name="email"
+                rules={[
+                  { type: "email", message: "รูปแบบอีเมลไม่ถูกต้อง !" },
+                  { required: true, message: "กรุณากรอกอีเมล !" },
+                ]}
+              >
+                <Input placeholder="กรอกอีเมล" />
+              </Form.Item>
+            </Col>
+
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="ชื่อผู้ใช้"
+                name="username"
+                rules={[{ required: true, message: "กรุณากรอกชื่อผู้ใช้ !" }]}
+              >
+                <Input placeholder="กรอกชื่อผู้ใช้" />
+              </Form.Item>
+            </Col>
+
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="สิทธิ์การใช้งาน"
+                name="role"
+                rules={[{ required: true, message: "กรุณาเลือกสิทธิ์ของ User !" }]}
+              >
+                <Select
+                  placeholder="เลือกสิทธิ์การใช้งาน"
+                  options={[
+                    { value: "admin", label: "Admin" },
+                    { value: "superuser", label: "SuperUser" },
+                    { value: "user", label: "User" },
+                  ]}
+                  style={{ borderRadius: "6px", width: "100%" }}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row justify="end">
+            <Col>
+              <Form.Item>
+                <Space>
+                  <Link to="/admin/customer">
+                    <Button htmlType="button" style={{ borderRadius: "6px" }}>
+                      ยกเลิก
+                    </Button>
+                  </Link>
+
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    icon={<PlusOutlined />}
+                    style={{
+                      background: "#1976D2",
+                      borderColor: "#1976D2",
+                      borderRadius: "6px",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    บันทึก
+                  </Button>
+                </Space>
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </Card>
+    </div>
+  );
+}
+
+export default CustomerEdit;

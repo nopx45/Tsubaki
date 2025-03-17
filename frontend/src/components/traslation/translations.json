@@ -1,0 +1,16 @@
+{
+    "en": {
+      "welcome": "Welcome to our website",
+      "description": "This is a multilingual website.",
+      "weblink": "Web link",
+      "sectionweb" : "Section Web",
+      "logout" : "Logout"
+    },
+    "th": {
+      "welcome": "ยินดีต้อนรับสู่เว็บไซต์ของเรา",
+      "description": "นี่คือเว็บไซต์ที่รองรับหลายภาษา",
+      "weblink": "ลิงก์เว็บ",
+      "sectionweb" : "เว็บแผนก",
+      "logout" : "ออกจากระบบ"
+    }
+  }
