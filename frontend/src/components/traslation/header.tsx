@@ -7,6 +7,7 @@ import headerlogo from "../../assets/header.jpg";
 import logo from "../../assets/logo.png";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
+import { IoHome } from "react-icons/io5";
 
 const { Header } = Layout;
 
@@ -53,10 +54,29 @@ const AppHeader = () => {
         style={styles.logo}
         onClick={() => navigate("/")}
       />
-      <div style={styles.spacer}></div>
+    <div style={{ flex: 1 }}></div>
+    <IoHome 
+      size={24} 
+      style={{
+        color: 'black',
+        marginRight: '16px',
+        cursor: 'pointer',
+        transition: 'transform 0.2s ease'
+      }}
+      onClick={() => navigate("/")}
+      onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.3)'}
+      onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+    />
+    <div
+      style={{
+        borderRadius: '6px',
+        padding: '6px 12px',
+      }}
+    >
       <LanguageSelector />
-    </Header>
-  );
+    </div>
+  </Header>
+);
 };
 
 const headerStyle: React.CSSProperties = {

@@ -15,6 +15,7 @@ import RegulationModal from "../../pages/userpages/regulation";
 import AppHeader from "../../components/traslation/header";
 import { useTranslation } from "react-i18next";
 import ChatComponent from "../../components/chat-component/chat";
+import imgpopup from "../../assets/popup.webp"
 
 const { Content, Footer } = Layout;
 const { Title } = Typography;
@@ -233,7 +234,7 @@ const UserLayout: React.FC = () => {
           onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(255, 0, 0, 0.8)")}
           onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.7)")}
         />
-        <img src="http://localhost:8080/uploads/images/article/e.g.infographic-1536x1409.png.webp" alt="Welcome" style={{ width: "100%" }} />
+        <img src={imgpopup} alt="Welcome" style={{ width: "100%" }} />
       </Modal>
       <AppHeader />
       <Layout style={{background: "transparent", backdropFilter: "blur(10px)"}}>
