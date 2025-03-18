@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"strings"
 
 	// "os"
 	// "strings"
@@ -165,29 +166,19 @@ func main() {
 	})
 
 	// Run the server
-	r.Run()
+	r.Run("0.0.0.0:8080")
 }
 
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// frontendDomain := os.Getenv("FRONTEND_URL")
+		origin := c.Request.Header.Get("Origin")
 
-		// //ถ้าไม่มีค่า ให้ใช้ Wildcard เฉพาะ Netlify
-		// if frontendDomain == "" {
-		// 	frontendDomain = "https://*.netlify.app"
-		// }
-
-		// // ตรวจสอบ Origin ที่เข้ามา
-		// origin := c.Request.Header.Get("Origin")
-		// if strings.HasSuffix(origin, ".netlify.app") {
-		// 	frontendDomain = origin
-		// }
-
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173")
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-
+		if origin != "" && isAllowedOrigin(origin) {
+			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+			c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+			c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		}
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
 			return
@@ -195,4 +186,23 @@ func CORSMiddleware() gin.HandlerFunc {
 
 		c.Next()
 	}
+}
+
+func isAllowedOrigin(origin string) bool {
+	allowedOrigins := []string{
+		"http://tat-webcenter",
+	}
+	// อนุญาตให้เฉพาะ IP ที่ขึ้นต้นด้วย "http://192.168."
+	if strings.HasPrefix(origin, "http://192.168.") {
+		return true
+	}
+
+	// ตรวจสอบว่า Origin อยู่ในลิสต์ allowedOrigins หรือไม่
+	for _, allowed := range allowedOrigins {
+		if origin == allowed {
+			return true
+		}
+	}
+
+	return false
 }

@@ -31,57 +31,6 @@ type (
 	}
 )
 
-func AutoLogin(c *gin.Context) {
-	systemUsername := os.Getenv("USERNAME") // Windows
-	if systemUsername == "" {
-		systemUsername = os.Getenv("USER") // Linux/macOS
-	}
-
-	var user entity.Users
-	db := config.DB()
-	result := db.Where("username = ?", systemUsername).First(&user)
-
-	if result.Error != nil {
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found in the system"})
-		} else {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
-		}
-		return
-	}
-
-	jwtWrapper := services.JwtWrapper{
-		SecretKey:       "SvNQpBN8y3qlVrsGAYYWoJJk56LtzFHx",
-		Issuer:          "AuthService",
-		ExpirationHours: 24,
-	}
-
-	err := jwtWrapper.GenerateToken(c.Writer, user.Username, user.Role)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error setting token"})
-		return
-	}
-
-	var redirectURL string
-	if user.Role == "admin" {
-		redirectURL = "/admin"
-	} else if user.Role == "adminit" {
-		redirectURL = "admin/it-knowledge"
-	} else if user.Role == "adminhr" {
-		redirectURL = "admin"
-	} else {
-		redirectURL = "/"
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"token_type":   "Bearer",
-		"token":        jwtWrapper,
-		"id":           user.ID,
-		"role":         user.Role,
-		"redirect_url": redirectURL,
-	})
-}
-
 func SignUp(c *gin.Context) {
 	var payload signUp
 
@@ -213,6 +162,52 @@ func SignIn(c *gin.Context) {
 		"redirect_url": redirectURL,
 	})
 }
+
+func AutoLogin(c *gin.Context) {
+	systemUsername := os.Getenv("USERNAME") // Windows
+	if systemUsername == "" {
+		systemUsername = os.Getenv("USER") // Linux/macOS
+	}
+
+	var users entity.Users
+	if err := config.DB().Raw("SELECT * FROM users WHERE username = ?", systemUsername).Scan(&users).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	jwtWrapper := services.JwtWrapper{
+		SecretKey:       "SvNQpBN8y3qlVrsGAYYWoJJk56LtzFHx",
+		Issuer:          "AuthService",
+		ExpirationHours: 24,
+	}
+
+	err := jwtWrapper.GenerateToken(c.Writer, users.Username, users.Role)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error setting token"})
+		return
+	}
+
+	var redirectURL string
+	if users.Role == "admin" {
+		redirectURL = "/admin"
+	} else if users.Role == "adminit" {
+		redirectURL = "admin/it-knowledge"
+	} else if users.Role == "adminhr" {
+		redirectURL = "admin"
+	} else {
+		redirectURL = "/"
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"token_type":   "Bearer",
+		"token":        jwtWrapper,
+		"id":           users.ID,
+		"username":     users.Username,
+		"role":         users.Role,
+		"redirect_url": redirectURL,
+	})
+}
+
 func GetAuthToken(c *gin.Context) {
 	cookie, err := c.Request.Cookie("auth_token")
 	if err != nil {
@@ -223,9 +218,9 @@ func GetAuthToken(c *gin.Context) {
 
 func Logout(c *gin.Context) {
 	// Secure = true ใน production (HTTPS) / false ใน localhost
-	secureFlag := true
-	if c.Request.Host == "localhost" {
-		secureFlag = false
+	secureFlag := false
+	if c.Request.TLS != nil { // ใช้ HTTPS เท่านั้น
+		secureFlag = true
 	}
 
 	// ลบ auth_token และ session_id
@@ -233,21 +228,21 @@ func Logout(c *gin.Context) {
 		Name:     "auth_token",
 		Value:    "",
 		Path:     "/",
-		Domain:   "",
+		Domain:   "192.168.0.85",
 		MaxAge:   -1,
 		Secure:   secureFlag,
 		HttpOnly: true,
-		SameSite: http.SameSiteNoneMode,
+		SameSite: http.SameSiteLaxMode, // http = Lax , https = None
 	})
 	http.SetCookie(c.Writer, &http.Cookie{
 		Name:     "session_id",
 		Value:    "",
 		Path:     "/",
-		Domain:   "",
+		Domain:   "192.168.0.85",
 		MaxAge:   -1,
 		Secure:   secureFlag,
 		HttpOnly: true,
-		SameSite: http.SameSiteNoneMode,
+		SameSite: http.SameSiteLaxMode, // http = Lax , https = None
 	})
 
 	c.JSON(http.StatusOK, gin.H{"message": "Logout successful"})

@@ -7,7 +7,7 @@ import { UsersInterface } from "../../interfaces/IUser";
 import { SignInInterface } from "../../interfaces/SignIn";
 
 import axios from "axios";
-const apiUrl = "http://localhost:8080";
+const apiUrl = "http://192.168.0.85:8080";
 axios.defaults.withCredentials = true;
 
 async function getAuthToken() {
@@ -38,21 +38,12 @@ async function SignIn(data: SignInInterface) {
 }
 
 async function AutoLogin() {
-  try {
-    const res = await axios.post(`${apiUrl}/auto/login`, {}, { withCredentials: true });
-
-    if (res.status === 200) {
-      return {
-        success: true,
-        redirectUrl: res.data.redirect_url,
-      };
-    } else {
-      return { success: false };
-    }
-  } catch (error) {
-    console.error("Auto-login failed", error);
-    return { success: false };
-  }
+  return await axios
+  .post(`${apiUrl}/auto/login`, {
+    withCredentials: true,
+  })
+  .then((res) => res)
+  .catch((e) => e.response);
 }
 
 async function GetUsers() {
@@ -480,7 +471,7 @@ async function startvisit() {
 
 async function stopvisit() {
   return await axios
-    .post(`${apiUrl}/exit`)
+    .post(`${apiUrl}/exit`,{withCredentials: true})
     .then((res) => res)
     .catch((e) => e.response);
 }
@@ -522,7 +513,7 @@ async function DeleteVisitorsById(id: string) {
 
 const StartPageVisit = async (pagePath: string) => {
   try {
-    await axios.post(`${apiUrl}/pagevisitors`, { pagePath });
+    await axios.post(`${apiUrl}/pagevisitors`, { pagePath ,withCredentials: true});
   } catch (error) {
   }
 };

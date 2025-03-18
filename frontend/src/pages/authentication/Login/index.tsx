@@ -1,10 +1,9 @@
 import { Button, Card, Form, Input, message, Flex, Row, Col } from "antd";
 import { useNavigate } from "react-router-dom";
-import { SignIn, AutoLogin, startvisit } from "../../../services/https";
+import { SignIn, startvisit } from "../../../services/https";
 import { SignInInterface } from "../../../interfaces/SignIn";
 import logo from "../../../assets/logo.png";
 import image from "../../../assets/header.jpg";
-import { useEffect } from "react";
 
 function SignInPages() {
   const navigate = useNavigate();
@@ -24,24 +23,10 @@ function SignInPages() {
     }
   };
 
-  useEffect(() => {
-    async function tryAutoLogin() {
-      const result = await AutoLogin();
-      if (result.success) {
-        messageApi.success("Auto-login successful");
-        setTimeout(() => {
-          localStorage.setItem("isLoggedIn", "true");
-          navigate(result.redirectUrl);
-        }, 2000);
-      }
-    }
-    tryAutoLogin();
-  }, []);
-  
   return (
     <>
       {contextHolder}
-      <div style={backgroundStyle} /> {/* ✅ พื้นหลังที่อยู่ด้านหน้าสุด */}
+      <div style={backgroundStyle} />
       <Flex justify="center" align="center" className="login">
         <Card className="card-login" style={{ width: 500, position: "relative", zIndex: 2 }}>
           <Row align={"middle"} justify={"center"} style={{ height: "400px" }}>
@@ -65,9 +50,10 @@ function SignInPages() {
                   <Input.Password />
                 </Form.Item>
                 <Form.Item>
-                  <Button type="primary" htmlType="submit" className="login-form-button" style={{ marginBottom: 20 }}>
+                  <Button type="primary" htmlType="submit" className="login-form-button" style={{ marginBottom: 10 }}>
                     Log in
                   </Button>
+                  <br />
                   Or <a onClick={() => navigate("/signup")}>signup now !</a>
                 </Form.Item>
               </Form>

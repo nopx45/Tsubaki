@@ -7,7 +7,7 @@ import { getAuthToken } from '../../services/https';
 import { jwtDecode } from 'jwt-decode';
 import { TiMessages } from "react-icons/ti";
 
-const WS_URL = "ws://localhost:8080/ws";
+const WS_URL = "ws://192.168.0.85:8080/ws";
 
 interface ChatComponentProps {
   isLoggedIn: boolean;

@@ -17,11 +17,12 @@ const AdminLayout: React.FC = () => {
     try {
       await stopvisit();
       await Logouts();
-  
       messageApi.success("Logout successful");
+  
       setTimeout(() => {
-        location.href = "/signin";
-      }, 2000);
+        localStorage.setItem("isLoggedIn", "false");
+        location.href = "/";
+      }, 1000);
     } catch (error) {
       console.error("Logout error:", error);
       messageApi.error("Logout failed");

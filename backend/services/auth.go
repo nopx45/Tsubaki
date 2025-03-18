@@ -47,8 +47,8 @@ func (j *JwtWrapper) GenerateToken(w http.ResponseWriter, Username string, role 
 		Name:     "auth_token",
 		Value:    signedToken,
 		HttpOnly: true,
-		Secure:   true, // ใช้ HTTPS เท่านั้น
-		SameSite: http.SameSiteNoneMode,
+		Secure:   false, // ใช้ HTTPS เท่านั้น
+		SameSite: http.SameSiteLaxMode,
 		Expires:  time.Now().Add(time.Hour * time.Duration(j.ExpirationHours)),
 	})
 
@@ -57,8 +57,8 @@ func (j *JwtWrapper) GenerateToken(w http.ResponseWriter, Username string, role 
 		Name:     "session_id",
 		Value:    sessionID,
 		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteNoneMode,
+		Secure:   false,
+		SameSite: http.SameSiteLaxMode,
 		Expires:  time.Now().Add(24 * time.Hour),
 	})
 
