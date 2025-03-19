@@ -191,6 +191,7 @@ func CORSMiddleware() gin.HandlerFunc {
 func isAllowedOrigin(origin string) bool {
 	allowedOrigins := []string{
 		"http://tat-webcenter",
+		"http://localhost:5173",
 	}
 	// อนุญาตให้เฉพาะ IP ที่ขึ้นต้นด้วย "http://192.168."
 	if strings.HasPrefix(origin, "http://192.168.") {

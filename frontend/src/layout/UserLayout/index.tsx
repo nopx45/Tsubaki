@@ -9,7 +9,6 @@ import { GetLinks, GetNUsers, GetSections, GetTotalVisitors, Logouts, stopvisit 
 import { LinksInterface } from "../../interfaces/ILink";
 import { SectionsInterface } from "../../interfaces/ISection";
 import { UsersInterface } from "../../interfaces/IUser";
-import UserDetailsModal from "../../components/userdetail-model/UserDetailsModal"
 import UserListModal from "../../components/userdetail-model/UserListModel";
 import RegulationModal from "../../pages/userpages/regulation";
 import AppHeader from "../../components/traslation/header";
@@ -38,8 +37,6 @@ const UserLayout: React.FC = () => {
   const [users, setUsers] = useState<UsersInterface[]>([]);
   const [visitors, setVisitors] = useState<number>(0);
   const [matchedUsers, setMatchedUsers] = useState<UsersInterface[]>([]);
-  const [selectedUser, setSelectedUser] = useState<UsersInterface | null>(null);
-  const [isModalVisible, setIsModalVisible] = useState(false);
   const [isListVisible, setIsListVisible] = useState(false);
   const [isRegulationModalVisible, setIsRegulationModalVisible] = useState(false);
 
@@ -165,12 +162,8 @@ const UserLayout: React.FC = () => {
     if (foundUser.length > 1) {
       setMatchedUsers(foundUser);
       setIsListVisible(true);
-    } else if (foundUser.length === 1) {
-      setSelectedUser(foundUser[0]);
-      setIsModalVisible(true);
     } else {
       setMatchedUsers([]);
-      setSelectedUser(null);
       messageApi.open({
         type: 'error',
         content: 'ไม่พบผู้ใช้',
@@ -179,17 +172,6 @@ const UserLayout: React.FC = () => {
     }
   };
   const [form] = Form.useForm();
-  const handleCloseModal = () => {
-    setIsModalVisible(false);
-    setIsListVisible(false);
-    setSearchValue("");
-    setMatchedUsers([]);
-    setSelectedUser(null);
-    setSearchValue("");
-    setMatchedUsers([]);
-    setSelectedUser(null);
-    form.resetFields();
-  };
 
   return (
     <Layout
@@ -239,9 +221,9 @@ const UserLayout: React.FC = () => {
       <AppHeader />
       <Layout style={{background: "transparent", backdropFilter: "blur(10px)"}}>
         <Sider style={{lineHeight: '100px',backgroundColor: "rgba(0, 21, 41, 0.9)"}} collapsible collapsed={collapsed} onCollapse={setCollapsed}>
-        <Menu theme="dark" style={{ backgroundColor: "rgba(0, 21, 41, 0.4)" }} mode="inline">
+        <Menu openKeys={["link"]} theme="dark" style={{ backgroundColor: "rgba(0, 21, 41, 0.4)" }} mode="inline">
             <SubMenu
-              key="link"
+              key={"link"}
               icon={<GlobalOutlined />}
               title={
                 <div style={{ 
@@ -279,6 +261,8 @@ const UserLayout: React.FC = () => {
                 </Menu.Item>
               )}
             </SubMenu>
+            </Menu>
+            <Menu theme="dark" style={{ backgroundColor: "rgba(0, 21, 41, 0.4)" }} mode="inline">
             <SubMenu
               key="Section"
               icon={<GlobalOutlined />}
@@ -330,7 +314,6 @@ const UserLayout: React.FC = () => {
               cursor: "default"
             }}
             hoverable
-            bodyStyle={{ padding: 0 }}
           >
             <div style={styles.cardContent}>
               <UserOutlined style={{ fontSize: "24px", color: "rgb(117, 117, 117)" }} />
@@ -486,20 +469,10 @@ const UserLayout: React.FC = () => {
         Copyright © 2024 TSUBAKIMOTO AUTOMOTIVE (THAILAND) Co,.Ltd
       </Footer>
       {/* ✅ แสดง Modal รายละเอียดผู้ใช้ */}
-      <UserDetailsModal
-        open={isModalVisible}
-        onClose={handleCloseModal}
-        user={selectedUser}
-      />
       <UserListModal
         open={isListVisible}
         users={matchedUsers}
         onClose={() => setIsListVisible(false)}
-        onSelectUser={(user) => {
-          setSelectedUser(user);
-          setIsListVisible(false);
-          setIsModalVisible(true);
-        }}
       />
       <RegulationModal
         visible={isRegulationModalVisible}
