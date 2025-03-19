@@ -7,7 +7,7 @@ import { UsersInterface } from "../../interfaces/IUser";
 import { SignInInterface } from "../../interfaces/SignIn";
 
 import axios from "axios";
-const apiUrl = "http://192.168.0.85:8080";
+const apiUrl = "http://tat-webcenter:8080";
 axios.defaults.withCredentials = true;
 
 async function getAuthToken() {

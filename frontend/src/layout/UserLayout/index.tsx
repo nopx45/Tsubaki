@@ -483,7 +483,7 @@ const UserLayout: React.FC = () => {
         </Sider>
       </Layout>
       <Footer style={{ textAlign: "center", backgroundColor: "rgba(239, 239, 255, 0.9)"}}>
-        Nopx create At 09/02/2568
+        Copyright © 2024 TSUBAKIMOTO AUTOMOTIVE (THAILAND) Co,.Ltd
       </Footer>
       {/* ✅ แสดง Modal รายละเอียดผู้ใช้ */}
       <UserDetailsModal
