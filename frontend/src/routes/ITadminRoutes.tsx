@@ -10,6 +10,10 @@ const ITKnowledge = Loadable(lazy(() => import("../pages/adminpage/it-knowledge"
 const ITKnowledgeCreate = Loadable(lazy(() => import("../pages/adminpage/it-knowledge/create")));
 const EditITKnowledges = Loadable(lazy(() => import("../pages/adminpage/it-knowledge/edit")));
 
+const Security = Loadable(lazy(() => import("../pages/adminpage/security")));
+const EditSecurity = Loadable(lazy(() => import("../pages/adminpage/security/edit")));
+const SecurityCreate = Loadable(lazy(() => import("../pages/adminpage/security/create")));
+
 const ITadminRoutes = (isLoggedIn: boolean): RouteObject => {
   return {
     path: "admin/",
@@ -31,6 +35,23 @@ const ITadminRoutes = (isLoggedIn: boolean): RouteObject => {
                 element: <EditITKnowledges />,
                 },
             ],
+        },
+        {
+          path: "security",
+          children: [
+            {
+              index: true,
+              element: <Security />,
+            },
+            {
+              path: "create",
+              element: <SecurityCreate />,
+            },
+            {
+              path: "edit/:id",
+              element: <EditSecurity />,
+            },
+          ],
         },
         {
             path: "*",

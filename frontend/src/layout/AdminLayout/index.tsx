@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, Outlet } from "react-router-dom";
-import { UserOutlined, FileOutlined, NotificationOutlined, ReadOutlined, BulbOutlined, RocketOutlined, WarningOutlined, DashboardOutlined, ExceptionOutlined, IeOutlined, GlobalOutlined } from "@ant-design/icons";
+import { UserOutlined, FileOutlined, NotificationOutlined, ReadOutlined, BulbOutlined, RocketOutlined, WarningOutlined, DashboardOutlined, ExceptionOutlined, IeOutlined, GlobalOutlined, SafetyOutlined } from "@ant-design/icons";
 import { Layout, Menu, Button, message, Typography } from "antd";
 import logo from "../../assets/logo.png";
 import { stopvisit, Logouts } from "../../services/https";
@@ -56,6 +56,9 @@ const AdminLayout: React.FC = () => {
           </Menu.Item>
           <Menu.Item key="itknowledge" icon={<BulbOutlined />}>
             <Link to="/admin/it-knowledge">ข่าวสารไอที</Link>
+          </Menu.Item>
+          <Menu.Item key="security" icon={<SafetyOutlined />}>
+            <Link to="/admin/security">ข่าวสารด้านความปลอดภัย</Link>
           </Menu.Item>
           <Menu.Item key="article" icon={<ReadOutlined />}>
             <Link to="/admin/article">บทความ</Link>

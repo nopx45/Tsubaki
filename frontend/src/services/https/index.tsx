@@ -7,7 +7,7 @@ import { UsersInterface } from "../../interfaces/IUser";
 import { SignInInterface } from "../../interfaces/SignIn";
 
 import axios from "axios";
-const apiUrl = "http://tat-webcenter:8080";
+const apiUrl = "http://localhost:8080";
 axios.defaults.withCredentials = true;
 
 async function getAuthToken() {
@@ -293,6 +293,49 @@ async function DeleteKnowledgesById(id: string) {
 async function CreateKnowledge(data: FormData) {
   try {
     const res = await axios.post(`${apiUrl}/knowledge`, data, {
+      withCredentials: true,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return res.data;
+  } catch (e: any) {
+    console.error("Upload error:", e.response?.data);
+    return e.response?.data || { error: "Unknown error occurred" };
+  }
+}
+
+async function GetSecurity() {
+  return await axios
+    .get(`${apiUrl}/securities`)
+    .then((res) => res)
+    .catch((e) => e.response);
+}
+
+async function GetSecurityById(id: string) {
+  return await axios
+    .get(`${apiUrl}/security/${id}`)
+    .then((res) => res)
+    .catch((e) => e.response);
+}
+
+async function UpdateSecurityById(id: string, data: FormData) {
+  return await axios
+    .put(`${apiUrl}/security/${id}`, data)
+    .then((res) => res)
+    .catch((e) => e.response);
+}
+
+async function DeleteSecurityById(id: string) {
+  return await axios
+    .delete(`${apiUrl}/security/${id}`)
+    .then((res) => res)
+    .catch((e) => e.response);
+}
+
+async function CreateSecurity(data: FormData) {
+  try {
+    const res = await axios.post(`${apiUrl}/security`, data, {
       withCredentials: true,
       headers: {
         "Content-Type": "multipart/form-data",
@@ -624,6 +667,12 @@ export {
   GetKnowledgesById,
   UpdateKnowledgesById,
   DeleteKnowledgesById,
+  // Security API
+  CreateSecurity,
+  GetSecurity,
+  GetSecurityById,
+  UpdateSecurityById,
+  DeleteSecurityById,
   // Section API
   CreateSection,
   GetSections,

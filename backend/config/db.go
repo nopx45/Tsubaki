@@ -41,6 +41,7 @@ func SetupDatabase() {
 		&entity.VisitPageLog{},
 		&entity.Message{},
 		&entity.UserSocket{},
+		&entity.Security{},
 	)
 }
 

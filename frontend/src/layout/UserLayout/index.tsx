@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { Button, Card, Form, Input, Layout, Menu, message, Modal, Typography} from "antd";
-import { GlobalOutlined, SearchOutlined, SolutionOutlined, BulbOutlined, LinkOutlined, CloseOutlined, UserOutlined } from "@ant-design/icons";
+import { GlobalOutlined, SearchOutlined, SolutionOutlined, BulbOutlined, LinkOutlined, CloseOutlined, UserOutlined, SafetyOutlined } from "@ant-design/icons";
 import Sider from "antd/es/layout/Sider";
 import headerlogo from "../../assets/header.jpg"
 import SubMenu from "antd/es/menu/SubMenu";
@@ -234,7 +234,7 @@ const UserLayout: React.FC = () => {
                   color: "white" 
                 }}>
                   <Title level={5} style={{ margin: 0, color: "white" }}>
-                  {t("weblink")}
+                  {t("centralweb")}
                   </Title>
                 </div>
               }
@@ -374,6 +374,16 @@ const UserLayout: React.FC = () => {
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                   <Title level={5} style={{ color: "white", margin: 0 }}>
                     {t("it_knowledge")}
+                  </Title>
+                </div>
+              </Link>
+            </Menu.Item>
+            <Menu.Item style={{backgroundColor: "rgba(0, 132, 255, 0)",
+              borderBottom: "1px solid #999999"}} key="security" icon={<SafetyOutlined />}>
+              <Link to="/security">
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <Title level={5} style={{ color: "white", margin: 0 }}>
+                    {t("security")}
                   </Title>
                 </div>
               </Link>

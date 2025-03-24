@@ -36,6 +36,8 @@ const resources = {
         loading : "Loading...",
         back : "Back",
         visit : "Visitors",
+        centralweb : "Central Web",
+        security : "Security",
       },
     },
     th: {
@@ -71,6 +73,8 @@ const resources = {
         loading : "กำลังโหลดข้อมูล...",
         back : "กลับ",
         visit : "ผู้เข้าชมทั้งหมด",
+        centralweb : "เว็บกลาง",
+        security : "ความปลอดภัย",
       },
     },
   };

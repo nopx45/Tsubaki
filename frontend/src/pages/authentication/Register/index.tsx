@@ -77,7 +77,7 @@ function SignUpPages() {
                   </Col>
                   <Col xs={24} sm={24} md={24} lg={24} xl={24}>
                     <Form.Item
-                      label="Username (ต้องตรงกับชื่อในคอมพิวเตอร์)"
+                      label="Username"
                       name="username"
                       rules={[
                         { required: true, message: "กรุณากรอกชื่อผู้ใช้ !" },

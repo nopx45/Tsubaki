@@ -7,6 +7,7 @@ import Announcement from "../pages/userpages/announcement";
 import Activity from "../pages/userpages/activity";
 import ActivityDetails from "../pages/adminpage/activity/indetail";
 import Article from "../pages/userpages/article";
+import Security from "../pages/userpages/security";
 import ArticleDetails from "../pages/userpages/article/indetail";
 
 const NotPage = Loadable(lazy(() => import("../pages/notpage")));
@@ -65,6 +66,15 @@ const UserRoutes = (isLoggedIn: boolean): RouteObject => {
             path: "detail/:id",
             element: <ArticleDetails />,
           },
+        ],
+      },
+      {
+        path: "security",
+        children: [
+          {
+            index: true,
+            element: <Security />,
+          }
         ],
       },
       {

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, Outlet } from "react-router-dom";
-import { ReadOutlined } from "@ant-design/icons";
+import { ReadOutlined, SafetyOutlined } from "@ant-design/icons";
 import { Layout, Menu, Button, message, Typography } from "antd";
 import logo from "../../assets/logo.png";
 import { Logouts, stopvisit } from "../../services/https";
@@ -37,6 +37,9 @@ const HRadminLayout: React.FC = () => {
         <Menu theme="dark" mode="inline">
           <Menu.Item key="it-knowledge" icon={<ReadOutlined />}>
             <Link to="/admin/it-knowledge">ข่าวสารไอที</Link>
+          </Menu.Item>
+          <Menu.Item key="security" icon={<SafetyOutlined />}>
+            <Link to="/admin/security">ข่าวสารด้านความปลอดภัย</Link>
           </Menu.Item>
         </Menu>
 

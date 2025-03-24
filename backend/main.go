@@ -22,6 +22,7 @@ import (
 	"github.com/webapp/controller/logvisitpage"
 	"github.com/webapp/controller/regulation"
 	"github.com/webapp/controller/section"
+	"github.com/webapp/controller/security"
 	"github.com/webapp/controller/users"
 	"github.com/webapp/entity"
 	"github.com/webapp/middlewares"
@@ -97,6 +98,10 @@ func main() {
 		adminITRouter.POST("/knowledge", knowledge.Upload)
 		adminITRouter.PUT("/knowledge/:id", knowledge.Update)
 		adminITRouter.DELETE("/knowledge/:id", knowledge.Delete)
+
+		adminITRouter.POST("/security", security.Upload)
+		adminITRouter.PUT("/security/:id", security.Update)
+		adminITRouter.DELETE("/security/:id", security.Delete)
 	}
 
 	adminHRRouter := r.Group("/")
@@ -151,6 +156,8 @@ func main() {
 	r.GET("/article/:id", article.GetID)
 	r.GET("/knowledges", knowledge.GetAll)
 	r.GET("/knowledge/:id", knowledge.GetID)
+	r.GET("/securities", security.GetAll)
+	r.GET("/security/:id", security.GetID)
 	r.GET("/links", link.GetAll)
 	r.GET("/link/:id", link.GetID)
 	r.GET("/sections", section.GetAll)
