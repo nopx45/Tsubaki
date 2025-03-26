@@ -1,4 +1,5 @@
 import { AnnouncementsInterface } from "../../interfaces/IAnnouncement";
+import { ChangePasswordInterface } from "../../interfaces/IChangePassword";
 import { FilesInterface } from "../../interfaces/IFile";
 import { FormsInterface } from "../../interfaces/IForm";
 import { LinksInterface } from "../../interfaces/ILink";
@@ -37,7 +38,7 @@ async function SignIn(data: SignInInterface) {
     .catch((e) => e.response);
 }
 
-async function ChangesPassword(data: SignInInterface) {
+async function ChangesPassword(data: ChangePasswordInterface) {
   return await axios
     .post(`${apiUrl}/change-password`, data, {
       withCredentials: true,

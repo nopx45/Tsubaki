@@ -138,9 +138,10 @@ function MessagesLog() {
                     rowKey="ID"
                     columns={columns}
                     dataSource={Messages}
-                    style={{ width: "100%", borderRadius: "8px", overflow: "hidden" }}
+                    style={{ width: "100%", borderRadius: "8px", overflowX: "auto" }}
                     pagination={{ pageSize: 10 }}
                     bordered
+                    scroll={{ x: "max-comtent"}}
                     />
                 </Card>
         </div>

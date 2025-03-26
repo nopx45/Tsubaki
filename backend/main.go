@@ -46,8 +46,6 @@ func main() {
 	// Auth Route
 	r.POST("/signup", users.SignUp)
 	r.POST("/signin", users.SignIn)
-	r.POST("/change-password", users.ChangePassword)
-	r.POST("/auto/login", users.AutoLogin)
 	r.GET("/auth/token", users.GetAuthToken)
 	r.GET("/logout", users.Logout)
 
@@ -60,7 +58,6 @@ func main() {
 	{
 		adminRouter.Use(middlewares.Authorizes("admin"))
 
-		adminRouter.POST("/reset-password", users.ResetUserPassword)
 		adminRouter.GET("/avg-duration", logs.GetAvgDuration)
 		adminRouter.GET("/allvisitors", logs.GetAllVisitors)
 		adminRouter.DELETE("/visit/:id", logs.Delete)
@@ -133,6 +130,9 @@ func main() {
 	userRouter := r.Group("/")
 	{
 		userRouter.Use(middlewares.Authorizes("user", "adminit", "admin", "adminhr"))
+
+		userRouter.POST("/change-password", users.ChangePassword)
+
 		userRouter.GET("/downloadfile/:id", files.DownloadFile)
 		userRouter.GET("/downloadform/:id", formgen.DownloadFile)
 		userRouter.GET("/downloadregulation/:id", regulation.DownloadFile)

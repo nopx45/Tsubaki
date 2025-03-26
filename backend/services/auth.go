@@ -20,16 +20,18 @@ type JwtWrapper struct {
 
 // JwtClaim adds email as a claim to the token
 type JwtClaim struct {
+	UserID   uint   `json:"user_id"`
 	Username string `json:"username"`
 	Role     string `json:"role"`
 	jwt.StandardClaims
 }
 
 // ✅ ฟังก์ชันสร้าง JWT และส่งผ่าน `HttpOnly Secure Cookie`
-func (j *JwtWrapper) GenerateToken(w http.ResponseWriter, Username string, role string) error {
+func (j *JwtWrapper) GenerateToken(w http.ResponseWriter, userID uint, Username string, role string) error {
 	claims := &JwtClaim{
 		Username: Username,
 		Role:     role,
+		UserID:   userID,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(time.Hour * time.Duration(j.ExpirationHours)).Unix(),
 			Issuer:    j.Issuer,

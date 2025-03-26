@@ -185,10 +185,11 @@ function Customers() {
           style={{
             width: "100%",
             borderRadius: "8px",
-            overflow: "hidden",
+            overflowX: "auto",
           }}
           pagination={{ pageSize: 5 }}
           bordered
+          scroll={{ x: "max-comtent"}}
         />
       </Card>
     </div>

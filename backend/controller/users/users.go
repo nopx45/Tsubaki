@@ -6,7 +6,17 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/webapp/config"
 	"github.com/webapp/entity"
+	"golang.org/x/crypto/bcrypt"
 )
+
+type UpdateUserInput struct {
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
+	Username  string `json:"username"`
+	Role      string `json:"role"`
+	Password  string `json:"password"` // optional
+}
 
 func GetAll(c *gin.Context) {
 	var users []entity.Users
@@ -55,20 +65,55 @@ func Update(c *gin.Context) {
 	var user entity.Users
 	UserID := c.Param("id")
 	db := config.DB()
-	result := db.First(&user, UserID)
-	if result.Error != nil {
+
+	if err := db.First(&user, UserID).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "id not found"})
 		return
 	}
-	if err := c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request, unable to map payload"})
-		return
-	}
-	result = db.Save(&user)
-	if result.Error != nil {
+
+	var input UpdateUserInput
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
 		return
 	}
+
+	// เตรียม map สำหรับ fields ที่จะอัปเดต
+	updates := map[string]interface{}{}
+
+	if input.FirstName != "" {
+		updates["first_name"] = input.FirstName
+	}
+	if input.LastName != "" {
+		updates["last_name"] = input.LastName
+	}
+	if input.Email != "" {
+		updates["email"] = input.Email
+	}
+	if input.Username != "" {
+		updates["username"] = input.Username
+	}
+	if input.Role != "" {
+		updates["role"] = input.Role
+	}
+	if input.Password != "" {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "ไม่สามารถเข้ารหัสรหัสผ่านได้"})
+			return
+		}
+		updates["password"] = string(hashedPassword)
+	}
+
+	if len(updates) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ไม่มีข้อมูลที่ต้องอัปเดต"})
+		return
+	}
+
+	if err := db.Model(&user).Updates(updates).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "ไม่สามารถอัปเดตข้อมูลได้"})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "Updated successful"})
 }
 

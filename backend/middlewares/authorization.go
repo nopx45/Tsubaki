@@ -32,10 +32,12 @@ func Authorizes(roles ...string) gin.HandlerFunc {
 		}
 
 		userRole := claims.Role
+		userID := claims.UserID
 		username := claims.Username
 		sessionID := sessionCookie.Value
 
 		c.Set("username", username)
+		c.Set("userID", userID)
 		c.Set("role", userRole)
 		c.Set("session_id", sessionID)
 

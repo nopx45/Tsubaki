@@ -3,7 +3,6 @@ package users
 import (
 	"errors"
 	"net/http"
-	"os"
 
 	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
@@ -136,7 +135,7 @@ func SignIn(c *gin.Context) {
 		ExpirationHours: 24,
 	}
 
-	err = jwtWrapper.GenerateToken(c.Writer, user.Username, user.Role)
+	err = jwtWrapper.GenerateToken(c.Writer, user.ID, user.Username, user.Role)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error setting token"})
 		return
@@ -161,51 +160,6 @@ func SignIn(c *gin.Context) {
 		"role":                  user.Role,
 		"redirect_url":          redirectURL,
 		"force_password_change": user.ForcePasswordChange,
-	})
-}
-
-func AutoLogin(c *gin.Context) {
-	systemUsername := os.Getenv("USERNAME") // Windows
-	if systemUsername == "" {
-		systemUsername = os.Getenv("USER") // Linux/macOS
-	}
-
-	var users entity.Users
-	if err := config.DB().Raw("SELECT * FROM users WHERE username = ?", systemUsername).Scan(&users).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	jwtWrapper := services.JwtWrapper{
-		SecretKey:       "SvNQpBN8y3qlVrsGAYYWoJJk56LtzFHx",
-		Issuer:          "AuthService",
-		ExpirationHours: 24,
-	}
-
-	err := jwtWrapper.GenerateToken(c.Writer, users.Username, users.Role)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error setting token"})
-		return
-	}
-
-	var redirectURL string
-	if users.Role == "admin" {
-		redirectURL = "/admin"
-	} else if users.Role == "adminit" {
-		redirectURL = "admin/it-knowledge"
-	} else if users.Role == "adminhr" {
-		redirectURL = "admin"
-	} else {
-		redirectURL = "/"
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"token_type":   "Bearer",
-		"token":        jwtWrapper,
-		"id":           users.ID,
-		"username":     users.Username,
-		"role":         users.Role,
-		"redirect_url": redirectURL,
 	})
 }
 
@@ -249,90 +203,78 @@ func Logout(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Logout successful"})
 }
 
-func ResetUserPassword(c *gin.Context) {
-	var req struct {
-		Username    string `json:"username"`
-		NewPassword string `json:"new_password"`
+func ChangePassword(c *gin.Context) {
+	jwtWrapper := services.JwtWrapper{
+		SecretKey: "SvNQpBN8y3qlVrsGAYYWoJJk56LtzFHx", // ให้ตรงกับตอน generate
+		Issuer:    "AuthService",
+	}
+	// ดึง JWT token จาก cookie
+	cookie, err := c.Request.Cookie("auth_token")
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
 	}
 
+	claims, err := jwtWrapper.ValidateToken(cookie.Value)
+	if err != nil {
+		// ตรวจสอบ token ผิดพลาด เช่น หมดอายุ หรือไม่ถูกต้อง
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		return
+	}
+
+	// ดึง user ID จาก claims
+	userID := claims.UserID
+
+	// Bind body
+	var req struct {
+		CurrentPassword string `json:"current_password"`
+		NewPassword     string `json:"new_password"`
+	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
 	}
 
-	// ค้นหาผู้ใช้
-	var user []entity.Users
+	// ดึงข้อมูลผู้ใช้
+	var user entity.Users
 	db := config.DB()
-	if err := db.Where("username = ?", req.Username).First(&user).Error; err != nil {
+	if err := db.First(&user, "id = ?", userID).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
 		return
 	}
 
-	// Hash รหัสผ่านใหม่
-	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+	// ตรวจสอบรหัสผ่านเดิม
+	if !user.ForcePasswordChange {
+		if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.CurrentPassword)); err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Current password is incorrect"})
+			return
+		}
+	}
 
-	// อัปเดตรหัสผ่านและบังคับเปลี่ยนรหัสผ่าน
-	db.Model(&user).Updates(map[string]interface{}{
-		"password":              hashedPassword,
-		"force_password_change": true,
+	// ตรวจสอบรหัสผ่านใหม่
+	if len(req.NewPassword) < 6 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "New password must be at least 6 characters long"})
+		return
+	}
+
+	// Hash password ใหม่
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
+		return
+	}
+
+	// อัปเดตฐานข้อมูล
+	if err := db.Model(&user).Updates(map[string]interface{}{
+		"password":              string(hashedPassword),
+		"force_password_change": false,
+	}).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update password"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":      "Password changed successfully",
+		"redirect_url": "/",
 	})
-
-	c.JSON(http.StatusOK, gin.H{"message": "Password reset successfully"})
 }
-
-func ChangePassword(c *gin.Context) {
-    userID, exists := c.Get("userID") // ดึง userID จาก JWT
-    if !exists {
-        c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-        return
-    }
-
-    var req struct {
-        CurrentPassword string `json:"current_password"`
-        NewPassword     string `json:"new_password"`
-    }
-
-    if err := c.ShouldBindJSON(&req); err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
-        return
-    }
-
-    // ดึงข้อมูลผู้ใช้จากฐานข้อมูล
-    var user entity.Users
-    db := config.DB()
-    if err := db.First(&user, "id = ?", userID).Error; err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
-        return
-    }
-
-    // ตรวจสอบรหัสผ่านปัจจุบัน
-    if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.CurrentPassword)); err != nil {
-        c.JSON(http.StatusUnauthorized, gin.H{"error": "Current password is incorrect"})
-        return
-    }
-
-    // ตรวจสอบความแข็งแกร่งของรหัสผ่านใหม่ (อย่างง่าย)
-    if len(req.NewPassword) < 8 {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "New password must be at least 8 characters long"})
-        return
-    }
-
-    // Hash รหัสผ่านใหม่
-    hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash password"})
-        return
-    }
-
-    // อัปเดตฐานข้อมูล
-    if err := db.Model(&user).Updates(map[string]interface{}{
-        "password":              string(hashedPassword),
-        "force_password_change": false, // ไม่ต้องบังคับเปลี่ยนรหัสอีก
-    }).Error; err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update password"})
-        return
-    }
-
-    c.JSON(http.StatusOK, gin.H{"message": "Password changed successfully"})
-}
-

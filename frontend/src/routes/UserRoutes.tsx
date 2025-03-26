@@ -16,8 +16,13 @@ const NotPage = Loadable(lazy(() => import("../pages/notpage")));
 const MainPages = Loadable(lazy(() => import("../pages/authentication/Login")));
 const Dashboard = Loadable(lazy(() => import("../pages/userpages/dashboard")));
 
-const UserRoutes = (isLoggedIn: boolean): RouteObject => {
-  return {
+const UserRoutes = (isLoggedIn: boolean): RouteObject[] => {
+  return [
+    {
+      path: "/change-password",
+      element: <ChangePassword />,
+    },
+    {
     path: "/",
     element: isLoggedIn ? <UserLayout /> : <MainPages />,
     children: [
@@ -79,20 +84,11 @@ const UserRoutes = (isLoggedIn: boolean): RouteObject => {
         ],
       },
       {
-        path: "change-password",
-        children: [
-          {
-            index: true,
-            element: <ChangePassword />, 
-          }
-        ],
-      },
-      {
         path: "*",
         element: <NotPage />, 
       },
-    ],
-  };
+   ]},
+  ];
 };
 
 

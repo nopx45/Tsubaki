@@ -48,7 +48,8 @@ function Central() {
     {
       title: "url ของเว็บไซต์",
       dataIndex: "link_url",
-      key: "link_url",
+      render: (text: string) =>
+        text.length > 60 ? `${text.slice(0,60)}...` : text
     },
     {
       title: "จัดการ",
@@ -161,10 +162,11 @@ function Central() {
           style={{
             width: "100%",
             borderRadius: "8px",
-            overflow: "hidden",
+            overflowX: "auto",
           }}
           pagination={{ pageSize: 5 }}
           bordered
+          scroll={{ x: "max-comtent"}}
         />
       </Card>
     </div>
