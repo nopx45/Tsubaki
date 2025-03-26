@@ -48,13 +48,13 @@ function ConfigRoutes() {
 
   if (isLoggedIn) {
     if (isAdmin) {
-      routes = [AdminRoutes(isLoggedIn), UserRoutes(isLoggedIn)];
+      routes = [AdminRoutes(isLoggedIn), ...UserRoutes(isLoggedIn)];
     } else if (isITadmin) {
-      routes = [ITadminRoutes(isLoggedIn), UserRoutes(isLoggedIn)];
+      routes = [ITadminRoutes(isLoggedIn), ...UserRoutes(isLoggedIn)];
     } else if (isHRadmin) {
-      routes = [HRadminRoutes(isLoggedIn), UserRoutes(isLoggedIn)];
+      routes = [HRadminRoutes(isLoggedIn), ...UserRoutes(isLoggedIn)];
     } else {
-      routes = [UserRoutes(isLoggedIn)];
+      routes = [...UserRoutes(isLoggedIn)];
     }
   } else {
     routes = [...MainRoutes()];

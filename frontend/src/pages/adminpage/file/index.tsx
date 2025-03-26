@@ -149,10 +149,11 @@ function Files() {
           dataSource={files}
           pagination={{ pageSize: 5 }}
           bordered
+          scroll={{ x: "max-comtent"}}
           style={{
             width: "100%",
             borderRadius: "8px",
-            overflow: "hidden",
+            overflowX: "auto",
           }}
           components={{
             header: {

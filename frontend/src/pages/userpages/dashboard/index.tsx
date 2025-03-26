@@ -111,9 +111,9 @@ export default function Announcements() {
                 type="primary"
                 block
                 style={{
-                  backgroundImage: "linear-gradient(90deg,rgb(134, 185, 252),rgb(0, 108, 180),rgb(134, 185, 252))",
+                  backgroundImage: "linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)",
                   borderRadius: "6px",
-                  boxShadow: "0px 8px 16px rgba(11, 96, 255, 0.8)",
+                  boxShadow: "0px 4px 12px rgba(11, 96, 255, 0.8)",
                   overflow: "hidden",
                   display: "flex",
                   alignItems: "center",
@@ -281,7 +281,7 @@ export default function Announcements() {
                 />
               }
               style={{
-                background: "linear-gradient(90deg,rgb(4, 26, 68),rgb(7, 65, 132)",
+                backgroundImage: "linear-gradient(90deg,rgb(17, 129, 203) 0%,rgb(9, 53, 129) 100%)",
                 borderRadius: "10px",
                 borderColor: "#002641",
                 boxShadow: "0px 4px 12px rgba(43, 107, 226, 0.8)",
@@ -367,7 +367,7 @@ export default function Announcements() {
                     hoverable
                       key={article.ID}
                       style={{
-                        background: "#ecffff",
+                        backgroundImage: "linear-gradient(90deg,rgb(212, 253, 224) 0%,rgb(174, 199, 241) 100%)",
                         borderRadius: "10px",
                         marginBottom: "5px",
                         boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
