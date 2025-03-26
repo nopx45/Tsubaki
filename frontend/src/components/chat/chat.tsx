@@ -2,7 +2,7 @@ import React, { useState, CSSProperties, useEffect, useRef } from 'react';
 import { Badge, Avatar, Button, Input } from 'antd';
 import { CloseOutlined, SendOutlined } from '@ant-design/icons';
 import useWebSocket from '../../socket';
-import { getAuthToken } from '../../services/https';
+import { getAuthToken, GetUserByUsername } from '../../services/https';
 import { jwtDecode } from 'jwt-decode';
 import { TiMessages } from "react-icons/ti";
 
@@ -74,23 +74,28 @@ const Chat: React.FC<ChatComponentProps> = ({ isLoggedIn }) => {
     }
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (newMessage.trim() === "") return;
-    
+
     let messageToSend = newMessage;
     let recipient = sendto || "admin";
-    
+
     // ตรวจสอบว่าข้อความมีรูปแบบชาร์ป (#) ตามด้วยชื่อผู้ใช้หรือไม่
     const match = newMessage.match(/#(\w+)/);
     if (match) {
-      recipient = match[1]; // ดึงชื่อผู้ใช้ที่อยู่หลัง #
-      messageToSend = newMessage.replace(/#(\w+)/, "").trim(); // ลบ #ชื่อผู้ใช้ออกจากข้อความ
+        recipient = match[1]; // ดึงชื่อผู้ใช้ที่อยู่หลัง #
+        messageToSend = newMessage.replace(/#(\w+)/, "").trim(); // ลบ #ชื่อผู้ใช้ออกจากข้อความ
+
+        // ตรวจสอบว่าชื่อผู้ใช้มีอยู่ในระบบหรือไม่
+        const userExists = await GetUserByUsername(recipient);
+        if (!userExists) {
+            alert(`ไม่พบผู้ใช้: ${recipient}`);
+            return;
+        }
     }
-  
-    sendMessage(JSON.stringify({ type: "send_message", from: recipient, role: role, content: messageToSend}));
-    
+    sendMessage(JSON.stringify({ type: "send_message", from: recipient, role: role, content: messageToSend }));
     setNewMessage("");
-  };
+};
 
   const handleSelectRecipient = (selectedUser: string) => {
     setSendto(selectedUser);
@@ -99,6 +104,7 @@ const Chat: React.FC<ChatComponentProps> = ({ isLoggedIn }) => {
   if (!isLoggedIn) {
     return null;
   }
+
   return (
     <>
       <div style={chatStyles.chatButton} onClick={toggleChat}>

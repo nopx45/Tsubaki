@@ -8,6 +8,7 @@ import Activity from "../pages/userpages/activity";
 import ActivityDetails from "../pages/adminpage/activity/indetail";
 import Article from "../pages/userpages/article";
 import ArticleDetails from "../pages/userpages/article/indetail";
+import Security from "../pages/userpages/security";
 
 const NotPage = Loadable(lazy(() => import("../pages/notpage")));
 
@@ -79,6 +80,15 @@ const MainRoutes = (): RouteObject[] => {
               path: "detail/:id",
               element: <ArticleDetails />,
             },
+          ],
+        },
+        {
+          path: "security",
+          children: [
+            {
+              index: true,
+              element: <Security />,
+            }
           ],
         },
         {

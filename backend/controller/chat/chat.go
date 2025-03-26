@@ -50,6 +50,20 @@ func GetUserSocketID(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
+func GetUserByUsername(c *gin.Context) {
+	username := c.Param("username")
+	var user entity.UserSocket
+	db := config.DB()
+
+	result := db.Where("username = ?", username).First(&user)
+	if result.Error != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
+}
+
 func Delete(c *gin.Context) {
 	id := c.Param("id")
 	db := config.DB()

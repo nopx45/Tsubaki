@@ -382,6 +382,7 @@ export default function Announcements() {
                         e.currentTarget.style.transform = "translate(0, 0)";
                         e.currentTarget.style.boxShadow = "0px 8px 16px rgba(0, 0, 0, 0.1)";
                       }}
+
                     >
                       <Row gutter={[16, 16]} align="middle">
                         <Col xs={24} sm={6}>

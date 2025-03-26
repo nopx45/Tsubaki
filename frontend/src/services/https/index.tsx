@@ -7,7 +7,7 @@ import { UsersInterface } from "../../interfaces/IUser";
 import { SignInInterface } from "../../interfaces/SignIn";
 
 import axios from "axios";
-const apiUrl = "http://localhost:8080";
+const apiUrl = "http://tat-webcenter:8080";
 axios.defaults.withCredentials = true;
 
 async function getAuthToken() {
@@ -31,6 +31,15 @@ async function Logouts() {
 async function SignIn(data: SignInInterface) {
   return await axios
     .post(`${apiUrl}/signin`, data, {
+      withCredentials: true,
+    })
+    .then((res) => res)
+    .catch((e) => e.response);
+}
+
+async function ChangesPassword(data: SignInInterface) {
+  return await axios
+    .post(`${apiUrl}/change-password`, data, {
       withCredentials: true,
     })
     .then((res) => res)
@@ -596,6 +605,16 @@ async function GetUserSocketsById(id: string) {
     .catch((e) => e.response);
 }
 
+async function GetUserByUsername(username: string) {
+  try {
+      const response = await axios.get(`${apiUrl}/usersocket/${username}`);
+      return response.data; // คืนค่าข้อมูลผู้ใช้
+  } catch (error) {
+      console.error("Error fetching user:", error);
+      return null; // ถ้าเกิดข้อผิดพลาดหรือไม่พบผู้ใช้ ให้คืนค่า null
+  }
+};
+
 async function DeleteUserSocketsById(id: string) {
   return await axios
     .delete(`${apiUrl}/usersocket/${id}`)
@@ -629,6 +648,7 @@ export {
   getAuthToken,
   Logouts,
   SignIn,
+  ChangesPassword,
   AutoLogin,
   GetUsers,
   GetNUsers,
@@ -716,6 +736,7 @@ export {
 
   GetUserSockets,
   GetUserSocketsById,
+  GetUserByUsername,
   DeleteUserSocketsById,
 
   GetMessages,

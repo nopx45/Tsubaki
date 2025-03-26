@@ -54,7 +54,10 @@ function SignInPages() {
                     Log in
                   </Button>
                   <br />
-                  Or <a onClick={() => navigate("/signup")}>signup now !</a>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <a onClick={() => navigate("/signup")}>signup now !</a>
+                    <p style={{ color: "gray", margin: 0 }}>หากลืมรหัสผ่าน กรุณาติดต่อฝ่าย IT</p>
+                  </div>
                 </Form.Item>
               </Form>
             </Col>

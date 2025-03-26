@@ -9,6 +9,7 @@ import ActivityDetails from "../pages/adminpage/activity/indetail";
 import Article from "../pages/userpages/article";
 import Security from "../pages/userpages/security";
 import ArticleDetails from "../pages/userpages/article/indetail";
+import ChangePassword from "../pages/authentication/change-password";
 
 const NotPage = Loadable(lazy(() => import("../pages/notpage")));
 
@@ -74,6 +75,15 @@ const UserRoutes = (isLoggedIn: boolean): RouteObject => {
           {
             index: true,
             element: <Security />,
+          }
+        ],
+      },
+      {
+        path: "change-password",
+        children: [
+          {
+            index: true,
+            element: <ChangePassword />, 
           }
         ],
       },

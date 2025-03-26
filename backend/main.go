@@ -46,6 +46,7 @@ func main() {
 	// Auth Route
 	r.POST("/signup", users.SignUp)
 	r.POST("/signin", users.SignIn)
+	r.POST("/change-password", users.ChangePassword)
 	r.POST("/auto/login", users.AutoLogin)
 	r.GET("/auth/token", users.GetAuthToken)
 	r.GET("/logout", users.Logout)
@@ -59,6 +60,7 @@ func main() {
 	{
 		adminRouter.Use(middlewares.Authorizes("admin"))
 
+		adminRouter.POST("/reset-password", users.ResetUserPassword)
 		adminRouter.GET("/avg-duration", logs.GetAvgDuration)
 		adminRouter.GET("/allvisitors", logs.GetAllVisitors)
 		adminRouter.DELETE("/visit/:id", logs.Delete)
@@ -168,6 +170,7 @@ func main() {
 	r.GET("/regulation/:id", regulation.GetID)
 	r.GET("/visitors", logs.GetTotalVisitors)
 	r.GET("/usersockets", chat.GetAll)
+	r.GET("/usersocket/:username", chat.GetUserByUsername)
 	r.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "API RUNNING...")
 	})
