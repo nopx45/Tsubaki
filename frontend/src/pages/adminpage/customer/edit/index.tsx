@@ -60,6 +60,8 @@ function CustomerEdit() {
 
     const payload: Partial<UsersInterface> = {
       password: values.reset_password,
+      ForcePasswordChange: true,
+      
     };
 
     const res = await UpdateUsersById(id, payload);

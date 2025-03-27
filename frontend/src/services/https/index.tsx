@@ -77,7 +77,7 @@ async function GetUsersById(id: string) {
     .catch((e) => e.response);
 }
 
-async function UpdateUsersById(id: string, data: UsersInterface) {
+async function UpdateUsersById(id: string, data: Partial<UsersInterface>) {
   return await axios
     .put(`${apiUrl}/user/${id}`, data)
     .then((res) => res)

@@ -10,12 +10,13 @@ import (
 )
 
 type UpdateUserInput struct {
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email"`
-	Username  string `json:"username"`
-	Role      string `json:"role"`
-	Password  string `json:"password"` // optional
+	FirstName           string `json:"first_name"`
+	LastName            string `json:"last_name"`
+	Email               string `json:"email"`
+	Username            string `json:"username"`
+	Role                string `json:"role"`
+	Password            string `json:"password"` // optional
+	ForcePasswordChange *bool  `json:"force_password_change"`
 }
 
 func GetAll(c *gin.Context) {
@@ -94,6 +95,9 @@ func Update(c *gin.Context) {
 	}
 	if input.Role != "" {
 		updates["role"] = input.Role
+	}
+	if input.ForcePasswordChange != nil {
+		updates["ForcePasswordChange"] = *input.ForcePasswordChange
 	}
 	if input.Password != "" {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)

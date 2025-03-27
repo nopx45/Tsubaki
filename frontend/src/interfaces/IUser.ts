@@ -7,4 +7,5 @@ export interface UsersInterface {
     phone?: string;
     role?: string;
     password?: string;
+    ForcePasswordChange?: boolean;
   }
