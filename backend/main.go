@@ -64,7 +64,6 @@ func main() {
 		adminRouter.DELETE("/pagevisit/:id", logvisitpage.Delete)
 
 		// User Route
-		adminRouter.PUT("/user/:id", users.Update)
 		adminRouter.GET("/users", users.GetAll)
 		adminRouter.GET("/user/:id", users.GetID)
 		adminRouter.DELETE("/user/:id", users.Delete)
@@ -132,6 +131,8 @@ func main() {
 		userRouter.Use(middlewares.Authorizes("user", "adminit", "admin", "adminhr"))
 
 		userRouter.POST("/change-password", users.ChangePassword)
+		userRouter.GET("/profile", users.GetUserProfile)
+		userRouter.PUT("/user/:id", users.Update)
 
 		userRouter.GET("/downloadfile/:id", files.DownloadFile)
 		userRouter.GET("/downloadform/:id", formgen.DownloadFile)

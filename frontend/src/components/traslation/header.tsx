@@ -8,13 +8,14 @@ import logo from "../../assets/logo.png";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { IoHome } from "react-icons/io5";
+import { FaUserCircle } from "react-icons/fa";
 
 const { Header } = Layout;
 
 const LanguageSelector = () => {
   const { i18n } = useTranslation();
   const [selectedLang, setSelectedLang] = useState(Cookies.get("language") || i18n.language);
-
+  
   useEffect(() => {
     i18n.changeLanguage(selectedLang);
   }, [selectedLang, i18n]);
@@ -45,7 +46,14 @@ const LanguageSelector = () => {
 };
 
 const AppHeader = () => {
+  const [isLogin, setIslogin] = useState(false);
   const navigate = useNavigate();
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+    setIslogin(isLoggedIn);
+  }, []);
+  
+
   return (
     <Header style={headerStyle}>
       <img
@@ -67,6 +75,20 @@ const AppHeader = () => {
       onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.3)'}
       onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
     />
+    {isLogin && (
+      <FaUserCircle
+        size={24}
+        style={{
+          color: "black",
+          marginRight: "16px",
+          cursor: "pointer",
+          transition: "transform 0.2s ease",
+        }}
+        onClick={() => navigate("/profile")}
+        onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.3)")}
+        onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
+      />
+    )}
     <div
       style={{
         borderRadius: '6px',

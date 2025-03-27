@@ -24,6 +24,7 @@ const SignInPages: React.FC = () => {
           window.location.reload();
         } else {
           navigate(res.data.redirect_url, { replace: true });
+          window.location.reload();
         }
       }, 2000);
     }
