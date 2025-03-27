@@ -42,7 +42,7 @@ const ChangePassword: React.FC = () => {
         setTimeout(() => {
           localStorage.setItem("isLoggedIn", "true");
           window.location.href = res.data.redirect_url;
-        }, 2000);
+        }, 100);
       } else {
         throw new Error("Password change failed");
       }

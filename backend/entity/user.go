@@ -13,5 +13,5 @@ type Users struct {
 	Phone               string `json:"phone"`
 	Password            string `json:"-" valid:"minstringlength(8)~รหัสผ่านต้องมากกว่า 8 อักษร"`
 	Role                string `json:"role"`
-	ForcePasswordChange bool   `gorm:"default:false"`
+	ForcePasswordChange bool   `json:"force_password_change" gorm:"default:false"`
 }

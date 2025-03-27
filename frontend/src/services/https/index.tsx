@@ -20,6 +20,17 @@ async function getAuthToken() {
   }
 }
 
+async function GetProfile() {
+  try {
+    const response = await axios.get(`${apiUrl}/profile`, {
+      withCredentials: true,
+    })
+    return response.data;
+  } catch (error) {
+    return null;
+  }
+}
+
 async function Logouts() {
   try {
     const response = await axios.get(`${apiUrl}/logout`);
@@ -647,6 +658,7 @@ async function DeleteMessagesById(id: string) {
 export {
   // User API
   getAuthToken,
+  GetProfile,
   Logouts,
   SignIn,
   ChangesPassword,

@@ -60,7 +60,7 @@ function CustomerEdit() {
 
     const payload: Partial<UsersInterface> = {
       password: values.reset_password,
-      ForcePasswordChange: true,
+      force_password_change: true,
       
     };
 

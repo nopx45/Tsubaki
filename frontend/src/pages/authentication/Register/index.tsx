@@ -144,13 +144,16 @@ const SignUpPages: React.FC = () => {
                   
                   <Col span={24}>
                     <Form.Item
-                      label="Phone Number"
+                      label="TAT telephone"
                       name="phone"
-                      rules={[{ required: true, message: "Please enter your phone number" }]}
+                      rules={[
+                        { required: true, message: "Please enter your TAT telephone" },
+                        { max: 3, message: "TAT telephone must be at most 3 characters" },
+                      ]}
                     >
                       <Input 
                         size="large" 
-                        placeholder="Enter phone number"
+                        placeholder="Enter TAT telephone"
                         className="rounded-input"
                       />
                     </Form.Item>
