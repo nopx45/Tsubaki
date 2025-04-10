@@ -39,8 +39,8 @@ function CentralEdit() {
     e.preventDefault();
     const form = e.currentTarget as HTMLFormElement;
     const values: LinksInterface = {
-      Title: (form.elements.namedItem("Title") as HTMLInputElement).value,
-      LinkUrl: (form.elements.namedItem("LinkUrl") as HTMLInputElement).value,
+      name: (form.elements.namedItem("name") as HTMLInputElement).value,
+      link_url: (form.elements.namedItem("link_url") as HTMLInputElement).value,
     };
 
     const res = await UpdateLinksById(id, values);

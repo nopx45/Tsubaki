@@ -22,6 +22,7 @@ import (
 	"github.com/webapp/controller/logs"
 	"github.com/webapp/controller/logvisitpage"
 	"github.com/webapp/controller/marquee"
+	"github.com/webapp/controller/popup"
 	"github.com/webapp/controller/regulation"
 	"github.com/webapp/controller/section"
 	"github.com/webapp/controller/security"
@@ -43,6 +44,7 @@ func main() {
 
 	r := gin.Default()
 	r.Static("/uploads/images", "./uploads/images")
+	r.Static("/static/popup", "./uploads/images/popup")
 	r.Use(CORSMiddleware())
 
 	// Auth Route
@@ -142,6 +144,8 @@ func main() {
 		allAdminRouter.GET("/user/:id", users.GetID)
 		//marquee
 		allAdminRouter.POST("/marquee", marquee.UpdateMarquee)
+		//popup
+		allAdminRouter.POST("/popup", popup.UploadPopupImage)
 
 	}
 
@@ -164,6 +168,7 @@ func main() {
 		userRouter.POST("/pagevisitors", logvisitpage.RecordlogVisit)
 		userRouter.GET("/pagevisitors", logvisitpage.GetAllPageVisitors)
 		userRouter.GET("/toppagevisitors", logvisitpage.GetTopPages)
+		userRouter.GET("/popup", popup.GetPopupImage)
 
 	}
 
@@ -199,7 +204,7 @@ func main() {
 	})
 
 	// Run the server
-	r.Run("0.0.0.0:8080")
+	r.Run("localhost:8080")
 }
 
 func CORSMiddleware() gin.HandlerFunc {

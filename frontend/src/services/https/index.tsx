@@ -10,7 +10,7 @@ import { SignInInterface } from "../../interfaces/SignIn";
 import axios from "axios";
 import Swal from "sweetalert2";
 
-const apiUrl = "http://tat-webcenter:8080";
+export const apiUrl = "http://localhost:8080";
 axios.defaults.withCredentials = true;
 
 axios.interceptors.response.use(
@@ -746,6 +746,40 @@ async function UpdateMarquee(message: string) {
   }
 }
 
+async function GetPopupImages() {
+  try {
+    const res = await axios.get(`${apiUrl}/popup`);
+    if (res.status === 200) {
+      return { success: true, image: res.data.image };
+    } else {
+      return { success: false, error: res.data.error || "เกิดข้อผิดพลาด" };
+    }
+  } catch (err) {
+    return { success: false, error: "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้" };
+  }
+}
+
+async function UploadPopupImages(file: File) {
+  try {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    const res = await axios.post(`${apiUrl}/popup`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    if (res.status === 200) {
+      return { success: true, path: res.data.path, message: res.data.message };
+    } else {
+      return { success: false, error: res.data.error || "อัปโหลดไม่สำเร็จ" };
+    }
+  } catch (err) {
+    return { success: false, error: "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้" };
+  }
+}
+
 export {
   // User API
   getAuthToken,
@@ -855,4 +889,7 @@ export {
 
   GetMarquee,
   UpdateMarquee,
+
+  GetPopupImages,
+  UploadPopupImages,
 };

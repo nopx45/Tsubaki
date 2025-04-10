@@ -13,7 +13,7 @@ EnvironmentOutlined} from "@ant-design/icons";
 import Sider from "antd/es/layout/Sider";
 import headerlogo from "../../assets/header.jpg"
 import SubMenu from "antd/es/menu/SubMenu";
-import { getAuthToken, GetLinks, GetNUsers, GetSections, GetTotalVisitors, Logouts, stopvisit } from "../../services/https";
+import { getAuthToken, GetLinks, GetNUsers, GetPopupImages, GetSections, GetTotalVisitors, Logouts, stopvisit, UploadPopupImages, apiUrl } from "../../services/https";
 import { LinksInterface } from "../../interfaces/ILink";
 import { SectionsInterface } from "../../interfaces/ISection";
 import { UsersInterface } from "../../interfaces/IUser";
@@ -22,7 +22,6 @@ import RegulationModal from "../../pages/userpages/regulation";
 import AppHeader from "../../components/traslation/header";
 import { useTranslation } from "react-i18next";
 import ChatComponent from "../../components/chat-component/chat";
-import imgpopup from "../../assets/popup.webp"
 import CustomCalendar from "../../components/carlendar/Carlendar";
 import Swal from "sweetalert2";
 
@@ -42,7 +41,9 @@ const UserLayout: React.FC = () => {
   const [openKeys, setOpenKeys] = useState<string[]>(["link", "other-web"]);
 
   // Popup welcome
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [isPopupVisible, setIsPopupVisible] = useState(false);
+  const [imgpopup, setImgPopup] = useState<string>("")
 
   // search user value
   const [searchValue, setSearchValue] = useState("");
@@ -111,10 +112,10 @@ const UserLayout: React.FC = () => {
   const getLinks = async () => {
     let res = await GetLinks();   
     if (res.status === 200) {
-      const formattedData = res.data.map((item: { ID: any; name: any; LinkUrl: any; }) => ({
+      const formattedData = res.data.map((item: { ID: any; name: any; link_url: any; }) => ({
         ID: item.ID,
-        Title: item.name,
-        LinkUrl: item.LinkUrl,
+        name: item.name,
+        link_url: item.link_url,
       }));
   
       setLinks(formattedData);
@@ -156,6 +157,19 @@ const UserLayout: React.FC = () => {
   };
 
   useEffect(() => {
+    const fetchPopup = async () => {
+      const res = await GetPopupImages();
+      console.log(res)
+      if (res.success) {
+        setImgPopup(`${apiUrl}${res.image}`);
+        console.log(imgpopup)
+      } else {
+        console.error(res.error);
+      }
+    };
+  
+    fetchPopup();
+
     const fetchData = async () => {
       await getLinks();
       await getSections();
@@ -165,8 +179,43 @@ const UserLayout: React.FC = () => {
       await checkLoginAndShowPopup();
     };
     fetchData();
+
+    const fetchRole = async () => {
+          try {
+            const token = await getAuthToken();
+            if (token) {
+              // decode token หรือดึง profile จาก API
+              const payload = JSON.parse(atob(token.split(".")[1]));
+              setUserRole(payload?.role ?? null);
+            }
+          } catch (err) {
+            console.error("Error decoding token:", err);
+          }
+        };
+        fetchRole();
   }, []);
 
+  const handleImageUpload = async () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.click();
+  
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+  
+      const result = await UploadPopupImages(file);
+      if (result.success) {
+        setImgPopup(result.path); // อัปเดตรูป popup
+        Swal.fire("สำเร็จ", result.message, "success");
+      } else {
+        Swal.fire("ผิดพลาด", result.error, "error");
+      }
+    };
+  };
+
+  
   const handlePopupClose = () => {
     setIsPopupVisible(false);
   };
@@ -247,6 +296,13 @@ const UserLayout: React.FC = () => {
           onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.7)")}
         />
         <img src={imgpopup} alt="Welcome" style={{ width: "100%" }} />
+        {(userRole === "admin" || userRole === "adminhr" || userRole === "adminit") && (
+          <div style={{ textAlign: "center", marginTop: "10px" }}>
+            <Button onClick={handleImageUpload} type="primary">
+              📤 อัปโหลดรูปภาพใหม่
+            </Button>
+          </div>
+        )}
       </Modal>
       <AppHeader />
       <Layout style={{background: "transparent", backdropFilter: "blur(10px)"}}>
@@ -306,7 +362,7 @@ const UserLayout: React.FC = () => {
                     }}
                     className="custom-menu-item"
                   >
-                    <a href={item.LinkUrl} target="_blank" rel="noopener noreferrer"
+                    <a href={item.link_url} target="_blank" rel="noopener noreferrer"
                       style={{
                         display: "flex",
                         alignItems: "center",
@@ -315,7 +371,7 @@ const UserLayout: React.FC = () => {
                       }}
                       >
                       <span style={{ position: "relative" }}>
-                        {item.Title}
+                        {item.name}
                         {/* เอฟเฟกต์ขีดเส้นใต้เมื่อโฮเวอร์ */}
                         <span className="link-underline" style={{
                           position: "absolute",
@@ -335,8 +391,8 @@ const UserLayout: React.FC = () => {
                       }} />
                     </a>
                   </Menu.Item>
-                ))
-              ) : (
+                  ))
+                ) : (
                 <Menu.Item key="no-links" disabled>
                   {t("nodata")}
                 </Menu.Item>
@@ -961,7 +1017,8 @@ const UserLayout: React.FC = () => {
         </Sider>
       </Layout>
       <Footer style={{ textAlign: "center", backgroundColor: "rgba(239, 239, 255, 0.9)"}}>
-        Copyright © 2024 TSUBAKIMOTO AUTOMOTIVE (THAILAND) Co,.Ltd
+        <p>Copyright © 2024 TSUBAKIMOTO AUTOMOTIVE (THAILAND) Co,.Ltd</p>
+        <p style={{color: '#989898'}}>Powered by Nopx</p>
       </Footer>
       {/* ✅ แสดง Modal รายละเอียดผู้ใช้ */}
       <UserListModal
