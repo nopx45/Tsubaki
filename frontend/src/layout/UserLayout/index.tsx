@@ -111,10 +111,10 @@ const UserLayout: React.FC = () => {
   const getLinks = async () => {
     let res = await GetLinks();   
     if (res.status === 200) {
-      const formattedData = res.data.map((item: { ID: any; name: any; link_url: any; }) => ({
+      const formattedData = res.data.map((item: { ID: any; name: any; LinkUrl: any; }) => ({
         ID: item.ID,
         Title: item.name,
-        LinkUrl: item.link_url,
+        LinkUrl: item.LinkUrl,
       }));
   
       setLinks(formattedData);
@@ -430,7 +430,7 @@ const UserLayout: React.FC = () => {
                         className="custom-menu-item"
                       >
                         <a 
-                          href={link.link_url} 
+                          href={link.link_url}
                           target="_blank" 
                           rel="noopener noreferrer"
                           style={{

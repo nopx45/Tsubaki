@@ -18,8 +18,8 @@ function Central() {
   const perPage = 20;
 
   const filtered = links.filter(link =>
-    link.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    link.link_url?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    link.Title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    link.LinkUrl?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     String(link.ID).includes(searchTerm)
   );
 
@@ -128,8 +128,8 @@ function Central() {
                     <tr key={link.ID} className="activity-row">
                       <td><span className="id-cell">{link.ID}</span></td>
                       <td>{dayjs(link.UpdatedAt).format("DD/MM/YYYY HH:mm")}</td>
-                      <td>{link.name}</td>
-                      <td>{link.link_url?.length ?? 0 > 60 ? `${link.link_url?.slice(0, 60)}...` : link.link_url}</td>
+                      <td>{link.Title}</td>
+                      <td>{link.LinkUrl?.length ?? 0 > 60 ? `${link.LinkUrl?.slice(0, 60)}...` : link.LinkUrl}</td>
                       <td>
                         <div className="action-buttons">
                           <button className="delete-button" onClick={() => deleteLinksById(String(link.ID))}>

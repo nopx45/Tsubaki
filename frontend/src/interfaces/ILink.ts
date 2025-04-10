@@ -1,7 +1,7 @@
 
 export interface LinksInterface {
     ID?: number;
-    name?: string;
-    link_url?: string;
+    Title?: string;
+    LinkUrl?: string;
     UpdatedAt?: string;
   }

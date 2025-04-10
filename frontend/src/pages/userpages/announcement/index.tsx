@@ -175,7 +175,7 @@ const Announcement: React.FC = () => {
                         <td>
                           <div className="date-container">
                             <FaRegCalendarAlt className="date-icon" />
-                            {dayjs(announce.created_at).format("DD/MM/YYYY HH:mm")}
+                            {dayjs(announce.CreatedAt).format("DD/MM/YYYY HH:mm")}
                           </div>
                         </td>
                         <td>

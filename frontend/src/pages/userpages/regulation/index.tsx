@@ -172,7 +172,7 @@ const RegulationModal: React.FC<RegulationModalProps> = ({ visible, onClose }) =
                           <td>
                             <div className="date-cell">
                               <FaRegCalendarAlt className="date-icon" />
-                              {dayjs(item.created_at).format("DD/MM/YYYY HH:mm")}
+                              {dayjs(item.UpdatedAt).format("DD/MM/YYYY HH:mm")}
                             </div>
                           </td>
                           <td>
