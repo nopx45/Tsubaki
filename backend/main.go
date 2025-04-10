@@ -14,12 +14,14 @@ import (
 	announcetment "github.com/webapp/controller/announcements"
 	"github.com/webapp/controller/article"
 	"github.com/webapp/controller/chat"
+	"github.com/webapp/controller/event"
 	"github.com/webapp/controller/files"
 	"github.com/webapp/controller/formgen"
 	"github.com/webapp/controller/knowledge"
 	"github.com/webapp/controller/link"
 	"github.com/webapp/controller/logs"
 	"github.com/webapp/controller/logvisitpage"
+	"github.com/webapp/controller/marquee"
 	"github.com/webapp/controller/regulation"
 	"github.com/webapp/controller/section"
 	"github.com/webapp/controller/security"
@@ -49,6 +51,14 @@ func main() {
 	r.GET("/auth/token", users.GetAuthToken)
 	r.GET("/logout", users.Logout)
 
+	r.POST("/upload-ics", event.UploadICS)
+	// Event CRUD
+	r.POST("/event", event.CreateEvent)
+	r.GET("/events", event.GetAllEvents)
+	r.GET("/event/:id", event.GetEventByID)
+	r.PUT("/event/:id", event.UpdateEvent)
+	r.DELETE("/event/:id", event.DeleteEvent)
+
 	// live chat
 	r.GET("/ws", func(c *gin.Context) {
 		chatController.HandleWebSocket(c.Writer, c.Request)
@@ -57,15 +67,7 @@ func main() {
 	adminRouter := r.Group("/")
 	{
 		adminRouter.Use(middlewares.Authorizes("admin"))
-
-		adminRouter.GET("/avg-duration", logs.GetAvgDuration)
-		adminRouter.GET("/allvisitors", logs.GetAllVisitors)
-		adminRouter.DELETE("/visit/:id", logs.Delete)
-		adminRouter.DELETE("/pagevisit/:id", logvisitpage.Delete)
-
 		// User Route
-		adminRouter.GET("/users", users.GetAll)
-		adminRouter.GET("/user/:id", users.GetID)
 		adminRouter.DELETE("/user/:id", users.Delete)
 		// Link Route
 		adminRouter.POST("/link", link.Upload)
@@ -124,6 +126,23 @@ func main() {
 		adminHRRouter.POST("/regulation", regulation.UploadRegulation)
 		adminHRRouter.PUT("/regulation/:id", regulation.Update)
 		adminHRRouter.DELETE("/regulation/:id", regulation.Delete)
+
+	}
+
+	allAdminRouter := r.Group("/")
+	{
+		allAdminRouter.Use(middlewares.Authorizes("admin", "adminhr", "adminit"))
+		// File Route
+		allAdminRouter.GET("/avg-duration", logs.GetAvgDuration)
+		allAdminRouter.GET("/allvisitors", logs.GetAllVisitors)
+		allAdminRouter.DELETE("/visit/:id", logs.Delete)
+		allAdminRouter.DELETE("/pagevisit/:id", logvisitpage.Delete)
+		// user Route
+		allAdminRouter.GET("/users", users.GetAll)
+		allAdminRouter.GET("/user/:id", users.GetID)
+		//marquee
+		allAdminRouter.POST("/marquee", marquee.UpdateMarquee)
+
 	}
 
 	userRouter := r.Group("/")
@@ -145,6 +164,7 @@ func main() {
 		userRouter.POST("/pagevisitors", logvisitpage.RecordlogVisit)
 		userRouter.GET("/pagevisitors", logvisitpage.GetAllPageVisitors)
 		userRouter.GET("/toppagevisitors", logvisitpage.GetTopPages)
+
 	}
 
 	// 📌 Route สำหรับ GET (ไม่ต้องใช้สิทธิ์พิเศษ)
@@ -172,6 +192,8 @@ func main() {
 	r.GET("/visitors", logs.GetTotalVisitors)
 	r.GET("/usersockets", chat.GetAll)
 	r.GET("/usersocket/:username", chat.GetUserByUsername)
+	r.GET("/marquee", marquee.GetMarquee)
+
 	r.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "API RUNNING...")
 	})

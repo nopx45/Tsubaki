@@ -1,39 +1,49 @@
 import React from 'react';
-import { Button, Card, Form, Input, message, Flex, Row, Col } from "antd";
+import { Button, Card, Form, Input, Flex, Row, Col } from "antd";
 import { AiOutlineUser, AiOutlineLock } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 import { SignIn, startvisit } from "../../../services/https";
 import { SignInInterface } from "../../../interfaces/SignIn";
 import logo from "../../../assets/logo.png";
 import image from "../../../assets/header.jpg";
+import Swal from 'sweetalert2';
 
 const SignInPages: React.FC = () => {
   const navigate = useNavigate();
-  const [messageApi, contextHolder] = message.useMessage();
 
   const onFinish = async (values: SignInInterface) => {
     let res = await SignIn(values);
     if (res.status == 200) {
+      await Swal.fire({
+        icon: "success",
+        title: "เข้าสู่ระบบสำเร็จ",
+        text: "กำลังเปลี่ยนเส้นทาง...",
+        timer: 1800,
+        showConfirmButton: false,
+        timerProgressBar: true,
+      });
+      localStorage.removeItem("exit_sent");
       localStorage.setItem("isLoggedIn", "true");
       await startvisit();
-      messageApi.success("Sign-in successful");
-    
-      setTimeout(() => {
-        if (res.data.force_password_change) {
-          navigate("/change-password", { replace: true });
-          window.location.reload();
-        } else {
-          navigate(res.data.redirect_url, { replace: true });
-          window.location.reload();
-        }
-      }, 2000);
+      if (res.data.force_password_change) {
+        navigate("/change-password", { replace: true });
+        window.location.reload();
+      } else {
+        window.location.href = res.data.redirect_url;
+      }
     }
-    else messageApi.error("username or password is wrong!!");
+    else {
+      Swal.fire({
+        icon: "error",
+        title: "เข้าสู่ระบบล้มเหลว",
+        text: "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง",
+        confirmButtonText: "ลองใหม่อีกครั้ง",
+      });
+    }
   };
 
   return (
     <div className="signin-container">
-      {contextHolder}
       <div className="background-overlay" style={backgroundStyle} />
       
       <Flex 

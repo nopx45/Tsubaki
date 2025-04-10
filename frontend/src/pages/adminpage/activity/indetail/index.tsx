@@ -4,12 +4,11 @@ import dayjs from "dayjs";
 import "dayjs/locale/th";
 import { GetActivitiesById } from "../../../../services/https";
 import { ActivitiesInterface } from "../../../../interfaces/IActivity";
-import { Card, Button, Typography, Spin } from "antd";
 import { useTranslation } from "react-i18next";
+import { FiArrowLeft, FiCalendar } from "react-icons/fi";
+import './detail.css'
 
 dayjs.locale("th");
-
-const { Title, Paragraph } = Typography;
 
 export default function ActivityDetails() {
   const { t } = useTranslation();
@@ -34,70 +33,53 @@ export default function ActivityDetails() {
   }, [id]);
 
   return (
-    <div style={{ background: "#E3F2FD", minHeight: "100vh", padding: "30px" }}>
-      <Card
-        style={{
-          maxWidth: "800px",
-          margin: "auto",
-          padding: "20px",
-          borderRadius: "12px",
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-          background: "white",
-        }}
-      >
-        {loading ? (
-          <div style={{ textAlign: "center", padding: "50px 0" }}>
-            <Spin size="large" />
-            <Paragraph>{t("loading")}</Paragraph>
+    <div className="activity-details">
+      {loading ? (
+        <div className="activity-details__loading">
+          <div className="activity-details__spinner"></div>
+          <p>{t("loading")}</p>
+        </div>
+      ) : activity ? (
+        <div className="activity-details__card">
+          <div className="activity-details__header">
+            <button 
+              onClick={() => navigate(-1)} 
+              className="activity-details__back-button"
+            >
+              <FiArrowLeft className="activity-details__back-icon" />
+              {t("back")}
+            </button>
           </div>
-        ) : activity ? (
-          <>
-            <Title level={2} style={{ color: "#0D47A1", textAlign: "center" }}>
-              {activity.title}
-            </Title>
 
+          <div className="activity-details__image-container">
             <img
               src={activity.Image}
               alt={activity.title}
-              style={{
-                width: "100%",
-                maxHeight: "400px",
-                objectFit: "cover",
-                borderRadius: "10px",
-                marginBottom: "20px",
-              }}
+              className="activity-details__image"
             />
+          </div>
 
-            <Paragraph style={{ fontSize: "1rem", color: "#37474F", textAlign: "justify" }}>
-              {activity.content}
-            </Paragraph>
+          <div className="activity-details__content">
+            <h1 className="activity-details__title">{activity.title}</h1>
+            
+            <div className="activity-details__meta">
+              <div className="activity-details__meta-item">
+                <FiCalendar className="activity-details__meta-icon" />
+                <span>{dayjs(activity.created_at).format("DD MMMM YYYY")}</span>
+              </div>
+            </div>
 
-            <Paragraph style={{ fontSize: "1rem", color: "#FF5722", fontWeight: "bold" }}>
-              📅 {t("upload_date")}: {dayjs(activity.created_at).format("DD/MM/YYYY HH:mm")}
-            </Paragraph>
+            <div className="activity-details__description">
+              <p>{activity.content}</p>
+            </div>
 
-            <Button
-              type="primary"
-              onClick={() => navigate(-1)}
-              style={{
-                marginTop: "20px",
-                background: "#0D47A1",
-                borderColor: "#0D47A1",
-                fontWeight: "bold",
-                width: "100%",
-                padding: "10px",
-                fontSize: "1.2rem",
-              }}
-            >
-              🔙 {t("back")}
-            </Button>
-          </>
-        ) : (
-          <Paragraph style={{ textAlign: "center", fontSize: "1.2rem", color: "red" }}>
-            {t("nodata")}
-          </Paragraph>
-        )}
-      </Card>
+          </div>
+        </div>
+      ) : (
+        <div className="activity-details__empty">
+          <p>{t("nodata")}</p>
+        </div>
+      )}
     </div>
   );
 }

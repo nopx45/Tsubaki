@@ -1,6 +1,7 @@
 export interface UserSocketsInterface {
-    ID?: number;
+    id?: number;
     username?: string;
-    socket_id?: string;
+    socketId?: string;
     role?: string;
+    UpdatedAt?: string;
   }

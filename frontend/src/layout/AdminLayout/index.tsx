@@ -6,6 +6,7 @@ import logo from "../../assets/logo.png";
 import { stopvisit, Logouts } from "../../services/https";
 import Chat from "../../components/chat/chat";
 import SubMenu from "antd/es/menu/SubMenu";
+import Swal from "sweetalert2";
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -17,12 +18,16 @@ const AdminLayout: React.FC = () => {
     try {
       await stopvisit();
       await Logouts();
-      messageApi.success("Logout successful");
-  
-      setTimeout(() => {
-        localStorage.setItem("isLoggedIn", "false");
-        location.href = "/";
-      }, 1000);
+      localStorage.setItem("isLoggedIn", "false");
+      await Swal.fire({
+        icon: "success",
+        title: "ออกจากระบบสำเร็จ",
+        text: "กำลังเปลี่ยนเส้นทาง...",
+        timer: 1800,
+        showConfirmButton: false,
+        timerProgressBar: true,
+      });
+      location.href = "/";
     } catch (error) {
       console.error("Logout error:", error);
       messageApi.error("Logout failed");
@@ -39,7 +44,7 @@ const AdminLayout: React.FC = () => {
         </div>
 
         <Menu theme="dark" mode="inline">
-        <Menu.Item key="dashboard" icon={<DashboardOutlined />}>
+          <Menu.Item key="dashboard" icon={<DashboardOutlined />}>
             <Link to="/admin">แดชบอร์ด</Link>
           </Menu.Item>
           <Menu.Item key="customer" icon={<UserOutlined />}>

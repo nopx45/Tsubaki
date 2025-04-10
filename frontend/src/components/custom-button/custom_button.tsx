@@ -1,11 +1,10 @@
-import { Button } from "antd";
+import { Button, ButtonProps } from "antd";
 import styled from "styled-components";
 import { ReactNode } from "react";
 
 type CustomButtonProps = {
-  onClick?: () => void; // ฟังก์ชันที่ไม่มีพารามิเตอร์และไม่มีค่าที่ return
-  children: ReactNode; // รองรับ React component หรือข้อความที่อยู่ภายในปุ่ม
-};
+  children: ReactNode;
+} & ButtonProps;
 
 const StyledButton = styled(Button)`
   position: relative;
@@ -59,6 +58,6 @@ const StyledButton = styled(Button)`
   }
 `;
 
-export default function CustomButton({ onClick, children }: CustomButtonProps) {
-  return <StyledButton onClick={onClick}>{children}</StyledButton>;
+export default function CustomButton(props: CustomButtonProps) {
+  return <StyledButton {...props}>{props.children}</StyledButton>;
 }

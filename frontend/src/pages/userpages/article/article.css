@@ -1,0 +1,258 @@
+/* Article List Styles */
+.artlist-container {
+    min-height: 100vh;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .artlist-card {
+    width: 100%;
+    max-width: 1200px;
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 1rem 2rem rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    transition: transform 0.3s ease;
+  }
+  
+  .artlist-card:hover {
+    transform: translateY(-0.5rem);
+    box-shadow: 0 1.5rem 3rem rgba(0, 0, 0, 0.15);
+  }
+  
+  /* Header */
+  .artlist-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 0.2rem solid #e3f2fd;
+  }
+  
+  .artlist-header-icon {
+    font-size: 2.5rem;
+    color: #0D47A1;
+  }
+  
+  .artlist-title {
+    font-size: 1.8rem;
+    margin: 0;
+    background: linear-gradient(90deg, #0D47A1, #1976D2);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  
+  /* Search */
+  .artlist-search-container {
+    position: relative;
+    margin-bottom: 2rem;
+    max-width: 400px;
+  }
+  
+  .artlist-search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #757575;
+  }
+  
+  .artlist-search-input {
+    width: 100%;
+    padding: 0.8rem 1rem 0.8rem 3rem;
+    border: 0.1rem solid #BBDEFB;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+  }
+  
+  .artlist-search-input:focus {
+    outline: none;
+    border-color: #0D47A1;
+    box-shadow: 0 0 0 0.2rem rgba(13, 71, 161, 0.2);
+  }
+  
+  /* Table */
+  .artlist-table-container {
+    overflow-x: auto;
+  }
+  
+  .artlist-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 0.8rem;
+    overflow: hidden;
+  }
+  
+  .artlist-table-header {
+    background: linear-gradient(135deg, #0D47A1, #1976D2);
+  }
+  
+  .artlist-th {
+    padding: 1.2rem 1rem;
+    color: white;
+    font-weight: 600;
+    text-align: left;
+    position: relative;
+  }
+  
+  .artlist-th:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 60%;
+    width: 0.1rem;
+    background: rgba(255, 255, 255, 0.3);
+  }
+  
+  .artlist-tr {
+    transition: all 0.3s ease;
+  }
+  
+  .artlist-tr:hover {
+    background-color: #E3F2FD !important;
+    transform: scale(1.01);
+  }
+  
+  .artlist-even {
+    background-color: #f6ffff;
+  }
+  
+  .artlist-odd {
+    background-color: #E8F9FF;
+  }
+  
+  .artlist-td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-bottom: 0.1rem solid #E3F2FD;
+  }
+  
+  /* Topic Column */
+  .artlist-topic {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    color: #0D47A1;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .artlist-topic:hover {
+    color: #FF5722;
+    transform: translateX(0.5rem);
+  }
+  
+  .artlist-topic-icon {
+    font-size: 1.2rem;
+  }
+  
+  /* Detail Column */
+  .artlist-detail {
+    color: #455A64;
+    line-height: 1.6;
+  }
+  
+  /* Date Column */
+  .artlist-date {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    color: #546E7A;
+  }
+  
+  .artlist-date-icon {
+    color: #FF5722;
+  }
+  
+  /* View Button */
+  .artlist-view-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #4CAF50, #2E7D32);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 0.4rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .artlist-view-btn:hover {
+    background: linear-gradient(135deg, #2E7D32, #4CAF50);
+    transform: translateY(-0.2rem);
+    box-shadow: 0 0.3rem 0.6rem rgba(46, 125, 50, 0.3);
+  }
+  
+  .artlist-view-icon {
+    transition: transform 0.3s ease;
+  }
+  
+  .artlist-view-btn:hover .artlist-view-icon {
+    transform: translateX(0.3rem);
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .artlist-container {
+      padding: 1rem;
+    }
+    
+    .artlist-card {
+      padding: 1rem;
+    }
+    
+    .artlist-th, .artlist-td {
+      padding: 0.8rem 0.5rem;
+      font-size: 0.9rem;
+    }
+    
+    .artlist-topic, .artlist-date {
+      flex-direction: column;
+      gap: 0.3rem;
+      align-items: flex-start;
+    }
+    
+    .artlist-view-btn {
+      padding: 0.4rem 0.8rem;
+    }
+  }
+
+  .artlist-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    gap: 12px;
+  }
+  
+  .artlist-page-btn {
+    background-color: #1976d2;
+    color: white;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .artlist-page-btn:disabled {
+    background-color: #aaa;
+    cursor: not-allowed;
+  }
+  
+  .artlist-page-number {
+    font-weight: bold;
+  }
+  

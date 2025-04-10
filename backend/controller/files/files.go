@@ -2,6 +2,7 @@ package files
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/webapp/config"
@@ -16,7 +17,7 @@ func UploadFile(c *gin.Context) {
 		return
 	}
 
-	filepath := "./uploads/" + file.Filename
+	filepath := "./uploads/file/" + file.Filename
 	if err := c.SaveUploadedFile(file, filepath); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file"})
 		return
@@ -31,14 +32,14 @@ func UploadFile(c *gin.Context) {
 
 func DownloadFile(c *gin.Context) {
 	db := config.DB()
-    id := c.Param("id")
-    var file entity.Files
-    if err := db.First(&file, id).Error; err != nil {
-        c.JSON(http.StatusNotFound, gin.H{"error": "File not found"})
-        return
-    }
+	id := c.Param("id")
+	var file entity.Files
+	if err := db.First(&file, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "File not found"})
+		return
+	}
 
-    c.File(file.Filepath)  // ส่งไฟล์กลับไปให้ผู้ใช้ดาวน์โหลด
+	c.File(file.Filepath) // ส่งไฟล์กลับไปให้ผู้ใช้ดาวน์โหลด
 }
 
 func GetAll(c *gin.Context) {
@@ -93,9 +94,28 @@ func Update(c *gin.Context) {
 func Delete(c *gin.Context) {
 	id := c.Param("id")
 	db := config.DB()
+
+	// 1. ค้นหาข้อมูลไฟล์ก่อน
+	var file entity.Files
+	if err := db.First(&file, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "file not found"})
+		return
+	}
+	var count int64
+	db.Model(&entity.Files{}).
+		Where("filepath = ? AND id != ?", file.Filepath, id).
+		Count(&count)
+	if count == 0 {
+		// ไม่มีเรคคอร์ดอื่นใช้ไฟล์นี้ => ปลอดภัยที่จะลบ
+		if err := os.Remove(file.Filepath); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete file from disk"})
+			return
+		}
+	}
+	// ลบเรคคอร์ดในฐานข้อมูล
 	if tx := db.Exec("DELETE FROM files WHERE id = ?", id); tx.RowsAffected == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "id not found"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Deleted successful"})
+	c.JSON(http.StatusOK, gin.H{"message": "Deleted successfully"})
 }

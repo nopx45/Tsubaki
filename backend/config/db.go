@@ -42,6 +42,7 @@ func SetupDatabase() {
 		&entity.Message{},
 		&entity.UserSocket{},
 		&entity.Security{},
+		&entity.Event{},
 	)
 }
 

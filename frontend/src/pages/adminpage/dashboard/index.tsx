@@ -11,18 +11,31 @@ import {
   Statistic,
   Popconfirm,
   Select,
+  Tooltip,
+  Badge
 } from "antd";
 import { BarChart } from '@mui/x-charts/BarChart';
-import { DeleteOutlined, HistoryOutlined, UserOutlined } from "@ant-design/icons";
+import { 
+  DeleteOutlined, 
+  HistoryOutlined, 
+  UserOutlined,
+  LineChartOutlined,
+  BarChartOutlined,
+  TeamOutlined,
+  ClockCircleOutlined,
+  GlobalOutlined,
+  DatabaseOutlined,
+  CalendarOutlined
+} from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { DeleteVisitorsById, GetAllTotalVisitors, GetTopPageVisitors, GetTopVisitors, GetTotalVisitors } from "../../../services/https/index";
 import { VisitsInterface } from "../../../interfaces/IVisit";
 import dayjs from "dayjs";
-import useResponsiveFontSize from "../../../components/fontsize/fontsize";
 import { axisClasses } from "@mui/x-charts/ChartsAxis";
 import Regulations from "../../../components/ranbow-text/ranbow_text";
+import './dashboard.css';
 
-dayjs.locale("th");
+dayjs.locale("en");
 
 type TopVisitor = {
   Username: string;
@@ -35,14 +48,13 @@ type TopPageVisitor = {
 };
 
 function Dashboard() {
-
   const [visitors, setVisitors] = useState<VisitsInterface[]>([]);
   const [topvisitors, setTopVisitors] = useState<TopVisitor[]>([]);
   const [toppagevisitors, setTopPageVisitors] = useState<TopPageVisitor[]>([]);
   const [totalvisitors, setTotalVisitors] = useState<number>(0);
   const [averageDuration, setAverageDuration] = useState<number>(0);
   const [messageApi, contextHolder] = message.useMessage();
-  const fontSize = useResponsiveFontSize();
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // select month and years
   const [selectedMonthPages, setSelectedMonthPages] = useState<number>(dayjs().month() + 1);
@@ -50,21 +62,21 @@ function Dashboard() {
   const [selectedMonthVisitors, setSelectedMonthVisitors] = useState<number>(dayjs().month() + 1);
   const [selectedYearVisitors, setSelectedYearVisitors] = useState<number>(dayjs().year());
 
-   // **Handle Change สำหรับ Top Pages**
-   const handleMonthChangePages = (value: number) => {
+  const handleMonthChangePages = (value: number) => {
     setSelectedMonthPages(value);
     getTopPageVisitors(value, selectedYearPages);
   };
+  
   const handleYearChangePages = (value: number) => {
     setSelectedYearPages(value);
     getTopPageVisitors(selectedMonthPages, value);
   };
 
-  //**Handle Change สำหรับ Top Visitors**
   const handleMonthChangeVisitors = (value: number) => {
     setSelectedMonthVisitors(value);
     getTopVisitors(value, selectedYearVisitors);
   };
+  
   const handleYearChangeVisitors = (value: number) => {
     setSelectedYearVisitors(value);
     getTopVisitors(selectedMonthVisitors, value);
@@ -72,59 +84,72 @@ function Dashboard() {
 
   const columns: ColumnsType<VisitsInterface> = [
     {
-      title: "Username",
+      title: <span className="table-header">Username</span>,
       dataIndex: "username",
       key: "User_name",
       width: 80,
       align: "center",
-      render: (text) => <b style={{ color: "#17d632" }}>{text}</b>,
+      render: (text) => <span className="username-cell">{text}</span>,
     },
     {
-      title: "User IP",
+      title: <span className="table-header">User IP</span>,
       dataIndex: "user_ip",
       key: "ip",
       width: 80,
       align: "center",
-      render: (text) => <b style={{ color: "#0D47A1" }}>{text}</b>,
+      render: (text) => <span className="ip-cell">{text}</span>,
     },
     {
-      title: "Login",
+      title: <span className="table-header">Login</span>,
       dataIndex: "start_time",
       key: "Start_time",
       render: (text) => (
-        <b style={{ color: "#dab211" }}>{dayjs(text).format("DD/MM/YYYY HH:mm:ss")}</b>
+        <Tooltip title={dayjs(text).format("dddd, MMMM D, YYYY HH:mm:ss")}>
+          <span className="time-cell">{dayjs(text).format("DD/MM/YYYY HH:mm:ss")}</span>
+        </Tooltip>
       ),
     },
     {
-      title: "Logout",
+      title: <span className="table-header">Logout</span>,
       dataIndex: "end_time",
       key: "End_time",
       render: (text) => (
-        <b style={{ color: "#dab211" }}>{dayjs(text).format("DD/MM/YYYY HH:mm:ss")}</b>
+        <Tooltip title={dayjs(text).format("dddd, MMMM D, YYYY HH:mm:ss")}>
+          <span className="time-cell">{dayjs(text).format("DD/MM/YYYY HH:mm:ss")}</span>
+        </Tooltip>
       ),
     },
     {
-        title: "Duration (Min.)",
-        dataIndex: "duration",
-        key: "duration",
-        render: (seconds) => {
-          const minutes = seconds / 60;
-          const displayTime = minutes >= 1 ? Math.floor(minutes) : minutes.toFixed(2);
-      
-          return <b style={{ color: "#d63e17" }}>{displayTime}</b>;
-        },
-      },      
+      title: <span className="table-header">Duration (Min.)</span>,
+      dataIndex: "duration",
+      key: "duration",
+      render: (seconds) => {
+        const minutes = seconds / 60;
+        const displayTime = minutes >= 1 ? Math.floor(minutes) : minutes.toFixed(2);
+        return (
+          <Badge 
+            count={displayTime} 
+            className="duration-badge"
+            style={{ 
+              backgroundColor: minutes >= 1 ? '#52c41a' : '#faad14',
+              color: '#fff'
+            }}
+          />
+        );
+      },
+    },      
     {
-      title: "จัดการ",
+      title: <span className="table-header">Actions</span>,
       align: "center",
       render: (record) => (
         <Space size="middle">
           <Popconfirm
             placement="top"
-            title="Delete!"
-            description="Are you sure to delete this data?"
+            title="Delete Visitor Record"
+            description="Are you sure to delete this visitor data?"
             okText="Yes"
             cancelText="No"
+            icon={<DeleteOutlined style={{ color: 'red' }} />}
             onConfirm={() => {
               if (record?.id) {
                 deleteVisitorsById(record.id);
@@ -140,7 +165,8 @@ function Dashboard() {
               type="default"
               danger
               icon={<DeleteOutlined />}
-              style={{ borderRadius: "6px" }}
+              className="delete-btn"
+              shape="circle"
             />
           </Popconfirm>
         </Space>
@@ -151,7 +177,7 @@ function Dashboard() {
   const chartSetting1 = {
     yAxis: [
       {
-        label: "Pages Categories",
+        label: "Pages Categories (Q'ty)",
       },
     ],
     width: 460,
@@ -166,7 +192,7 @@ function Dashboard() {
   const chartSetting2 = {
     yAxis: [
       {
-        label: "Top Visitors",
+        label: "Top Visitors (Q'ty)",
       },
     ],
     width: 460,
@@ -179,10 +205,11 @@ function Dashboard() {
   };
   
   const valueFormatter = (value: number | null) => {
-    return value !== null ? `${value} ครั้ง` : "-";
+    return value !== null ? `${value} visits` : "-";
   };
   
   const getAllTotalVisitors = async () => {
+    setIsLoading(true);
     let res = await GetAllTotalVisitors();
     
     if (res.status === 200) {
@@ -193,7 +220,7 @@ function Dashboard() {
       if (durations.length > 0) {
         const totalDuration = durations.reduce((acc: any, cur: any) => acc + cur, 0);
         const avgDurationSec = totalDuration / durations.length;
-        const avgDurationMin = avgDurationSec / 60; // แปลงเป็นนาที
+        const avgDurationMin = avgDurationSec / 60;
 
         setAverageDuration(parseFloat(avgDurationMin.toFixed(2)));
       } else {
@@ -207,6 +234,7 @@ function Dashboard() {
         content: res.data.error,
       });
     }
+    setIsLoading(false);
   };
 
   const getTotalVisitors = async () => {
@@ -272,6 +300,7 @@ function Dashboard() {
     getAllTotalVisitors();
     getTotalVisitors();
   }, []);
+  
   useEffect(() => {
     getTopPageVisitors(selectedMonthPages, selectedYearPages);
   }, [selectedMonthPages, selectedYearPages]);
@@ -281,349 +310,293 @@ function Dashboard() {
   }, [selectedMonthVisitors, selectedYearVisitors]);
   
   return (
-    <div style={{ background: "#E3F2FD", minHeight: "100vh", padding: "30px" }}>
+    <div className="dashboards-containers">
       {contextHolder}
-      <Card
-        style={{
-          borderRadius: "12px",
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-          background: "white",
-          padding: "10px",
-          maxWidth: "1200px",
-          margin: "auto",
-        }}
-      >
-        <Regulations text="Dashboard" />
+      <Card className="main-card">
+        <Regulations text="Dashboard Analytics" />
+        
         <Row gutter={[16, 16]} justify="start">
-        <Col xs={24} sm={12} md={8} lg={6}>
-                <Card
-                    hoverable
-                    style={{
-                    background: "linear-gradient(135deg,rgb(179, 212, 248) 30%,rgb(255, 255, 255) 100%)",
-                    color: "white",
-                    borderRadius: "12px",
-                    boxShadow: "0 4px 12px rgba(0, 123, 255, 0.89)",
-                    textAlign: "center",
-                    height: 300,
-                    }}
-                >
-                    <h3 style={{ color: "#17d632", fontSize: fontSize, fontWeight: "bold", marginBottom: "20px", marginTop: "-10px" }}>
-                    📚 หมวดหมู่ทีมีการเข้าชมมากที่สุด
-                    </h3>
-                    {toppagevisitors && toppagevisitors.length > 0 ? (
-                    <ul style={{ listStyleType: "none", padding: 0, margin: 0 }}>
-                      {toppagevisitors.map((visitors, index) => (
-                        <li
-                          key={index}
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            padding: "5px 10px",
-                            background: index % 2 === 0 ? "#f0f8ff" : "white",
-                            borderRadius: "8px",
-                            marginBottom: "5px",
-                          }}
-                        >
-                          <span style={{fontWeight: "bold", color: "#0D47A1" }}>
-                            {visitors.page_name}
-                          </span>
-                          <span style={{fontWeight: "bold", color: "#0D47A1" }}>
-                            {visitors.count} ครั้ง
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p style={{ color: "#d63e17", fontWeight: "bold" }}>ไม่มีข้อมูล</p>
-                  )}
-                </Card>
-            </Col>
-            <Col xs={24} sm={12} md={8} lg={6}>
-                <Card
-                    hoverable
-                    style={{
-                    background: "linear-gradient(135deg,rgb(179, 212, 248) 30%,rgb(255, 255, 255) 100%)",
-                    color: "white",
-                    borderRadius: "12px",
-                    boxShadow: "0 4px 12px rgba(0, 123, 255, 0.89)",
-                    textAlign: "center",
-                    height: 130,
-                    }}
-                >
-                    <h3 style={{ color: "#17d632", fontSize: fontSize, fontWeight: "bold", marginBottom: "10px", marginTop: "-10px" }}>
-                    🧑 จำนวนผู้เข้าชมเว็บไซต์ทั้งหมด
-                    </h3>
-                    <Statistic
-                    title=""
-                    valueStyle={{ color: "orange", fontSize: fontSize, fontWeight: "bold" }}
-                    prefix={<UserOutlined />}
-                    value={totalvisitors}
-                    />
-                </Card>
-            </Col>
-            <Col xs={24} sm={12} md={8} lg={6}>
-                <Card
-                    hoverable
-                    style={{
-                    background: "linear-gradient(135deg,rgb(179, 212, 248) 30%,rgb(255, 255, 255) 100%)",
-                    color: "white",
-                    borderRadius: "12px",
-                    boxShadow: "0 4px 12px rgba(0, 123, 255, 0.89)",
-                    textAlign: "center",
-                    height: 130,
-                    }}
-                >
-                    <h3 style={{ color: "#17d632", fontSize: fontSize, fontWeight: "bold", marginBottom: "10px", marginTop: "-10px" }}>
-                    ⏱️ เวลาที่เข้าชมเว็บไซต์ (Min.)
-                    </h3>
-                    <Statistic
-                    title=""
-                    valueStyle={{ color: "orange", fontSize: fontSize, fontWeight: "bold" }}
-                    prefix={<HistoryOutlined />}
-                    value={averageDuration}
-                    />
-                </Card>
-            </Col>
-            <Col xs={24} sm={12} md={8} lg={6}>
-              <Card
-                hoverable
-                style={{
-                  background: "linear-gradient(135deg,rgb(179, 212, 248) 30%,rgb(255, 255, 255) 100%)",
-                  color: "white",
-                  borderRadius: "12px",
-                  boxShadow: "0 4px 12px rgba(0, 123, 255, 0.89)",
-                  textAlign: "center",
-                  height: 300,
-                  overflow: "hidden",
-                }}
-              >
-                <h3 style={{ color: "#17d632", fontSize: fontSize, fontWeight: "bold", marginBottom: "20px", marginTop: "-10px" }}>
-                  📈 5 ผู้ใช้ที่เข้าชม<br />มากที่สุด
-                </h3>
-                <div style={{ maxHeight: "180px", overflowY: "auto", paddingRight: "10px" }}>
-                  {topvisitors && topvisitors.length > 0 ? (
-                    <ul style={{ listStyleType: "none", padding: 0, margin: 0 }}>
-                      {topvisitors.map((visitor, index) => (
-                        <li
-                          key={index}
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            padding: "5px 10px",
-                            background: index % 2 === 0 ? "#f0f8ff" : "white",
-                            borderRadius: "8px",
-                            marginBottom: "5px",
-                          }}
-                        >
-                          <span style={{fontWeight: "bold", color: "#0D47A1" }}>
-                            {visitor.Username}
-                          </span>
-                          <span style={{fontWeight: "bold", color: "#0D47A1" }}>
-                            {visitor.Count} ครั้ง
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p style={{ color: "#d63e17", fontWeight: "bold" }}>ไม่มีข้อมูล</p>
-                  )}
+          {/* Top Pages Card */}
+          <Col xs={24} sm={12} md={8} lg={6}>
+            <Card
+              hoverable
+              className="stats-card top-pages-card"
+              loading={isLoading}
+            >
+              <div className="card-header">
+                <LineChartOutlined className="card-icon" />
+                <h3 className="card-title">Top Visited Pages</h3>
+              </div>
+              <div className="card-content">
+                {toppagevisitors && toppagevisitors.length > 0 ? (
+                  <ul className="top-list">
+                    {toppagevisitors.map((visitors, index) => (
+                      <li key={index} className={`top-item ${index % 2 === 0 ? 'even' : 'odd'}`}>
+                        <span className="item-name">
+                          {index === 0 && <span className="rank-badge">🥇</span>}
+                          {index === 1 && <span className="rank-badge">🥈</span>}
+                          {index === 2 && <span className="rank-badge">🥉</span>}
+                          {visitors.page_name}
+                        </span>
+                        <span className="item-value">{visitors.count} visits</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="no-data">
+                    <DatabaseOutlined />
+                    <p>No data available</p>
+                  </div>
+                )}
+              </div>
+            </Card>
+          </Col>
+          
+          {/* Total Visitors Card */}
+          <Col xs={24} sm={12} md={8} lg={6}>
+            <Card
+              hoverable
+              className="stats-card total-visitors-card"
+              loading={isLoading}
+            >
+              <div className="card-header">
+                <TeamOutlined className="card-icon" />
+                <h3 className="card-title">Total Visitors</h3>
+              </div>
+              <div className="card-content">
+                <Statistic
+                  value={totalvisitors}
+                  precision={0}
+                  valueStyle={{ 
+                    color: '#1890ff',
+                    fontSize: '2.2rem',
+                    fontWeight: 600,
+                    textShadow: '0 2px 4px rgba(24, 144, 255, 0.3)'
+                  }}
+                  prefix={<GlobalOutlined />}
+                  suffix="visitors"
+                />
+              </div>
+            </Card>
+          </Col>
+          
+          {/* Average Duration Card */}
+          <Col xs={24} sm={12} md={8} lg={6}>
+            <Card
+              hoverable
+              className="stats-card duration-card"
+              loading={isLoading}
+            >
+              <div className="card-header">
+                <ClockCircleOutlined className="card-icon" />
+                <h3 className="card-title">Avg. Visit Duration</h3>
+              </div>
+              <div className="card-content">
+                <Statistic
+                  value={averageDuration}
+                  precision={2}
+                  valueStyle={{ 
+                    color: '#722ed1',
+                    fontSize: '2.2rem',
+                    fontWeight: 600,
+                    textShadow: '0 2px 4px rgba(114, 46, 209, 0.3)'
+                  }}
+                  suffix="minutes"
+                />
+                <div className="duration-bar">
+                  <div 
+                    className="duration-progress" 
+                    style={{ width: `${Math.min(averageDuration * 10, 100)}%` }}
+                  ></div>
                 </div>
-              </Card>
-            </Col>
-            <Divider style={{margin: 0, border: "1px solid #0D47A1"}} />
-            <Col xs={24} sm={12} md={12} lg={12}>
-              <Card
-                hoverable
-                style={{
-                  background: "linear-gradient(135deg,rgb(179, 212, 248) 30%,rgb(255, 255, 255) 100%)",
-                  color: "white",
-                  borderRadius: "12px",
-                  boxShadow: "0 4px 12px rgba(0, 123, 255, 0.89)",
-                  textAlign: "center",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  width: "100%",
-                  minHeight: "300px",
-                }}
-              >
-                <Row justify="center" gutter={16} style={{ marginBottom: "20px" }}>
-                  <Col>
-                    <Select
-                      value={selectedMonthPages}
-                      onChange={handleMonthChangePages}
-                      style={{
-                        width: 150,
-                        borderRadius: "8px",
-                        background: "#E3F2FD",
-                        color: "#0D47A1",
-                        fontWeight: "bold",
-                        textAlign: "center",
-                        boxShadow: "0 4px 6px rgba(4, 84, 202, 0.55)",
-                      }}
-                      dropdownStyle={{
-                        background: "#E3F2FD",
-                        color: "#0D47A1",
-                        borderRadius: "8px",
-                      }}
-                    >
-                      {Array.from({ length: 12 }, (_, i) => (
-                        <Select.Option key={i + 1} value={i + 1} style={{ color: "#0D47A1", fontWeight: "bold" }}>
-                          {dayjs().month(i).format("MMMM")}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Col>
-                  <Col>
-                    <Select value={selectedYearPages}
-                      style={{
-                        width: 150,
-                        borderRadius: "8px",
-                        background: "#E3F2FD",
-                        color: "#0D47A1",
-                        fontWeight: "bold",
-                        textAlign: "center",
-                        boxShadow: "0 4px 6px rgba(4, 84, 202, 0.55)",
-                      }}
-                      dropdownStyle={{
-                        background: "#E3F2FD",
-                        color: "#0D47A1",
-                        borderRadius: "8px",
-                      }}
-                      onChange={handleYearChangePages}
-                    >
-                      {Array.from({ length: 5 }, (_, i) => (
-                        <Select.Option key={i} value={dayjs().year() - i}>
-                          {dayjs().year() - i}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Col>
-                </Row>
-                <div style={{ width: "100%", maxWidth: "100%", overflow: "hidden"}}> 
-                  <BarChart
-                    dataset={toppagevisitors && toppagevisitors.length > 0 ? toppagevisitors : []}
-                    xAxis={[{ scaleType: 'band', dataKey: 'page_name'}]}
-                    series={[
-                      { dataKey: 'count', label: 'จำนวนครั้งในการเข้าชม', valueFormatter, color: "#16b1fd"},
-                    ]}
-                    {...chartSetting1}
-                  />
+              </div>
+            </Card>
+          </Col>
+          
+          {/* Top Visitors Card */}
+          <Col xs={24} sm={12} md={8} lg={6}>
+            <Card
+              hoverable
+              className="stats-card top-visitors-card"
+              loading={isLoading}
+            >
+              <div className="card-header">
+                <UserOutlined className="card-icon" />
+                <h3 className="card-title">Top Visitors</h3>
+              </div>
+              <div className="card-content">
+                {topvisitors && topvisitors.length > 0 ? (
+                  <ul className="top-list">
+                    {topvisitors.map((visitor, index) => (
+                      <li key={index} className={`top-item ${index % 2 === 0 ? 'even' : 'odd'}`}>
+                        <span className="item-name">
+                          {index === 0 && <span className="rank-badge">👑</span>}
+                          {visitor.Username}
+                        </span>
+                        <span className="item-value">{visitor.Count} visits</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="no-data">
+                    <DatabaseOutlined />
+                    <p>No data available</p>
+                  </div>
+                )}
+              </div>
+            </Card>
+          </Col>
+          
+          <Divider className="section-divider" />
+          
+          {/* Top Pages Chart */}
+          <Col xs={24} sm={12} md={12} lg={12}>
+            <Card
+              hoverable
+              className="chart-card"
+              loading={isLoading}
+            >
+              <div className="chart-header">
+                <BarChartOutlined />
+                <h3>Top Pages by Visits</h3>
+                <div className="date-selectors">
+                  <Select
+                    value={selectedMonthPages}
+                    onChange={handleMonthChangePages}
+                    className="month-selector"
+                    suffixIcon={<CalendarOutlined />}
+                  >
+                    {Array.from({ length: 12 }, (_, i) => (
+                      <Select.Option key={i + 1} value={i + 1}>
+                        {dayjs().month(i).format("MMMM")}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                  <Select 
+                    value={selectedYearPages}
+                    className="year-selector"
+                    onChange={handleYearChangePages}
+                    suffixIcon={<CalendarOutlined />}
+                  >
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <Select.Option key={i} value={dayjs().year() - i}>
+                        {dayjs().year() - i}
+                      </Select.Option>
+                    ))}
+                  </Select>
                 </div>
-              </Card>
-            </Col>
-            <Col xs={24} sm={12} md={12} lg={12}>
-              <Card
-                hoverable
-                style={{
-                  background: "linear-gradient(135deg,rgb(179, 212, 248) 30%,rgb(255, 255, 255) 100%)",
-                  color: "white",
-                  borderRadius: "12px",
-                  boxShadow: "0 4px 12px rgba(0, 123, 255, 0.89)",
-                  textAlign: "center",
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  width: "100%",
-                  minHeight: "300px",
-                }}
-              >
-                <Row justify="center" gutter={16} style={{ marginBottom: "20px" }}>
-                  <Col>
-                    <Select 
-                      value={selectedMonthVisitors} 
-                      style={{
-                        width: 150,
-                        borderRadius: "8px",
-                        background: "#E3F2FD",
-                        color: "#0D47A1",
-                        fontWeight: "bold",
-                        textAlign: "center",
-                        boxShadow: "0 4px 6px rgba(4, 84, 202, 0.55)",
-                      }}
-                      dropdownStyle={{
-                        background: "#E3F2FD",
-                        color: "#0D47A1",
-                        borderRadius: "8px",
-                      }}
-                      onChange={handleMonthChangeVisitors}
-                    >
-                      {Array.from({ length: 12 }, (_, i) => (
-                        <Select.Option key={i + 1} value={i + 1}>
-                          {dayjs().month(i).format("MMMM")}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Col>
-                  <Col>
-                    <Select 
-                      value={selectedYearVisitors}
-                      style={{
-                        width: 150,
-                        borderRadius: "8px",
-                        background: "#E3F2FD",
-                        color: "#0D47A1",
-                        fontWeight: "bold",
-                        textAlign: "center",
-                        boxShadow: "0 4px 6px rgba(4, 84, 202, 0.55)",
-                      }}
-                      dropdownStyle={{
-                        background: "#E3F2FD",
-                        color: "#0D47A1",
-                        borderRadius: "8px",
-                      }}
-                      onChange={handleYearChangeVisitors}
-                    >
-                      {Array.from({ length: 5 }, (_, i) => (
-                        <Select.Option key={i} value={dayjs().year() - i}>
-                          {dayjs().year() - i}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Col>
-                </Row>
-                <div style={{ width: "100%", maxWidth: "100%", overflow: "hidden"}}> 
-                  <BarChart
-                    dataset={topvisitors && topvisitors.length > 0 ? topvisitors : []}
-                    xAxis={[{ scaleType: 'band', dataKey: 'Username'}]}
-                    series={[
-                      { dataKey: 'Count', label: 'จำนวนครั้งในการเข้าชม', valueFormatter, color: "#16b1fd"},
-                    ]}
-                    {...chartSetting2}
-                  />
+              </div>
+              <div className="chart-container">
+                <BarChart
+                  dataset={toppagevisitors && toppagevisitors.length > 0 ? toppagevisitors : []}
+                  xAxis={[{ scaleType: 'band', dataKey: 'page_name'}]}
+                  series={[
+                    { 
+                      dataKey: 'count', 
+                      label: 'Visits', 
+                      valueFormatter, 
+                      color: "#4f46e5",
+                      highlightScope: {
+                        highlighted: 'series',
+                        faded: 'global'
+                      }
+                    },
+                  ]}
+                  {...chartSetting1}
+                />
+              </div>
+            </Card>
+          </Col>
+          
+          {/* Top Visitors Chart */}
+          <Col xs={24} sm={12} md={12} lg={12}>
+            <Card
+              hoverable
+              className="chart-card"
+              loading={isLoading}
+            >
+              <div className="chart-header">
+                <BarChartOutlined />
+                <h3>Top Users by Visits</h3>
+                <div className="date-selectors">
+                  <Select 
+                    value={selectedMonthVisitors} 
+                    className="month-selector"
+                    onChange={handleMonthChangeVisitors}
+                    suffixIcon={<CalendarOutlined />}
+                  >
+                    {Array.from({ length: 12 }, (_, i) => (
+                      <Select.Option key={i + 1} value={i + 1}>
+                        {dayjs().month(i).format("MMMM")}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                  <Select 
+                    value={selectedYearVisitors}
+                    className="year-selector"
+                    onChange={handleYearChangeVisitors}
+                    suffixIcon={<CalendarOutlined />}
+                  >
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <Select.Option key={i} value={dayjs().year() - i}>
+                        {dayjs().year() - i}
+                      </Select.Option>
+                    ))}
+                  </Select>
                 </div>
-              </Card>
-            </Col>
-        </Row>
-      </Card>
-      <Card
-        style={{
-          borderRadius: "12px",
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-          background: "white",
-          padding: "10px",
-          maxWidth: "1200px",
-          margin: "auto",
-          marginTop: "10px",
-        }}
-      >
-        <Row justify="space-between" align="middle">
-          <Col>
-            <Regulations text="ข้อมูล Log" />
+              </div>
+              <div className="chart-container">
+                <BarChart
+                  dataset={topvisitors && topvisitors.length > 0 ? topvisitors : []}
+                  xAxis={[{ scaleType: 'band', dataKey: 'Username'}]}
+                  series={[
+                    { 
+                      dataKey: 'Count', 
+                      label: 'Visits', 
+                      valueFormatter, 
+                      color: "#10b981",
+                      highlightScope: {
+                        highlighted: 'series',
+                        faded: 'global'
+                      }
+                    },
+                  ]}
+                  {...chartSetting2}
+                />
+              </div>
+            </Card>
           </Col>
         </Row>
-        <Divider />
+      </Card>
+      
+      {/* Visitor Log Table */}
+      <Card className="log-table-card">
+        <div className="table-header">
+          <Regulations text="Visitor Log Records" />
+          <Tooltip title="Refresh data">
+            <Button 
+              type="primary" 
+              shape="circle" 
+              icon={<HistoryOutlined />} 
+              onClick={getAllTotalVisitors}
+              loading={isLoading}
+            />
+          </Tooltip>
+        </div>
+        <Divider className="table-divider" />
         <Table
           rowKey="ID"
           columns={columns}
           dataSource={visitors}
-          style={{ width: "100%", borderRadius: "8px", overflow: "hidden" }}
-          pagination={{ pageSize: 10 }}
+          className="visitor-log-table"
+          loading={isLoading}
+          pagination={{ 
+            pageSize: 10,
+            showSizeChanger: false,
+            showQuickJumper: true
+          }}
           bordered
+          scroll={{ x: true }}
         />
       </Card>
     </div>

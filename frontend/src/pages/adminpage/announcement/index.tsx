@@ -1,121 +1,68 @@
 import { useState, useEffect } from "react";
-import {
-  Space,
-  Table,
-  Button,
-  Col,
-  Row,
-  Divider,
-  message,
-  Card,
-  Typography,
-} from "antd";
-import { PlusOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import type { ColumnsType } from "antd/es/table";
+import { AnnouncementsInterface } from "../../../interfaces/IAnnouncement";
 import { GetAnnouncements, DeleteAnnouncementsById } from "../../../services/https/index";
 import { Link, useNavigate } from "react-router-dom";
-import { AnnouncementsInterface } from "../../../interfaces/IAnnouncement";
 import dayjs from "dayjs";
-
-const { Title } = Typography;
-dayjs.locale("th");
+import { FaBullhorn, FaPlus, FaTrash, FaEdit, FaCalendarAlt, FaFileAlt } from "react-icons/fa";
+import { FiSearch } from "react-icons/fi";
+import Pagination from "../../../components/Pagination/Pagination";
 
 function Announcement() {
   const navigate = useNavigate();
   const [announces, setAnnounces] = useState<AnnouncementsInterface[]>([]);
-  const [messageApi, contextHolder] = message.useMessage();
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
   const myId = localStorage.getItem("id");
 
-  const columns: ColumnsType<AnnouncementsInterface> = [
-    {
-      title: "ประกาศฉบับที่",
-      dataIndex: "ID",
-      key: "id",
-      width: 80,
-      align: "center",
-      render: (text) => <b style={{ color: "#0D47A1" }}>{text}</b>,
-    },
-    {
-      title: "วันที่ประกาศ",
-      dataIndex: "created_at",
-      key: "created_at",
-      render: (text) => dayjs(text).format("DD/MM/YYYY HH:mm"),
-    },
-    {
-      title: "ชื่อประกาศ",
-      dataIndex: "title",
-      key: "title",
-    },
-    {
-      title: "รายละเอียด",
-      dataIndex: "content",
-      key: "content",
-    },
-    {
-      title: "ID ไฟล์ประกาศ",
-      dataIndex: "file_id",
-      key: "file_id",
-    },
-    {
-      title: "จัดการ",
-      align: "center",
-      render: (record) => (
-        <Space size="middle">
-          {myId !== record?.ID && (
-            <Button
-              type="default"
-              danger
-              icon={<DeleteOutlined />}
-              onClick={() => deleteAnnounceById(record.ID)}
-              style={{ borderRadius: "6px" }}
-            />
-          )}
+  const [currentPage, setCurrentPage] = useState(1);
+  const AnnouncesPerPage = 12;
 
-          <Button
-            type="primary"
-            icon={<EditOutlined />}
-            onClick={() => navigate(`/admin/announcement/edit/${record.ID}`)}
-            style={{
-              background: "#0D47A1",
-              borderColor: "#0D47A1",
-              borderRadius: "6px",
-            }}
-          >
-            แก้ไข
-          </Button>
-        </Space>
-      ),
-    },
-  ];
+  dayjs.locale("th");
 
   const deleteAnnounceById = async (id: string) => {
+    if (!window.confirm("คุณแน่ใจที่จะลบประกาศนี้ใช่หรือไม่?")) return;
     let res = await DeleteAnnouncementsById(id);
 
     if (res.status === 200) {
-      messageApi.open({
-        type: "success",
-        content: res.data.message,
-      });
+      showNotification("success", res.data.message);
       await getAnnouncements();
     } else {
-      messageApi.open({
-        type: "error",
-        content: res.data.error,
-      });
+      showNotification("error", res.data.error);
     }
   };
 
-  const getAnnouncements = async () => {
-    let res = await GetAnnouncements();
+  const showNotification = (type: string, message: string) => {
+    const notification = document.createElement("div");
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.classList.add("show");
+    }, 10);
+    
+    setTimeout(() => {
+      notification.classList.remove("show");
+      setTimeout(() => {
+        document.body.removeChild(notification);
+      }, 300);
+    }, 3000);
+  };
 
-    if (res.status === 200) {
-      setAnnounces(res.data);
-    } else {
-      setAnnounces([]);
-      messageApi.open({
-        type: "error",
-        content: res.data.error,
-      });
+  const getAnnouncements = async () => {
+    setLoading(true);
+    try {
+      let res = await GetAnnouncements();
+      if (res.status === 200) {
+        setAnnounces(res.data);
+      } else {
+        setAnnounces([]);
+        showNotification("error", res.data.error);
+      }
+    } catch (error) {
+      showNotification("error", "เกิดข้อผิดพลาดในการโหลดข้อมูล");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -123,59 +70,537 @@ function Announcement() {
     getAnnouncements();
   }, []);
 
+  const filteredAnnounces = announces.filter(announce => 
+    announce.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    announce.content?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    String(announce.ID).includes(searchTerm)
+  );
+
+  const totalPages = Math.ceil(announces.length / AnnouncesPerPage);
+  const indexOfLastAnnounce = currentPage * AnnouncesPerPage;
+  const indexOfFirstAnnounce = indexOfLastAnnounce - AnnouncesPerPage;
+  const currentAnnounces = filteredAnnounces.slice(indexOfFirstAnnounce, indexOfLastAnnounce);  
+
   return (
-    <div style={{ background: "#E3F2FD", minHeight: "100vh", padding: "30px" }}>
-      {contextHolder}
-      <Card
-        style={{
-          borderRadius: "12px",
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-          background: "white",
-          padding: "20px",
-          maxWidth: "1200px",
-          margin: "auto",
-        }}
-      >
-        <Row justify="space-between" align="middle">
-          <Col>
-            <Title level={3} style={{ color: "#0D47A1", marginBottom: 0 }}>
-              จัดการประกาศบริษัทฯ
-            </Title>
-          </Col>
-          <Col>
-            <Link to="/admin/announcement/create">
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                style={{
-                  background: "#1976D2",
-                  borderColor: "#1976D2",
-                  borderRadius: "6px",
-                  fontWeight: "bold",
-                }}
-              >
-                สร้างข้อมูล
-              </Button>
+    <div className="announcement-container">
+      <div className="announcement-card">
+        <div className="header-section">
+          <div className="title-wrapper">
+            <FaBullhorn className="title-icon" />
+            <h1>จัดการประกาศบริษัทฯ</h1>
+          </div>
+          <div className="header-actions">
+            <div className="search-container">
+              <FiSearch className="search-icon" />
+              <input
+                type="text"
+                placeholder="ค้นหาประกาศ..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-input"
+              />
+            </div>
+            <Link to="/admin/announcement/create" className="create-button">
+              <FaPlus className="button-icon" />
+              <span>สร้างประกาศ</span>
+              <span className="button-hover-effect"></span>
             </Link>
-          </Col>
-        </Row>
+          </div>
+        </div>
 
-        <Divider />
+        <div className="divider"></div>
 
-        <Table
-          rowKey="ID"
-          columns={columns}
-          dataSource={announces}
-          style={{
-            width: "100%",
-            borderRadius: "8px",
-            overflowX: "auto",
-          }}
-          pagination={{ pageSize: 5 }}
-          bordered
-          scroll={{ x: "max-comtent"}}
+        {loading ? (
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>กำลังโหลดข้อมูลประกาศ...</p>
+          </div>
+        ) : (
+          <div className="table-container">
+            <table className="announcement-table">
+              <thead>
+                <tr>
+                  <th>
+                    <div className="header-cell">
+                      <FaFileAlt className="column-icon" />
+                      <span>ประกาศฉบับที่</span>
+                    </div>
+                  </th>
+                  <th>
+                    <div className="header-cell">
+                      <FaCalendarAlt className="column-icon" />
+                      <span>วันที่แก้ไขล่าสุด</span>
+                    </div>
+                  </th>
+                  <th>
+                    <div className="header-cell">
+                      <FaBullhorn className="column-icon" />
+                      <span>ชื่อประกาศ</span>
+                    </div>
+                  </th>
+                  <th>
+                    <div className="header-cell">
+                      <FaFileAlt className="column-icon" />
+                      <span>รายละเอียด</span>
+                    </div>
+                  </th>
+                  <th>
+                    <div className="header-cell">
+                      <FaFileAlt className="column-icon" />
+                      <span>ID ไฟล์ประกาศ</span>
+                    </div>
+                  </th>
+                  <th>จัดการ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentAnnounces.length > 0 ? (
+                  currentAnnounces.map((announce) => (
+                    <tr key={announce.ID} className="announce-row">
+                      <td>
+                        <span className="id-cell">{announce.ID}</span>
+                      </td>
+                      <td>
+                        <span className="date-cell">
+                          {dayjs(announce.UpdatedAt).format("DD/MM/YYYY HH:mm")}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="title-cell">{announce.title}</span>
+                      </td>
+                      <td>
+                        <span className="content-cell">{announce.content}</span>
+                      </td>
+                      <td>
+                        <span className="file-cell">{announce.file_id}</span>
+                      </td>
+                      <td>
+                        <div className="action-buttons">
+                          {Number(myId) !== announce?.ID && (
+                            <button
+                              className="delete-button"
+                              onClick={() => deleteAnnounceById(String(announce.ID))}
+                              title="ลบประกาศ"
+                            >
+                              <FaTrash />
+                              <span className="tooltip">ลบ</span>
+                              <span className="button-hover-effect"></span>
+                            </button>
+                          )}
+                          <button
+                            className="edit-button"
+                            onClick={() => navigate(`/admin/announcement/edit/${announce.ID}`)}
+                            title="แก้ไขประกาศ"
+                          >
+                            <FaEdit />
+                            <span className="tooltip">แก้ไข</span>
+                            <span className="button-hover-effect"></span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="empty-message">
+                      ไม่พบข้อมูลประกาศ
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onNext={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+          onPrev={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
         />
-      </Card>
+      </div>
+
+      <style>{`
+        .announcement-container {
+          font-family: 'Mali', Tahoma, Geneva, Verdana, sans-serif;
+          min-height: 100vh;
+          max-width: 100%;
+          border-radius: 20px;
+          padding: 30px;
+          background: linear-gradient(135deg, #f0f4f8 0%, #e0e8f5 100%);
+        }
+        
+        .announcement-card {
+          max-width: 1200px;
+          margin: 0 auto;
+          background: white;
+          border-radius: 16px;
+          padding: 30px;
+          box-shadow: 0 15px 35px rgba(106, 17, 203, 0.15);
+          transition: transform 0.3s ease;
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .announcement-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 20px 40px rgba(106, 17, 203, 0.2);
+        }
+        
+        .announcement-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 5px;
+          background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+        }
+        
+        .header-section {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 20px;
+        }
+        
+        .title-wrapper {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+        }
+        
+        .title-wrapper h1 {
+          margin: 0;
+          font-size: 28px;
+          font-weight: 700;
+          background: linear-gradient(to right, #6a11cb 0%, #2575fc 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        
+        .title-icon {
+          font-size: 32px;
+          color: #6a11cb;
+          background: rgba(106, 17, 203, 0.1);
+          padding: 12px;
+          border-radius: 50%;
+        }
+        
+        .header-actions {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+        }
+        
+        .search-container {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+        
+        .search-icon {
+          position: absolute;
+          left: 15px;
+          color: #6a11cb;
+          font-size: 16px;
+        }
+        
+        .search-input {
+          padding: 10px 15px 10px 40px;
+          border: 1px solid #e0e0e0;
+          border-radius: 8px;
+          font-size: 14px;
+          transition: all 0.3s ease;
+          width: 250px;
+        }
+        
+        .search-input:focus {
+          outline: none;
+          border-color: #6a11cb;
+          box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+        }
+        
+        .create-button {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 20px;
+          background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-weight: 600;
+          text-decoration: none;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 15px rgba(106, 17, 203, 0.3);
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .create-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(106, 17, 203, 0.4);
+        }
+        
+        .button-icon {
+          font-size: 16px;
+        }
+        
+        .button-hover-effect {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+        
+        .create-button:hover .button-hover-effect {
+          opacity: 1;
+        }
+        
+        .divider {
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(106, 17, 203, 0.1), transparent);
+          margin: 25px 0;
+        }
+        
+        .loading-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 60px 0;
+        }
+        
+        .loading-spinner {
+          width: 50px;
+          height: 50px;
+          border: 5px solid rgba(106, 17, 203, 0.1);
+          border-radius: 50%;
+          border-top-color: #6a11cb;
+          animation: spin 1s ease-in-out infinite;
+          margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        
+        .table-container {
+          overflow-x: auto;
+          border-radius: 12px;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .announcement-table {
+          width: 100%;
+          border-collapse: separate;
+          border-spacing: 0;
+          border-radius: 12px;
+          overflow: hidden;
+        }
+        
+        .announcement-table th {
+          background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+          color: #2c3e50;
+          font-weight: 600;
+          padding: 16px 12px;
+          text-align: left;
+          position: sticky;
+          top: 0;
+          z-index: 10;
+        }
+        
+        .announcement-table td {
+          padding: 7px 12px;
+          border-bottom: 1px solid #f0f0f0;
+          transition: all 0.2s ease;
+        }
+        
+        .announcement-table tr:last-child td {
+          border-bottom: none;
+        }
+        
+        .announcement-table tr:hover td {
+          background: rgba(106, 17, 203, 0.03);
+        }
+        
+        .announce-row {
+          transition: all 0.3s ease;
+        }
+        
+        .announce-row:hover {
+          transform: translateX(5px);
+        }
+        
+        .header-cell {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        
+        .column-icon {
+          color: #6a11cb;
+          font-size: 16px;
+        }
+        
+        .id-cell {
+          font-weight: bold;
+          color: #2575fc;
+          background: rgba(37, 117, 252, 0.1);
+          padding: 4px 8px;
+          border-radius: 4px;
+        }
+        
+        .date-cell {
+          color: #6a11cb;
+          font-weight: 500;
+        }
+        
+        .title-cell {
+          font-weight: 500;
+          color: #2c3e50;
+        }
+        
+        .content-cell {
+          color: #666;
+          max-width: 300px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          display: inline-block;
+        }
+        
+        .file-cell {
+          color: #2575fc;
+          font-weight: 500;
+        }
+        
+        .empty-message {
+          text-align: center;
+          padding: 20px;
+          color: #666;
+        }
+        
+        .action-buttons {
+          display: flex;
+          gap: 10px;
+          justify-content: center;
+        }
+        
+        .edit-button, .delete-button {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+          border: none;
+          border-radius: 50%;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          overflow: hidden;
+        }
+        
+        .edit-button {
+          background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+          color: white;
+        }
+        
+        .delete-button {
+          background: linear-gradient(135deg, #ff5e62 0%, #ff9966 100%);
+          color: white;
+        }
+        
+        .edit-button:hover, .delete-button:hover {
+          transform: scale(1.1);
+        }
+        
+        .edit-button .tooltip, .delete-button .tooltip {
+          position: absolute;
+          top: -30px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: #2c3e50;
+          color: white;
+          padding: 4px 8px;
+          border-radius: 4px;
+          font-size: 12px;
+          opacity: 0;
+          visibility: hidden;
+          transition: all 0.2s ease;
+          white-space: nowrap;
+        }
+        
+        .edit-button:hover .tooltip, .delete-button:hover .tooltip {
+          opacity: 1;
+          visibility: visible;
+          top: -40px;
+        }
+        
+        .notification {
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          padding: 15px 25px;
+          border-radius: 8px;
+          color: white;
+          font-weight: 500;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+          transform: translateX(100%);
+          opacity: 0;
+          transition: all 0.3s ease;
+          z-index: 1000;
+        }
+        
+        .notification.show {
+          transform: translateX(0);
+          opacity: 1;
+        }
+        
+        .notification.success {
+          background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        }
+        
+        .notification.error {
+          background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+        }
+        
+        @media (max-width: 768px) {
+          .announcement-card {
+            padding: 20px;
+          }
+          
+          .header-section {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          
+          .header-actions {
+            width: 100%;
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          
+          .search-input {
+            width: 100%;
+          }
+          
+          .create-button {
+            width: 100%;
+            justify-content: center;
+          }
+          
+          .content-cell {
+            max-width: 150px;
+          }
+        }
+      `}</style>
     </div>
   );
 }

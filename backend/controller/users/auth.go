@@ -6,6 +6,7 @@ import (
 
 	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt"
 	"github.com/webapp/config"
 	"github.com/webapp/entity"
 	"github.com/webapp/services"
@@ -132,7 +133,7 @@ func SignIn(c *gin.Context) {
 	jwtWrapper := services.JwtWrapper{
 		SecretKey:       "SvNQpBN8y3qlVrsGAYYWoJJk56LtzFHx",
 		Issuer:          "AuthService",
-		ExpirationHours: 24,
+		ExpirationHours: 3,
 	}
 
 	err = jwtWrapper.GenerateToken(c.Writer, user.ID, user.Username, user.Role)
@@ -165,9 +166,27 @@ func SignIn(c *gin.Context) {
 
 func GetAuthToken(c *gin.Context) {
 	cookie, err := c.Request.Cookie("auth_token")
-	if err != nil {
+	if err != nil || cookie.Value == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Missing auth token"})
 		return
 	}
+
+	jwtWrapper := services.JwtWrapper{
+		SecretKey: "SvNQpBN8y3qlVrsGAYYWoJJk56LtzFHx",
+		Issuer:    "AuthService",
+	}
+
+	_, err = jwtWrapper.ValidateToken(cookie.Value)
+	if err != nil {
+		var ve *jwt.ValidationError
+		if errors.As(err, &ve) && ve.Errors&(jwt.ValidationErrorExpired) != 0 {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "SessionExpired"})
+			return
+		}
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "InvalidToken"})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{"token": cookie.Value})
 }
 
@@ -218,7 +237,7 @@ func ChangePassword(c *gin.Context) {
 	claims, err := jwtWrapper.ValidateToken(cookie.Value)
 	if err != nil {
 		// ตรวจสอบ token ผิดพลาด เช่น หมดอายุ หรือไม่ถูกต้อง
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 

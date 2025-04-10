@@ -1,6 +1,6 @@
 export interface RegulationsInterface {
     ID?: number;
-    created_at?: string;
+    UpdatedAt?: string;
     name?: string;
     file_name: string;
     file_path?: string;

@@ -1,27 +1,34 @@
-import { Badge, Button, Card, Col, Row, Typography, message } from "antd";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnnouncementsInterface } from "../../../interfaces/IAnnouncement";
-import { GetAnnouncements, DownloadFile, GetActivities, GetArticles, getAuthToken } from "../../../services/https";
+import { GetAnnouncements, DownloadFile, GetActivities, GetArticles, getAuthToken, UpdateMarquee, GetMarquee } from "../../../services/https";
 import { ActivitiesInterface } from "../../../interfaces/IActivity";
-import newIcon from "../../../assets/new_icon.png";
-import CustomButton from "../../../components/custom-button/custom_button";
 import { ArticlesInterface } from "../../../interfaces/IArticle";
-import Regulations from "../../../components/ranbow-text/ranbow_text";
 import { useTranslation } from "react-i18next";
-const { Title, Paragraph, Text } = Typography;
+import { FaArrowRight, FaCalendarAlt, FaUserTie, FaRocket } from "react-icons/fa";
+import { FiCalendar } from "react-icons/fi";
+import { CiFaceSmile } from "react-icons/ci";
+import { RiNotification3Fill, RiFilePdf2Line } from "react-icons/ri";
+import { MdNotificationsActive } from "react-icons/md";
+import { IoIosRocket, IoMdNotifications } from "react-icons/io";
+import { LuFlower } from "react-icons/lu";
+import Swal from "sweetalert2";
+import './dashboard.css'; 
 
 export default function Announcements() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [messageApi, contextHolder] = message.useMessage();
   const [buttons, setButtons] = useState<AnnouncementsInterface[]>([]);
   const [hoveredId, setHoveredId] = useState<number | null>(null);
-  // Activities
   const [activity, setActivity] = useState<ActivitiesInterface[]>([]);
+  const [articles, setArticles] = useState<ArticlesInterface[]>([]);
   const MAX_ITEMS = 1;
-  // Articles
-    const [articles, setArticles] = useState<ArticlesInterface[]>([]);
+
+  const [marqueeText, setMarqueeText] = useState(
+    "ระบบจะปิดปรับปรุงชั่วคราวในวันศุกร์ที่ 5 เมษายน 2570 เวลา 22:00 - 23:30 น. เพื่อพัฒนาประสิทธิภาพการให้บริการ ขออภัยในความไม่สะดวก 🙏"
+  );
+  const [userRole, setUserRole] = useState<string | null>(null);
+  
 
   const formatThaiDateTime = (date: string | 0) => {
     if (typeof date === "number") return "N/A";
@@ -70,374 +77,388 @@ export default function Announcements() {
       }
     };
     fetchArticles();
+    const fetchRole = async () => {
+      try {
+        const token = await getAuthToken();
+        if (token) {
+          // decode token หรือดึง profile จาก API
+          const payload = JSON.parse(atob(token.split(".")[1]));
+          setUserRole(payload?.role ?? null);
+        }
+      } catch (err) {
+        console.error("Error decoding token:", err);
+      }
+    };
+    fetchRole();
+    const fetchMarquee = async () => {
+      const result = await GetMarquee();
+      if (result.success) {
+        setMarqueeText(result.message);
+      } else {
+        console.error("โหลดข้อความล้มเหลว:", result.error);
+      }
+    };
+  
+    fetchMarquee();
   }, []);
+  
+  const updateMarquee = async (newText: string) => {
+    const result = await UpdateMarquee(newText);
+  
+    if (result.success) {
+      await Swal.fire({
+        icon: "success",
+        title: "อัปเดตสำเร็จ",
+        text: result.message,
+        timer: 1800,
+        showConfirmButton: false,
+      });
+  
+      setMarqueeText(newText); // 👈 อัปเดตข้อความใน state ด้วย
+      console.log(result);
+    } else {
+      await Swal.fire({
+        icon: "error",
+        title: "เกิดข้อผิดพลาด",
+        text: result.error,
+      });
+    }
+  };  
 
-  const handleMoreClick = () => {
-    navigate("/announcement");
-  };
-  const handleMoreActClick = () => {
-    navigate("/activity");
-  };
-  const handleMoreArtClick = () => {
-    navigate("/article");
-  };
-  const handleActivityClick = (id: number) => {
-    navigate(`/activity/detail/${id}`);
-  };
-  const handleArticleClick = (id: number) => {
-    navigate(`/article/detail/${id}`);
-  };
+  const handleMoreClick = () => navigate("/announcement");
+  const handleMoreActClick = () => navigate("/activity");
+  const handleMoreArtClick = () => navigate("/article");
+  const handleActivityClick = (id: number) => navigate(`/activity/detail/${id}`);
+  const handleArticleClick = (id: number) => navigate(`/article/detail/${id}`);
 
   return (
-    <>
-    {contextHolder}
-      <Row gutter={[16, 16]}>
-        <Col span={24}>
-        <Card
-          style={{
-            background: "#ffff",
-            padding: "10px",
-            borderRadius: "12px",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4)",
-          }}
-        >
-      <Regulations text={t("announcement")} />
-      <Row gutter={[16, 16]} justify="start">
-        {buttons.slice(-16).reverse().map((item, index) => {
-          const isNew = index === 0;
-          return (
-            <Col key={index} xs={24} sm={16} md={12} lg={6}>
-              <Button
-                type="primary"
-                block
-                style={{
-                  backgroundImage: "linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)",
-                  borderRadius: "6px",
-                  boxShadow: "0px 4px 12px rgba(11, 96, 255, 0.8)",
-                  overflow: "hidden",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  position: "relative",
-                }}
-                onMouseEnter={(e) => {
-                  setHoveredId(index);
-                  e.currentTarget.style.transform = "translate(-5px, -5px)";
-                  e.currentTarget.style.boxShadow = "0px 10px 20px rgba(43, 107, 226, 0.8)";
-                }}
-                onMouseLeave={(e) => {
-                  setHoveredId(null);
-                  e.currentTarget.style.transform = "translate(0, 0)";
-                  e.currentTarget.style.boxShadow = "0px 4px 12px rgba(15, 91, 224, 0.8)";
-                }}
-              >
-                <Badge
-                  count={isNew ? "New" : 0}
-                  offset={[30, 7]}
-                  style={{
-                    position: "absolute",        
-                    top: "5px",                  
-                    right: "10px",               
-                    transform: "scale(0.9)", 
-                    whiteSpace: "nowrap",    
-                  }}
-                />
-                <span style={{ 
-                  flex: 1, 
-                  whiteSpace: "nowrap", 
-                  overflow: "hidden", 
-                  textOverflow: "ellipsis",
-                  textAlign: "center",
-                }}>
-                  {item.title}
-                </span>
-                <Badge
-                count={isNew ? "New" : 0}
-                offset={[10, -5]}
-
-                style={{
-                  backgroundColor: "#ff4d4f",
-                  color: "#fff",
-                  fontSize: "10px",
-                  boxShadow: "0 0 0 1px #fff"
-                }}
-                />
-              </Button>
-              {hoveredId === index && (
-                <Card
-                  style={{
-                    position: "absolute",
-                    top: "85%",
-                    left: 0,
-                    width: "100%",
-                    zIndex: 10,
-                    background: "white",
-                    borderRadius: "12px",
-                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
-                    border: "1px solid #e6e8eb",
-                    transition: "all 0.2s ease",
-                  }}
-                  onMouseEnter={() => setHoveredId(index)}
-                  onMouseLeave={() => setHoveredId(null)}
-                >
-                  <Paragraph 
-                    style={{ 
-                      color: "#5B6EAA", 
-                      marginBottom: "8px", 
-                      fontSize: "14px" 
-                    }}
-                  >
-                    <strong>{formatThaiDateTime(item.created_at ?? 0)}</strong>
-                  </Paragraph>
-                  <Paragraph 
-                    style={{ 
-                      fontSize: "16px", 
-                      lineHeight: "1.5", 
-                      marginBottom: "12px",
-                      color: "#333" 
-                    }}
-                  >
-                    {item.title}
-                  </Paragraph>
-                  
-                  {item.file_id && (
-                    <div 
-                      style={{ 
-                        display: "flex", 
-                        alignItems: "center", 
-                        marginTop: "10px",
-                        background: "#f7f9fc",
-                        padding: "8px 12px",
-                        borderRadius: "8px"
-                      }}
-                    >
-                      <span
-                        onClick={async () => {
-                          try {
-                            const authToken = await getAuthToken();
-                            const isLoggedIn = Boolean(authToken);
-                            if (!isLoggedIn) {
-                              messageApi.open({
-                                type: "error",
-                                content: "please login first!",
-                              });
-                              return;
-                            }
-                            const blob = await DownloadFile((item.file_id ?? 0).toString());
-                            const url = window.URL.createObjectURL(blob);
-                            window.open(url, "_blank");
-                          } catch (error) {
-                            message.error("Failed to open file");
-                          }
-                        }}
-                        style={{
-                          color: "#5B6EAA",
-                          fontWeight: "500",
-                          cursor: "pointer",
-                        }}
-                      >
-                        {t("open_file")}
-                      </span>
-                    </div>
-                  )}
-                </Card>
-              )}
-            </Col>
-          );
-        })}
-      </Row>
-      {/* ✅ ปุ่ม MORE THAN (เพิ่มเติม) */}
-      {buttons.length > 5 && (
-        <Row justify="center" style={{ marginTop: "20px" }}>
-          <CustomButton onClick={handleMoreClick}>
-            {t("more")}
-          </CustomButton>
-        </Row>
-      )}
-    </Card>
-        </Col>
-        <Col span={24}>
-        <Card
-          style={{
-            background: "#ffff",
-            padding: "10px",
-            borderRadius: "12px",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4)"
-          }}
-        >
-        <Regulations text={t("activity")} />
-      <Row gutter={[16, 16]} justify="start">
-      {activity.slice(-6).reverse().map((activity, index) => {
-          const isNew = index === 0;
-          return (
-          <Col xs={24} sm={12} md={8} key={activity.ID}>
-            <Card
-              hoverable
-              cover={
-                <img
-                  alt={activity.title}
-                  src={activity.Image}
-                  style={{ height: "180px", objectFit: "cover" }}
-                />
-              }
-              style={{
-                backgroundImage: "linear-gradient(90deg,rgb(17, 129, 203) 0%,rgb(9, 53, 129) 100%)",
-                borderRadius: "10px",
-                borderColor: "#002641",
-                boxShadow: "0px 4px 12px rgba(43, 107, 226, 0.8)",
-                overflow: "hidden",
-                transition: "transform 0.3s ease, box-shadow 0.3s ease",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translate(-5px, -5px) rotate(-2deg)";
-                e.currentTarget.style.boxShadow = "0px 10px 20px rgba(43, 107, 226, 0.8)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translate(0, 0) rotate(0)";
-                e.currentTarget.style.boxShadow = "0px 4px 12px rgba(43, 107, 226, 0.8)";
-              }}
-              onClick={() => handleActivityClick(activity.ID ?? 0)}
-            >
-              <Badge
-                count={isNew ? "New" : 0}
-                offset={[20, -5]}
-
-                style={{
-                  backgroundColor: "#ff4d4f",
-                  color: "#fff",
-                  fontSize: "10px",
-                  boxShadow: "0 0 0 1px #fff"
-                }}
-            >
-              <Typography.Title
-                level={5}
-                style={{
-                  marginBottom: "15px",
-                  marginTop: "-10px",
-                  color: "#fff",
-                  transition: "color 0.3s ease",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "#00aaff")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "#fff")}
-              >
-                {activity.title?.substring(0,30)+ "..."}
-              </Typography.Title>
-              <Paragraph
-                style={{
-                  fontSize: "0.75rem",
-                  color: "#fff",
-                  transition: "color 0.3s ease",
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "#00aaff")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "#fff")}
-              >
-                {new Date(activity.created_at ?? "").toLocaleDateString("th-TH", {
-                  day: "2-digit",
-                  month: "long",
-                  year: "numeric",
-                })}
-              </Paragraph>
-              </Badge>
-            </Card>
-          </Col>
-          );
-      })}
-      </Row>
-      {activity.length > MAX_ITEMS && (
-        <div style={{ textAlign: "center", marginTop: "20px" }}>
-          <CustomButton onClick={handleMoreActClick}>{t("more")}</CustomButton>
-        </div>
-      )}
-    </Card>
-    </Col>
-    <Col span={24}>
-          <Card
-            style={{
-            background: "#ffff",
-            padding: "10px",
-            borderRadius: "12px",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.4)"
-            }}
-          >
-                <Regulations text={t("article")}/>
-                {articles.slice(-6).reverse().map((article, index) => {
-                  const isLatest = index === 0;
-                  return (
-                    <Card
-                    hoverable
-                      key={article.ID}
-                      style={{
-                        backgroundImage: "linear-gradient(90deg,rgb(212, 253, 224) 0%,rgb(174, 199, 241) 100%)",
-                        borderRadius: "10px",
-                        marginBottom: "5px",
-                        boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
-                        overflow: "hidden",
-                        transition: "transform 0.3s ease, box-shadow 0.3s ease",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = "translate(-1px, -1px)";
-                        e.currentTarget.style.boxShadow = "0px 10px 20px rgba(43, 107, 226, 0.8)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = "translate(0, 0)";
-                        e.currentTarget.style.boxShadow = "0px 8px 16px rgba(0, 0, 0, 0.1)";
-                      }}
-
-                    >
-                      <Row gutter={[16, 16]} align="middle">
-                        <Col xs={24} sm={6}>
-                          <img
-                            alt={article.title || "Image"}
-                            src={article.Image}
-                            style={{
-                              width: "100%",
-                              height: "180px",
-                              objectFit: "cover",
-                              borderRadius: "8px",
-                            }}
-                          />
-                        </Col>
-            
-                        <Col xs={24} sm={18}>
-                          <div
-                            style={{
-                              borderBottom: "2px solid rgb(17, 65, 120)",
-                              paddingBottom: "8px",
-                              marginBottom: "10px",
-                            }}
-                          >
-                            <Title level={4} style={{ marginBottom: "4px", color: "#0D47A1" }}>
-                              {article.title}
-                              {isLatest && (
-                                <img src={newIcon} alt="New" style={{ width: "30px", height: "30px" }} />
-                              )}
-                            </Title>
-                            <Text type="secondary">
-                              By: <b>TAT</b> | {new Date(article.created_at ?? "").toLocaleDateString("th-TH")}
-                            </Text>
-                          </div>
-            
-                          {/* ✅ คอนเทนต์ (ตัดตอน) */}
-                          <Paragraph style={{ fontSize: "14px", color: "#424242" }}>
-                              {article.content?.substring(0, 300)}...
-                          </Paragraph>
-            
-                          {/* ✅ ปุ่มอ่านเพิ่มเติม */}
-                          <CustomButton onClick={() => handleArticleClick(article.ID ?? 0)}>{t("more")}</CustomButton>
-                        </Col>
-                      </Row>
-                    </Card>
-                    );
-                  })}
-                  {articles.length > 1 && (
-                    <div style={{ textAlign: "center", marginTop: "20px" }}>
-                      <CustomButton onClick={handleMoreArtClick}>{t("view_all_articles")}</CustomButton>
-                    </div>
-                  )}
-          </Card>
-        </Col>
-      </Row>
+    <div className="dashboard-container">
+      {/* Animated Background Elements */}
+      <div className="bg-bubbles">
+        {[...Array(10)].map((_, i) => <div key={i} className="bubble"></div>)}
+      </div>
       
-    </>
+      {/* Marquee Notification */}
+      <div className="marquee-notification">
+        <div className="marquee-container">
+          <div className="marquee-content">
+            <IoMdNotifications className="marquee-icon" style={{
+              marginRight: '10px',
+              fontSize: '20px',
+              color: '#f39c12'
+            }} />
+            <span style={{
+              fontSize: '1.2rem',
+              fontWeight: '700'
+            }}>{marqueeText}</span>
+          </div>
+
+          {(userRole === "admin" || userRole === "adminhr" || userRole === "adminit") && (
+            <button
+              onClick={async () => {
+                const { value: newText } = await Swal.fire({
+                  title: "แก้ไขข้อความแจ้งเตือน",
+                  input: "textarea",
+                  inputValue: marqueeText,
+                  inputPlaceholder: "กรอกข้อความใหม่ที่นี่...",
+                  showCancelButton: true,
+                  confirmButtonText: "บันทึก",
+                  cancelButtonText: "ยกเลิก",
+                });
+
+                if (newText && newText.trim() !== "") {
+                  setMarqueeText(newText.trim());
+                  updateMarquee(newText.trim());
+                }
+              }}
+              className="edit-marquee-button"
+              style={{
+                position: 'absolute',
+                right: '15px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                border: 'none',
+                background: 'rgba(20, 4, 44, 0.52)',
+                cursor: 'pointer',
+                color: '#fff',
+                fontSize: '16px',
+                padding: '5px 10px',
+                borderRadius: '4px',
+                transition: 'background 0.3s',
+                zIndex: 10
+              }}
+              title="แก้ไขข้อความ"
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0, 0, 0, 0.3)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0, 0, 0, 0.56)'}
+            >
+              ✏️ แก้ไข
+            </button>
+          )}
+
+          <style>
+            {`
+              @keyframes marquee {
+                0% { transform: translateX(100%); }
+                100% { transform: translateX(-100%); }
+              }
+            `}
+          </style>
+        </div>
+      </div>
+
+      {/* Articles Section */}
+      <section className="dashboard-section articles-section">
+        <div className="section-header">
+          <FaRocket className="section-icon float" />
+          <h2>{t("article")}</h2>
+          <FaRocket className="section-icon float-delay" />
+        </div>
+
+        {articles.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 4V6M12 18V20M6 12H4M20 12H18M17.6568 17.6568L16.2426 16.2426M7.75732 7.75732L6.34314 6.34314M17.6568 6.34314L16.2426 7.75732M7.75732 16.2426L6.34314 17.6568" />
+              </svg>
+            </div>
+            <h3>{t("no_article")}</h3>
+            <p>{t("no_article_detail")}</p>
+          </div>
+        ) : (
+          <>
+            <div className="articles-list">
+              {articles.slice(-2).reverse().map((article, index) => {
+                const isLatest = index === 0;
+                return (
+                  <div 
+                    key={article.ID} 
+                    className="article-card"
+                    onClick={() => handleArticleClick(article.ID ?? 0)}
+                  >
+                    {isLatest && (
+                      <div className="new-badge">
+                        <RiNotification3Fill className="new-icon" />
+                        <span>NEW</span>
+                      </div>
+                    )}
+                    <div className="article-image"> <img
+                        alt={article.title}
+                        src={article.Image}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          borderTopLeftRadius: "15px",
+                          borderTopRightRadius: "15px"
+                        }}
+                      /></div>
+                    <div className="article-content">
+                      <h3>
+                        <IoIosRocket className="title-icon" />
+                        {article.title}
+                      </h3>
+                      <div className="article-meta">
+                        <div className="meta-item">
+                          <FaUserTie className="meta-icon" />
+                          <span>TAT</span>
+                        </div>
+                        <div className="meta-item">
+                          <FaCalendarAlt className="meta-icon" />
+                          <span>{new Date(article.created_at ?? "").toLocaleDateString("th-TH")}</span>
+                        </div>
+                      </div>
+                      <p className="article-excerpt">
+                        {article.content?.substring(0, 300)}...
+                      </p>
+                      <button className="read-more-button">
+                        <span>{t("more")}</span>
+                        <FaArrowRight className="arrow-icon" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {articles.length > 1 && (
+              <button className="more-button" onClick={handleMoreArtClick}>
+                {t("view_all_articles")} <FaArrowRight className="arrow" />
+              </button>
+            )}
+          </>
+        )}
+      </section>
+
+      {/* Announcements Section */}
+      <section className="dashboard-section announcements-section">
+        <div className="section-header">
+          <LuFlower className="section-icon spin" />
+          <h2>{t("announcement")}</h2>
+          <LuFlower className="section-icon spin-reverse" />
+        </div>
+
+        {buttons.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 4V6M12 18V20M6 12H4M20 12H18M17.6568 17.6568L16.2426 16.2426M7.75732 7.75732L6.34314 6.34314M17.6568 6.34314L16.2426 7.75732M7.75732 16.2426L6.34314 17.6568" />
+              </svg>
+            </div>
+            <h3>{t("no_Announcement")}</h3>
+            <p>{t("no_Announcement_detail")}</p>
+          </div>
+        ) : (
+          <>
+            <div className="announcements-grid">
+              {buttons.slice(-16).reverse().map((item, index) => {
+                const isNew = index === 0;
+                return (
+                  <div 
+                    key={index}
+                    onMouseEnter={() => setHoveredId(index)}
+                    onMouseLeave={() => setHoveredId(null)}
+                  >                    
+                    <button 
+                      className="announcement-button"
+                      onClick={async () => {
+                        try {
+                          const authToken = await getAuthToken();
+                          const isLoggedIn = Boolean(authToken);
+                          if (!isLoggedIn) {
+                            await Swal.fire({
+                              icon: "error",
+                              title: "Please Login!",
+                              text: "กรุณา Login ก่อนเข้าใช้งาน...",
+                              timer: 1800,
+                              showConfirmButton: false,
+                              timerProgressBar: true,
+                            });
+                            return;
+                          }
+                          const blob = await DownloadFile((item.file_id ?? 0).toString());
+                          const url = window.URL.createObjectURL(blob);
+                          window.open(url, "_blank");
+                        } catch (error) {
+                          Swal.fire("Error", "Failed to open file", "error");
+                        }
+                      }}
+                    >
+                      <RiFilePdf2Line className="pdf-icon" />
+                      {isNew && (
+                        <div className="new-badges">
+                          <MdNotificationsActive className="new-icons" />
+                        </div>
+                      )}
+                      <span>{item.title}</span>
+                    </button>
+                    {hoveredId === index && (
+                      <div className="announcement-details">
+                        <div className="detail-row">
+                          <FiCalendar />
+                          <span>{formatThaiDateTime(item.UpdatedAt ?? 0)}</span>
+                        </div>
+                        <p>{item.title}</p>
+                        {item.file_id && (
+                          <button className="open-file-button">
+                            <RiFilePdf2Line />
+                            <span>{t("open_file")}</span>
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {buttons.length > 5 && (
+              <button className="more-button" onClick={handleMoreClick}>
+                {t("more")} <FaArrowRight className="arrow" />
+              </button>
+            )}
+          </>
+        )}
+      </section>
+
+      {/* Activities Section */}
+      <section className="dashboard-section activities-section">
+        <div className="section-header">
+          <CiFaceSmile className="section-icon bounce" />
+          <h2>{t("activity")}</h2>
+          <CiFaceSmile className="section-icon bounce-delay" />
+        </div>
+
+        {activity.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 4V6M12 18V20M6 12H4M20 12H18M17.6568 17.6568L16.2426 16.2426M7.75732 7.75732L6.34314 6.34314M17.6568 6.34314L16.2426 7.75732M7.75732 16.2426L6.34314 17.6568" />
+              </svg>
+            </div>
+            <h3>{t("no_activity")}</h3>
+            <p>{t("no_activity_detail")}</p>
+          </div>
+        ) : (
+          <>
+            <div className="activities-grid">
+              {activity.slice(-3).reverse().map((activity, index) => {
+                const isNew = index === 0;
+                return (
+                  <div 
+                    key={activity.ID}
+                    className="activity-card"
+                    onClick={() => handleActivityClick(activity.ID ?? 0)}
+                  >
+                    {isNew && (
+                      <div className="new-badge">
+                        <RiNotification3Fill className="new-icon" />
+                        <span>NEW</span>
+                      </div>
+                    )}
+                    <div className="activity-image">
+                      <img
+                        alt={activity.title}
+                        src={activity.Image}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          borderTopLeftRadius: "15px",
+                          borderTopRightRadius: "15px"
+                        }}
+                      />
+                    </div>
+                    <div className="activity-content">
+                      <h3>
+                        <CiFaceSmile className="title-icon" />
+                        {activity.title && activity.title.length > 30
+                          ? activity.title.substring(0, 30) + "..."
+                          : activity.title}
+                      </h3>
+                      <div className="activity-meta">
+                        <FiCalendar className="meta-icon" />
+                        <span>
+                          {new Date(activity.created_at ?? "").toLocaleDateString("th-TH", {
+                            day: "2-digit",
+                            month: "long",
+                            year: "numeric",
+                          })}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {activity.length > MAX_ITEMS && (
+              <button className="more-button" onClick={handleMoreActClick}>
+                {t("more")} <FaArrowRight className="arrow" />
+              </button>
+            )}
+          </>
+        )}
+      </section>
+    </div>
   );
 }

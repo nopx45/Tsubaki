@@ -1,0 +1,351 @@
+/* Dashboard Container */
+.dashboards-containers {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e3f2fd 100%);
+    min-height: 100vh;
+    border-radius: 20px;
+    padding: 24px;
+  }
+  
+  /* Main Card Styling */
+  .main-card {
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    background: white;
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto 24px;
+    border: none;
+    transition: all 0.3s ease;
+  }
+  
+  .main-card:hover {
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+  }
+  
+  /* Stats Cards */
+  .stats-card {
+    border-radius: 12px;
+    height: 100%;
+    border: none;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    overflow: hidden;
+  }
+  
+  .stats-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.1);
+  }
+  
+  .stats-card .ant-card-body {
+    padding: 20px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 12px;
+  }
+  
+  .card-icon {
+    font-size: 24px;
+    margin-right: 12px;
+    color: #4f46e5;
+    background: rgba(79, 70, 229, 0.1);
+    padding: 8px;
+    border-radius: 8px;
+  }
+  
+  .card-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .card-content {
+    flex: 1;
+  }
+  
+  /* Top Pages Card */
+  .top-pages-card .card-icon {
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+  }
+  
+  /* Total Visitors Card */
+  .total-visitors-card .card-icon {
+    color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+  }
+  
+  /* Duration Card */
+  .duration-card .card-icon {
+    color: #8b5cf6;
+    background: rgba(139, 92, 246, 0.1);
+  }
+  
+  /* Top Visitors Card */
+  .top-visitors-card .card-icon {
+    color: #ec4899;
+    background: rgba(236, 72, 153, 0.1);
+  }
+  
+  /* Top Lists */
+  .top-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .top-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+  }
+  
+  .top-item:hover {
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+  
+  .top-item.even {
+    background: #f8fafc;
+  }
+  
+  .top-item.odd {
+    background: #ffffff;
+    border: 1px solid #f1f5f9;
+  }
+  
+  .item-name {
+    font-weight: 500;
+    color: #334155;
+    display: flex;
+    align-items: center;
+  }
+  
+  .item-value {
+    font-weight: 600;
+    color: #1e40af;
+    background: #eff6ff;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+  }
+  
+  .rank-badge {
+    margin-right: 8px;
+    font-size: 16px;
+  }
+  
+  /* No Data State */
+  .no-data {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #94a3b8;
+  }
+  
+  .no-data .anticon {
+    font-size: 32px;
+    margin-bottom: 8px;
+  }
+  
+  .no-data p {
+    margin: 0;
+    font-size: 14px;
+  }
+  
+  /* Trend Indicator */
+  .trend-indicator {
+    margin-top: 12px;
+    font-size: 12px;
+  }
+  
+  .trend-up {
+    color: #10b981;
+    font-weight: 500;
+  }
+  
+  .trend-down {
+    color: #ef4444;
+    font-weight: 500;
+  }
+  
+  /* Duration Bar */
+  .duration-bar {
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 3px;
+    margin-top: 12px;
+    overflow: hidden;
+  }
+  
+  .duration-progress {
+    height: 100%;
+    background: linear-gradient(90deg, #8b5cf6 0%, #6366f1 100%);
+    border-radius: 3px;
+    transition: width 0.6s ease;
+  }
+  
+  /* Chart Cards */
+  .chart-card {
+    border-radius: 12px;
+    border: none;
+    height: 100%;
+    transition: all 0.3s ease;
+  }
+  
+  .chart-card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  }
+  
+  .chart-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  
+  .chart-header h3 {
+    margin: 0 16px 0 8px;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  
+  .chart-header .anticon {
+    font-size: 20px;
+    color: #4f46e5;
+  }
+  
+  .date-selectors {
+    display: flex;
+    margin-left: auto;
+  }
+  
+  .month-selector, .year-selector {
+    width: 120px;
+    margin-left: 8px;
+  }
+  
+  .chart-container {
+    width: 100%;
+    overflow: hidden;
+  }
+  
+  /* Section Dividers */
+  .section-divider {
+    margin: 24px 0;
+    border-color: #e2e8f0;
+  }
+  
+  /* Log Table Card */
+  .log-table-card {
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    background: white;
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+    border: none;
+  }
+  
+  .table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .table-divider {
+    margin: 12px 0;
+    border-color: #e2e8f0;
+  }
+  
+  /* Table Styles */
+  .visitor-log-table {
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .visitor-log-table .ant-table-thead > tr > th {
+    background: #4f46e5 !important;
+    color: white !important;
+    font-weight: 500;
+  }
+  
+  .visitor-log-table .ant-table-tbody > tr:hover > td {
+    background: #f8fafc !important;
+  }
+  
+  .table-header {
+    color: white;
+    font-weight: 500;
+  }
+  
+  /* Cell Styles */
+  .username-cell {
+    font-weight: 500;
+    color: #10b981;
+  }
+  
+  .ip-cell {
+    font-weight: 500;
+    color: #3b82f6;
+  }
+  
+  .time-cell {
+    font-weight: 500;
+    color: #64748b;
+  }
+  
+  .duration-badge .ant-badge-count {
+    box-shadow: none;
+    font-weight: 500;
+  }
+  
+  /* Delete Button */
+  .delete-btn {
+    transition: all 0.2s ease;
+  }
+  
+  .delete-btn:hover {
+    transform: scale(1.1);
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 992px) {
+    .chart-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .date-selectors {
+      margin-left: 0;
+      margin-top: 8px;
+      width: 100%;
+    }
+    
+    .month-selector, .year-selector {
+      width: 50%;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .dashboard-container {
+      padding: 12px;
+    }
+    
+    .main-card, .log-table-card {
+      padding: 16px;
+    }
+  }

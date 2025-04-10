@@ -1,175 +1,312 @@
 import { useEffect } from "react";
-import {
-  Space,
-  Button,
-  Col,
-  Row,
-  Divider,
-  Form,
-  Input,
-  Card,
-  message,
-  Typography,
-  Select,
-} from "antd";
-import { PlusOutlined } from "@ant-design/icons";
-import { SectionsInterface } from "../../../../interfaces/ISection";
-import { GetSectionsById, UpdateSectionsById } from "../../../../services/https/index";
 import { useNavigate, Link, useParams } from "react-router-dom";
-
-const { Title } = Typography;
+import { GetSectionsById, UpdateSectionsById } from "../../../../services/https";
+import { SectionsInterface } from "../../../../interfaces/ISection";
+import { FiGlobe, FiLink, FiPlus, FiArrowLeft, FiTag } from "react-icons/fi";
 
 function SectionEdit() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: any }>();
-  const [messageApi, contextHolder] = message.useMessage();
-  const [form] = Form.useForm();
 
-  const getSectionsById = async (id: string) => {
-    let res = await GetSectionsById(id);
-    if (res.status == 200) {
-      form.setFieldsValue({
-        name: res.data.name,
-        name_link: res.data.name_link,
-        link_url: res.data.link_url,
-      });
+  const showNotification = (type: string, message: string) => {
+    const notification = document.createElement("div");
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    setTimeout(() => notification.classList.add("show"), 10);
+    setTimeout(() => {
+      notification.classList.remove("show");
+      setTimeout(() => document.body.removeChild(notification), 300);
+    }, 3000);
+  };
+
+  const getSection = async (id: string) => {
+    const res = await GetSectionsById(id);
+    if (res.status === 200) {
+      const form = document.getElementById("sectionForm") as HTMLFormElement;
+      if (form) {
+        (form.elements.namedItem("name") as HTMLSelectElement).value = res.data.name;
+        (form.elements.namedItem("name_link") as HTMLInputElement).value = res.data.name_link;
+        (form.elements.namedItem("link_url") as HTMLInputElement).value = res.data.link_url;
+      }
     } else {
-      messageApi.open({
-        type: "error",
-        content: "ไม่พบข้อมูลเว็บไซต์",
-      });
-      setTimeout(() => {
-        navigate("/admin/section-web");
-      }, 2000);
+      showNotification("error", "ไม่พบข้อมูลเว็บไซต์");
+      setTimeout(() => navigate("/admin/section-web"), 2000);
     }
   };
 
-  const onFinish = async (values: SectionsInterface) => {
-    const payload = {
-      ...values
+  const onFinish = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const form = e.currentTarget as HTMLFormElement;
+    const values: SectionsInterface = {
+      name: (form.elements.namedItem("name") as HTMLSelectElement).value,
+      name_link: (form.elements.namedItem("name_link") as HTMLInputElement).value,
+      link_url: (form.elements.namedItem("link_url") as HTMLInputElement).value,
     };
 
-    const res = await UpdateSectionsById(id, payload);
-    if (res.status == 200) {
-      messageApi.open({
-        type: "success",
-        content: res.data.message,
-      });
-      setTimeout(() => {
-        navigate("/admin/section-web");
-      }, 2000);
+    const res = await UpdateSectionsById(id, values);
+    if (res.status === 200) {
+      showNotification("success", res.data.message);
+      setTimeout(() => navigate("/admin/section-web"), 2000);
     } else {
-      messageApi.open({
-        type: "error",
-        content: res.data.error,
-      });
+      showNotification("error", res.data.error);
     }
   };
 
   useEffect(() => {
-    getSectionsById(id);
-  }, []);
+    getSection(id);
+  }, [id]);
 
   return (
-    <div style={{ background: "#E3F2FD", minHeight: "100vh", padding: "30px" }}>
-      {contextHolder}
-      <Card
-        style={{
-          borderRadius: "12px",
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-          background: "white",
-          padding: "20px",
-          maxWidth: "800px",
-          margin: "auto",
-        }}
-      >
-        <Title level={3} style={{ color: "#0D47A1", textAlign: "center" }}>
-          แก้ไขข้อมูลเว็บไซต์ (Section Web)
-        </Title>
-        <Divider />
+    <div className="section-create-container">
+      <div className="form-card">
+        <div className="form-header">
+          <FiGlobe className="header-icon" />
+          <h2>แก้ไขเว็บไซต์ที่เกี่ยวข้อง</h2>
+          <p>แก้ไขข้อมูลเว็บไซต์ฝ่ายในระบบ</p>
+        </div>
 
-        <Form
-          name="basic"
-          form={form}
-          layout="vertical"
-          onFinish={onFinish}
-          autoComplete="off"
-        >
-          <Row gutter={[16, 16]}>
-          <Col xs={24}>
-              <Form.Item
-                label="ฝ่าย"
-                name="name"
-                rules={[{ required: true, message: "กรุณาเลือกฝ่าย !" }]}
-              >
-                  <Select
-                    placeholder="กรุณาเลือกฝ่าย !"
-                    style={{ width: "40%" }}
-                    options={[
-                        { value: 'HR', label: 'HR' },
-                        { value: 'ACC', label: 'ACC' },
-                        { value: 'QA', label: 'QA' },
-                        { value: 'MKT', label: 'MKT' },
-                        { value: 'IT', label: 'IT' },
-                        { value: 'ME/PE', label: 'ME/PE' },
-                        { value: 'Safety', label: 'Safety' },
-                        { value: 'WH', label: 'WH' },
-                        { value: 'PC', label: 'PC' },
-                    ]}
-                  />
-              </Form.Item>
-            </Col>
+        <form id="sectionForm" onSubmit={onFinish} className="user-form">
+          <div className="form-grid">
+            <div className="form-group">
+              <label htmlFor="name">
+                <FiTag className="input-icon" /> ฝ่าย
+              </label>
+              <div className="select-wrapper">
+                <select id="name" name="name" required>
+                  <option value="">เลือกฝ่าย</option>
+                  <option value="HR">HR</option>
+                  <option value="ACC">ACC</option>
+                  <option value="QA">QA</option>
+                  <option value="MKT">MKT</option>
+                  <option value="IT">IT</option>
+                  <option value="ME/PE">ME/PE</option>
+                  <option value="Safety">Safety</option>
+                  <option value="WH">WH</option>
+                  <option value="PC">PC</option>
+                </select>
+                <span className="select-focus"></span>
+              </div>
+            </div>
 
-            <Col xs={24}>
-              <Form.Item
-                label="ชื่อเว็บไซต์"
-                name="name_link"
-                rules={[{ required: true, message: "กรุณากรอกชื่อเว็บไซต์ !" }]}
-              >
-                <Input placeholder="กรอกชื่อเว็บไซต์" />
-              </Form.Item>
-            </Col>
+            <div className="form-group">
+              <label htmlFor="name_link">
+                <FiGlobe className="input-icon" /> ชื่อเว็บไซต์
+              </label>
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  id="name_link"
+                  name="name_link"
+                  placeholder="กรอกชื่อเว็บไซต์"
+                  required
+                />
+                <span className="input-focus"></span>
+              </div>
+            </div>
 
-            <Col xs={24}>
-              <Form.Item
-                label="url ของเว็บไซต์"
-                name="link_url"
-                rules={[{ required: true, message: "กรุณากรอก url ของเว็บไซต์ !" }]}
-              >
-                <Input.TextArea rows={4} placeholder="กรอก url ของเว็บไซต์" />
-              </Form.Item>
-            </Col>
-          </Row>
+            <div className="form-group">
+              <label htmlFor="link_url">
+                <FiLink className="input-icon" /> URL เว็บไซต์
+              </label>
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  id="link_url"
+                  name="link_url"
+                  placeholder="กรอก URL เว็บไซต์"
+                  required
+                />
+                <span className="input-focus"></span>
+              </div>
+            </div>
+          </div>
 
-          <Row justify="end">
-            <Col>
-              <Form.Item>
-                <Space>
-                  <Link to="/admin/section-web">
-                    <Button htmlType="button" style={{ borderRadius: "6px" }}>
-                      ยกเลิก
-                    </Button>
-                  </Link>
+          <div className="form-actions">
+            <Link to="/admin/section-web" className="cancel-button">
+              <FiArrowLeft className="button-icon" /> ยกเลิก
+            </Link>
+            <button type="submit" className="submit-button">
+              <FiPlus className="button-icon" /> บันทึกการเปลี่ยนแปลง
+            </button>
+          </div>
+        </form>
+      </div>
 
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    icon={<PlusOutlined />}
-                    style={{
-                      background: "#1976D2",
-                      borderColor: "#1976D2",
-                      borderRadius: "6px",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    บันทึก
-                  </Button>
-                </Space>
-              </Form.Item>
-            </Col>
-          </Row>
-        </Form>
-      </Card>
+      <style>{`
+        .section-create-container {
+          font-family: 'Mali', Tahoma, sans-serif;
+          min-height: 80vh;
+          border-radius: 20px;
+          padding: 30px;
+          background: linear-gradient(135deg, #f0f4f8 0%, #d9e4f2 100%);
+          display: flex;
+          justify-content: center;
+          align-items: top;
+        }
+        .form-card {
+          width: 100%;
+          max-width: 800px;
+          background: white;
+          border-radius: 16px;
+          padding: 40px;
+          box-shadow: 0 15px 35px rgba(106, 17, 203, 0.15);
+          position: relative;
+          overflow: hidden;
+        }
+        .form-header {
+          text-align: center;
+          margin-bottom: 40px;
+        }
+        .form-header h2 {
+          background: linear-gradient(to right, #6a11cb, #2575fc);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+        .header-icon {
+          font-size: 40px;
+          color: #6a11cb;
+          background: rgba(106, 17, 203, 0.1);
+          padding: 15px;
+          border-radius: 50%;
+        }
+        .user-form {
+          display: flex;
+          flex-direction: column;
+          gap: 25px;
+        }
+        .form-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 20px;
+        }
+        .form-group {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        .form-group label {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-weight: 500;
+          color: #2c3e50;
+        }
+        .input-icon {
+          color: #6a11cb;
+        }
+        .input-wrapper, .select-wrapper {
+          position: relative;
+        }
+        input, select {
+          width: 100%;
+          padding: 12px 15px 12px 40px;
+          border: 1px solid #e0e0e0;
+          border-radius: 8px;
+          font-size: 16px;
+          background-color: #f9f9f9;
+        }
+        select {
+          appearance: none;
+          background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+          background-repeat: no-repeat;
+          background-position: right 10px center;
+          background-size: 15px;
+        }
+        input:focus, select:focus {
+          outline: none;
+          border-color: #6a11cb;
+          background-color: white;
+          box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+        }
+        .input-focus, .select-focus {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          height: 2px;
+          background: linear-gradient(to right, #6a11cb, #2575fc);
+          width: 0;
+          transition: width 0.3s ease;
+        }
+        input:focus ~ .input-focus, select:focus ~ .select-focus {
+          width: 100%;
+        }
+        .form-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 15px;
+        }
+        .cancel-button, .submit-button {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 20px;
+          border: none;
+          border-radius: 8px;
+          font-weight: 600;
+          cursor: pointer;
+        }
+        .cancel-button {
+          background: #f5f5f5;
+          color: #666;
+        }
+        .cancel-button:hover {
+          background: #e0e0e0;
+          transform: translateY(-2px);
+        }
+        .submit-button {
+          background: linear-gradient(to right, #6a11cb, #2575fc);
+          color: white;
+          box-shadow: 0 4px 15px rgba(106, 17, 203, 0.3);
+        }
+        .submit-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(106, 17, 203, 0.4);
+        }
+        .button-icon {
+          font-size: 18px;
+        }
+        .notification {
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          padding: 15px 25px;
+          border-radius: 8px;
+          color: white;
+          font-weight: 500;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+          transform: translateX(100%);
+          opacity: 0;
+          transition: all 0.3s ease;
+          z-index: 1000;
+        }
+        .notification.show {
+          transform: translateX(0);
+          opacity: 1;
+        }
+        .notification.success {
+          background: linear-gradient(to right, #6a11cb, #2575fc);
+        }
+        .notification.error {
+          background: linear-gradient(to right, #ff416c, #ff4b2b);
+        }
+        @media (max-width: 768px) {
+          .form-card {
+            padding: 25px;
+          }
+          .form-grid {
+            grid-template-columns: 1fr;
+          }
+          .form-actions {
+            flex-direction: column;
+          }
+          .cancel-button, .submit-button {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+      `}</style>
     </div>
   );
 }

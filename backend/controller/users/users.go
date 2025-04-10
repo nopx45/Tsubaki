@@ -15,6 +15,7 @@ type UpdateUserInput struct {
 	LastName            string `json:"last_name"`
 	Email               string `json:"email"`
 	Username            string `json:"username"`
+	Phone               string `json:"phone"`
 	Role                string `json:"role"`
 	Password            string `json:"password"` // optional
 	ForcePasswordChange *bool  `json:"force_password_change"`
@@ -94,6 +95,9 @@ func Update(c *gin.Context) {
 	if input.Username != "" {
 		updates["username"] = input.Username
 	}
+	if input.Username != "" {
+		updates["phone"] = input.Phone
+	}
 	if input.Role != "" {
 		updates["role"] = input.Role
 	}
@@ -125,7 +129,7 @@ func Update(c *gin.Context) {
 func GetUserProfile(c *gin.Context) {
 	tokenString, err := c.Cookie("auth_token")
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Missing auth token"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -135,7 +139,7 @@ func GetUserProfile(c *gin.Context) {
 	}
 	claims, err := jwtWrapper.ValidateToken(tokenString)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 

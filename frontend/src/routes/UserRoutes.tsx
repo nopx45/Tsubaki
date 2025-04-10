@@ -11,6 +11,7 @@ import Security from "../pages/userpages/security";
 import ArticleDetails from "../pages/userpages/article/indetail";
 import ChangePassword from "../pages/authentication/change-password";
 import UserProfile from "../pages/userpages/profile";
+import Calendar from "../pages/userpages/carlendar";
 
 const NotPage = Loadable(lazy(() => import("../pages/notpage")));
 
@@ -90,6 +91,15 @@ const UserRoutes = (isLoggedIn: boolean): RouteObject[] => {
           {
             index: true,
             element: <UserProfile />,
+          }
+        ],
+      },
+      {
+        path: "calendar",
+        children: [
+          {
+            index: true,
+            element: <Calendar />,
           }
         ],
       },

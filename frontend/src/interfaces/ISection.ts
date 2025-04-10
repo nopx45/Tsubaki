@@ -4,4 +4,5 @@ export interface SectionsInterface {
     name?: string;
     name_link?: string;
     link_url?: string;
+    UpdatedAt?: string;
   }

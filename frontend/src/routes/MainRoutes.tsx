@@ -9,6 +9,7 @@ import ActivityDetails from "../pages/adminpage/activity/indetail";
 import Article from "../pages/userpages/article";
 import ArticleDetails from "../pages/userpages/article/indetail";
 import Security from "../pages/userpages/security";
+import Calendar from "../pages/userpages/carlendar";
 
 const NotPage = Loadable(lazy(() => import("../pages/notpage")));
 
@@ -88,6 +89,15 @@ const MainRoutes = (): RouteObject[] => {
             {
               index: true,
               element: <Security />,
+            }
+          ],
+        },
+        {
+          path: "calendar",
+          children: [
+            {
+              index: true,
+              element: <Calendar />,
             }
           ],
         },

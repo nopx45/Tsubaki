@@ -2,7 +2,7 @@ import { FilesInterface } from "./IFile";
 
 export interface AnnouncementsInterface {
   file_name: string;
-  created_at?: string;
+  UpdatedAt?: string;
     ID?: number;
     title?: string;
     content?: string;

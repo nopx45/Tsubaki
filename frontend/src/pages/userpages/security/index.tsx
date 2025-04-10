@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Card, Typography, Row, Col } from "antd";
 import { SecurityInterface } from "../../../interfaces/ISecurity";
 import { GetSecurity } from "../../../services/https";
-import CustomButton from "../../../components/custom-button/custom_button";
 import { useTranslation } from "react-i18next";
 import Regulations from "../../../components/ranbow-text/ranbow_text";
-
-const { Title, Paragraph, Text } = Typography;
+import { FaChevronDown, FaChevronUp, FaCalendarAlt, FaUserTag } from "react-icons/fa";
+import { IoShieldCheckmark } from "react-icons/io5";
+import './security.css'
 
 const Security: React.FC = () => {
   const { t } = useTranslation();
@@ -30,68 +29,66 @@ const Security: React.FC = () => {
   };
 
   return (
-    <div
-      style={{
-        padding: "20px",
-        maxWidth: "900px",
-        margin: "0 auto",
-        background: "#E3F2FD",
-      }}
-    >
-        <Regulations text ={t("security")} />
+    <div className="security-container">
+      <div className="knowledge-header-right">
+        <Regulations text={t("security")} />
+      </div>
       {security.map((securities) => (
-        <Card
+        <div 
           key={securities.ID}
-          style={{
-            marginBottom: "2px",
-            borderRadius: "8px",
-            background: "#FFFFFF",
-            boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-            padding: "15px",
-          }}
+          className={`security-card ${expanded[securities.ID!] ? 'expanded' : ''}`}
         >
-          <Row gutter={[16, 16]} align="middle">
-            <Col xs={24} sm={6}>
+          <div className="security-card-header">
+            <IoShieldCheckmark className="security-icon" />
+            <h3 className="security-title">{securities.title}</h3>
+            <div className="security-meta">
+              <span className="meta-item">
+                <FaUserTag className="meta-icon" />
+                <span>TAT</span>
+              </span>
+              <span className="meta-item">
+                <FaCalendarAlt className="meta-icon" />
+                <span>{new Date(securities.created_at ?? "").toLocaleDateString("th-TH")}</span>
+              </span>
+            </div>
+          </div>
+
+          <div className="security-content">
+            <div className="image-container">
               <img
                 alt={securities.title || "Image"}
                 src={securities.Image}
-                style={{
-                  width: "100%",
-                  height: "120px",
-                  objectFit: "cover",
-                  borderRadius: "8px",
-                }}
+                className="security-image"
               />
-            </Col>
+              <div className="image-overlay"></div>
+            </div>
 
-            <Col xs={24} sm={18}>
-              <div
-                style={{
-                  borderBottom: "4px solid #1565C0",
-                  paddingBottom: "8px",
-                  marginBottom: "10px",
-                }}
-              >
-                <Title level={4} style={{ marginBottom: "4px", color: "#0D47A1" }}>
-                  {securities.title}
-                </Title>
-                <Text type="secondary">
-                  By: <b>TAT</b> | {new Date(securities.created_at ?? "").toLocaleDateString("th-TH")}
-                </Text>
-              </div>
-
-              <Paragraph style={{ fontSize: "14px", color: "#424242" }}>
+            <div className="text-content">
+              <p className={`security-paragraph ${expanded[securities.ID!] ? 'expanded' : ''}`}>
                 {expanded[securities.ID!]
                   ? securities.content
                   : `${securities.content?.substring(0, 300)}...`}
-              </Paragraph>
+              </p>
 
-              <CustomButton onClick={() => toggleExpand(securities.ID!)}>
-                {expanded[securities.ID!] ? t("collapse_text") : t("read_more")}
-              </CustomButton>
-            </Col>
-          </Row>
-        </Card>
+              <button 
+                onClick={() => toggleExpand(securities.ID!)} 
+                className="toggle-button"
+              >
+                {expanded[securities.ID!] ? (
+                  <>
+                    <span>{t("collapse_text")}</span>
+                    <FaChevronUp className="button-icon" />
+                  </>
+                ) : (
+                  <>
+                    <span>{t("read_more")}</span>
+                    <FaChevronDown className="button-icon" />
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
       ))}
     </div>
   );

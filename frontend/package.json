@@ -14,12 +14,16 @@
     "@emotion/styled": "^11.14.0",
     "@mui/x-charts": "^7.27.1",
     "@mui/x-date-pickers": "^7.27.3",
+    "@toast-ui/react-calendar": "^2.1.3",
     "@types/styled-components": "^5.1.34",
     "antd": "^5.24.0",
     "axios": "^1.8.2",
+    "bootstrap": "^5.3.3",
+    "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
     "framer-motion": "^12.4.10",
     "i18next": "^24.2.2",
+    "ical.js": "^2.1.0",
     "js-cookie": "^3.0.5",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.484.0",
@@ -32,7 +36,8 @@
     "react-slick": "^0.30.3",
     "slick-carousel": "^1.8.1",
     "socket.io-client": "^4.8.1",
-    "styled-components": "^6.1.15"
+    "styled-components": "^6.1.15",
+    "sweetalert2": "^11.17.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",

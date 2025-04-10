@@ -4,26 +4,27 @@ import dayjs from "dayjs";
 import "dayjs/locale/th";
 import { GetArticlesById } from "../../../../services/https";
 import { ArticlesInterface } from "../../../../interfaces/IArticle";
-import { Card, Button, Typography, Spin } from "antd";
 import { useTranslation } from "react-i18next";
+import { FaArrowLeft, FaCalendarAlt, FaShareAlt, FaBookmark, FaHeart } from "react-icons/fa";
+import './article_detail.css'
 
 dayjs.locale("th");
-
-const { Title, Paragraph } = Typography;
 
 export default function ArticleDetails() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { id } = useParams<{ id: any }>();
-  const [articles, setArticles] = useState<ArticlesInterface | null>(null);
+  const [article, setArticle] = useState<ArticlesInterface | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
 
   useEffect(() => {
     const fetchArticleById = async (id: string) => {
       if (!id) return;
       try {
         const response = await GetArticlesById(id);
-        setArticles(response.data);
+        setArticle(response.data);
       } catch (error) {
         console.error("Error fetching article details:", error);
       } finally {
@@ -34,68 +35,65 @@ export default function ArticleDetails() {
   }, [id]);
 
   return (
-    <div style={{ background: "#E3F2FD", minHeight: "100vh", padding: "30px" }}>
-      <Card
-        style={{
-          maxWidth: "800px",
-          margin: "auto",
-          padding: "20px",
-          borderRadius: "12px",
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-          background: "white",
-        }}
-      >
-        {loading ? (
-          <div style={{ textAlign: "center", padding: "50px 0" }}>
-            <Spin size="large" />
-            <Paragraph>{t("loading")}.</Paragraph>
+    <div className="artdet-container">
+      {loading ? (
+        <div className="artdet-loading">
+          <div className="artdet-spinner"></div>
+          <p>{t("loading")}</p>
+        </div>
+      ) : article ? (
+        <div className="artdet-card">
+          <div className="artdet-header">
+            <button onClick={() => navigate(-1)} className="artdet-back-btn">
+              <FaArrowLeft className="artdet-back-icon" />
+              <span>{t("back")}</span>
+            </button>
+            <div className="artdet-actions">
+              <button 
+                className={`artdet-action-btn ${isBookmarked ? 'artdet-active' : ''}`}
+                onClick={() => setIsBookmarked(!isBookmarked)}
+              >
+                <FaBookmark className="artdet-action-icon" />
+              </button>
+              <button 
+                className={`artdet-action-btn ${isLiked ? 'artdet-active' : ''}`}
+                onClick={() => setIsLiked(!isLiked)}
+              >
+                <FaHeart className="artdet-action-icon" />
+              </button>
+              <button className="artdet-action-btn">
+                <FaShareAlt className="artdet-action-icon" />
+              </button>
+            </div>
           </div>
-        ) : articles ? (
-          <>
-            <Title level={2} style={{ color: "#0D47A1", textAlign: "center" }}>
-              {articles.title}
-            </Title>
 
+          <div className="artdet-img-container">
             <img
-              src={articles.Image}
-              alt={articles.title}
-              style={{
-                width: "100%",
-                objectFit: "cover",
-                borderRadius: "10px",
-                marginBottom: "20px",
-              }}
+              src={article.Image}
+              alt={article.title}
+              className="artdet-img"
             />
+          </div>
+          <div className="artdet-content">
+            <h1 className="artdet-title">{article.title}</h1>
+            
+            <div className="artdet-meta">
+              <div className="artdet-meta-item">
+                <FaCalendarAlt className="artdet-meta-icon" />
+                <span>{t("upload_date")}: {dayjs(article.created_at).format("DD MMMM YYYY HH:mm")}</span>
+              </div>
+            </div>
 
-            <Paragraph style={{ fontSize: "1rem", color: "#37474F", textAlign: "justify" }}>
-              {articles.content}
-            </Paragraph>
-
-            <Paragraph style={{ fontSize: "1rem", color: "#FF5722", fontWeight: "bold" }}>
-              📅 {t("upload_date")} : {dayjs(articles.created_at).format("DD/MM/YYYY HH:mm")}
-            </Paragraph>
-            <Button
-              type="primary"
-              onClick={() => navigate(-1)}
-              style={{
-                marginTop: "20px",
-                background: "#0D47A1",
-                borderColor: "#0D47A1",
-                fontWeight: "bold",
-                width: "100%",
-                padding: "10px",
-                fontSize: "1.2rem",
-              }}
-            >
-              🔙 {t("back")}
-            </Button>
-          </>
-        ) : (
-          <Paragraph style={{ textAlign: "center", fontSize: "1.2rem", color: "red" }}>
-            {t("nodata")}
-          </Paragraph>
-        )}
-      </Card>
+            <div className="artdet-text">
+              <p>{article.content}</p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="artdet-empty">
+          <p>{t("nodata")}</p>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,0 +1,256 @@
+/* IT Knowledge Component Styles */
+.knowledge-container {
+    padding: 2rem;
+    border-radius: 30px;
+    max-width: 90%;
+    margin: 0 auto;
+  }
+  
+  .knowledge-header-right {
+    display: flex;
+    justify-content: flex-end;
+    padding-right: 20px;
+  }
+  
+  .knowledge-card {
+    background: white;
+    border-radius: 15px;
+    margin-bottom: 1.8rem;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    overflow: hidden;
+    position: relative;
+    border-left: 4px solid #4a6bff;
+  }
+  
+  .knowledge-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+  }
+  
+  .knowledge-card.expanded {
+    border-top-color: #ff6b6b;
+  }
+  
+  .knowledge-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #4a6bff, #6a5acd, #6bffee, #ffd166);
+    background-size: 400% 400%;
+    animation: gradientBG 8s ease infinite;
+  }
+  
+  @keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  
+  .knowledge-card-header {
+    padding: 1.5rem 1.5rem 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  
+  .knowledge-icon {
+    font-size: 2rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.6rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .knowledge-card:hover .knowledge-icon {
+    transform: rotate(15deg) scale(1.1);
+  }
+  
+  .knowledge-title {
+    margin: 0;
+    color: #2c3e50;
+    font-size: 1.5rem;
+    flex-grow: 1;
+    background: linear-gradient(to right, #6a5acd, #4a6bff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 700;
+  }
+  
+  .knowledge-meta {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+    width: 100%;
+  }
+  
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #7f8c8d;
+    font-size: 0.9rem;
+    background: #f8f9fa;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+  }
+  
+  .meta-icon {
+    color: #6a5acd;
+  }
+  
+  .knowledge-content {
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+  }
+  
+  @media (min-width: 768px) {
+    .knowledge-content {
+      flex-direction: row;
+      gap: 2rem;
+    }
+  }
+  
+  .image-container {
+    position: relative;
+    flex: 0 0 220px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .knowledge-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+  
+  .image-container:hover {
+    transform: perspective(1000px) rotateX(5deg);
+  }
+  
+  .image-container:hover .knowledge-image {
+    transform: scale(1.1);
+  }
+  
+  .image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(106, 90, 205, 0.2), rgba(74, 107, 255, 0.2));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .image-container:hover .image-overlay {
+    opacity: 1;
+  }
+  
+  .text-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .knowledge-paragraph {
+    top: -50px;
+    color: #34495e;
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+    position: relative;
+    max-height: 120px;
+    overflow: hidden;
+    transition: max-height 0.6s ease;
+    font-size: 1rem;
+  }
+  
+  .knowledge-paragraph.expanded {
+    max-height: 2000px;
+  }
+  
+  .knowledge-paragraph::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 20px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), white);
+    transition: opacity 0.3s ease;
+  }
+  
+  .knowledge-paragraph.expanded::after {
+    opacity: 0;
+  }
+  
+  .toggle-button {
+    align-self: flex-start;
+    background: linear-gradient(45deg, #6a5acd, #4a6bff);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 30px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 12px rgba(106, 90, 205, 0.2);
+    font-size: 0.9rem;
+    margin-top: auto;
+  }
+  
+  .toggle-button:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 16px rgba(106, 90, 205, 0.3);
+    background: linear-gradient(45deg, #4a6bff, #6a5acd);
+  }
+  
+  .button-icon {
+    transition: transform 0.3s ease;
+  }
+  
+  .toggle-button:hover .button-icon {
+    transform: translateY(3px);
+  }
+  
+  /* Different category colors */
+  .knowledge-card[data-category="Programming"] {
+    border-top-color: #6a5acd;
+  }
+  
+  .knowledge-card[data-category="Networking"] {
+    border-top-color: #4a6bff;
+  }
+  
+  .knowledge-card[data-category="Security"] {
+    border-top-color: #ff6b6b;
+  }
+  
+  .knowledge-card[data-category="Cloud"] {
+    border-top-color: #2ecc71;
+  }
+  
+  /* Pulse animation for new items */
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(106, 90, 205, 0.4); }
+    70% { box-shadow: 0 0 0 15px rgba(106, 90, 205, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(106, 90, 205, 0); }
+  }
+  
+  .knowledge-card:first-child {
+    animation: pulse 2s infinite;
+  }

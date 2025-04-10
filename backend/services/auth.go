@@ -1,11 +1,10 @@
 package services
 
 import (
-	"errors"
 	"net/http"
 	"time"
 
-	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 	"github.com/webapp/config"
 	"github.com/webapp/entity"
@@ -13,12 +12,12 @@ import (
 
 // JwtWrapper wraps the signing key and the issuer
 type JwtWrapper struct {
-	SecretKey       string
-	Issuer          string
+	SecretKey         string
+	Issuer            string
 	ExpirationHours int64
 }
 
-// JwtClaim adds email as a claim to the token
+// JwtClaim adds user info as claims to the token
 type JwtClaim struct {
 	UserID   uint   `json:"user_id"`
 	Username string `json:"username"`
@@ -26,10 +25,10 @@ type JwtClaim struct {
 	jwt.StandardClaims
 }
 
-// ✅ ฟังก์ชันสร้าง JWT และส่งผ่าน `HttpOnly Secure Cookie`
-func (j *JwtWrapper) GenerateToken(w http.ResponseWriter, userID uint, Username string, role string) error {
+// GenerateToken creates and sets a signed JWT token and session ID in cookies
+func (j *JwtWrapper) GenerateToken(w http.ResponseWriter, userID uint, username string, role string) error {
 	claims := &JwtClaim{
-		Username: Username,
+		Username: username,
 		Role:     role,
 		UserID:   userID,
 		StandardClaims: jwt.StandardClaims{
@@ -44,14 +43,13 @@ func (j *JwtWrapper) GenerateToken(w http.ResponseWriter, userID uint, Username 
 		return err
 	}
 
-	// ✅ ตั้งค่า HttpOnly Secure Cookie
 	http.SetCookie(w, &http.Cookie{
 		Name:     "auth_token",
 		Value:    signedToken,
 		HttpOnly: true,
 		Secure:   false,
 		SameSite: http.SameSiteLaxMode,
-		Expires:  time.Now().Add(time.Hour * time.Duration(j.ExpirationHours)),
+		// Expires:  time.Now().Add(time.Hour * time.Duration(j.ExpirationHours)),
 	})
 
 	sessionID := uuid.New().String()
@@ -61,12 +59,13 @@ func (j *JwtWrapper) GenerateToken(w http.ResponseWriter, userID uint, Username 
 		HttpOnly: true,
 		Secure:   false,
 		SameSite: http.SameSiteLaxMode,
-		Expires:  time.Now().Add(24 * time.Hour),
+		// Expires:  time.Now().Add(24 * time.Hour),
 	})
 
 	return nil
 }
 
+// ValidateToken parses and validates the JWT token
 func (j *JwtWrapper) ValidateToken(tokenString string) (*JwtClaim, error) {
 	token, err := jwt.ParseWithClaims(
 		tokenString,
@@ -81,19 +80,13 @@ func (j *JwtWrapper) ValidateToken(tokenString string) (*JwtClaim, error) {
 
 	claims, ok := token.Claims.(*JwtClaim)
 	if !ok || !token.Valid {
-		return nil, errors.New("invalid JWT token")
-	}
-
-	// ✅ ตรวจสอบ JWT หมดอายุหรือยัง
-	if claims.ExpiresAt < time.Now().Unix() {
-		return nil, errors.New("JWT is expired")
+		return nil, err
 	}
 
 	return claims, nil
 }
 
-type UserService struct {
-}
+type UserService struct{}
 
 func (s *UserService) GetUserByID(id uint) (*entity.Users, error) {
 	db := config.DB()

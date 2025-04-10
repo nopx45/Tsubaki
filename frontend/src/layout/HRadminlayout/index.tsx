@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { Link, Outlet } from "react-router-dom";
-import { FileOutlined, NotificationOutlined, ReadOutlined, RocketOutlined, WarningOutlined } from "@ant-design/icons";
+import { DashboardOutlined, FileOutlined, NotificationOutlined, ReadOutlined, RocketOutlined, WarningOutlined } from "@ant-design/icons";
 import { Layout, Menu, Button, message, Typography } from "antd";
 import logo from "../../assets/logo.png";
 import { Logouts, stopvisit } from "../../services/https";
+import Swal from "sweetalert2";
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -15,10 +16,16 @@ const HRadminLayout: React.FC = () => {
     try {
       await stopvisit();
       await Logouts();
-      messageApi.success("Logout successful");
-      setTimeout(() => {
-        location.href = "/signin";
-      }, 2000);
+      localStorage.setItem("isLoggedIn", "false");
+      await Swal.fire({
+        icon: "success",
+        title: "ออกจากระบบสำเร็จ",
+        text: "กำลังเปลี่ยนเส้นทาง...",
+        timer: 1800,
+        showConfirmButton: false,
+        timerProgressBar: true,
+      });
+      location.href = "/";
     } catch (error) {
       console.error("Logout error:", error);
       messageApi.error("Logout failed");
@@ -35,6 +42,9 @@ const HRadminLayout: React.FC = () => {
         </div>
 
         <Menu theme="dark" mode="inline">
+          <Menu.Item key="dashboard" icon={<DashboardOutlined />}>
+            <Link to="/admin">แดชบอร์ด</Link>
+          </Menu.Item>
           <Menu.Item key="file" icon={<FileOutlined />}>
             <Link to="/admin/file">ไฟล์</Link>
           </Menu.Item>

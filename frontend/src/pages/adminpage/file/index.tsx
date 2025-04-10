@@ -13,14 +13,14 @@ import {
 } from "antd";
 import { PlusOutlined, DeleteOutlined, DownloadOutlined } from "@ant-design/icons";
 import { GetFiles, DeleteFilesById, DownloadFile } from "../../../services/https/index";
-import FileUpload from "./create"; // นำเข้า FileUpload
+import FileUpload from "./create";
 
 const { Title } = Typography;
 
 function Files() {
   const [files, setFiles] = useState<{ id: string; filename?: string; filepath?: string; filetype?: string }[]>([]);
   const [messageApi, contextHolder] = message.useMessage();
-  const [isModalOpen, setIsModalOpen] = useState(false); // สร้าง state สำหรับ Modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchFiles = async () => {
     try {

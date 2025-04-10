@@ -1,15 +1,40 @@
 import { AnnouncementsInterface } from "../../interfaces/IAnnouncement";
 import { ChangePasswordInterface } from "../../interfaces/IChangePassword";
+import { EventInterface } from "../../interfaces/IEvent";
 import { FilesInterface } from "../../interfaces/IFile";
 import { FormsInterface } from "../../interfaces/IForm";
 import { LinksInterface } from "../../interfaces/ILink";
 import { SectionsInterface } from "../../interfaces/ISection";
 import { UsersInterface } from "../../interfaces/IUser";
 import { SignInInterface } from "../../interfaces/SignIn";
-
 import axios from "axios";
+import Swal from "sweetalert2";
+
 const apiUrl = "http://tat-webcenter:8080";
 axios.defaults.withCredentials = true;
+
+axios.interceptors.response.use(
+  response => response,
+  error => {
+    console.log(error.response?.data?.error)
+    if (error.response?.data?.error === "SessionExpired") {
+      Swal.fire({
+        icon: "warning",
+        title: "Session หมดอายุ",
+        text: "กรุณาเข้าสู่ระบบใหม่อีกครั้ง",
+        confirmButtonText: "ตกลง",
+        confirmButtonColor: "#3085d6"
+      }).then(() => {
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href=("/");
+        Logouts();
+      });
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 async function getAuthToken() {
   try {
@@ -535,7 +560,7 @@ async function startvisit() {
 
 async function stopvisit() {
   return await axios
-    .post(`${apiUrl}/exit`,{withCredentials: true})
+    .post(`${apiUrl}/exit`, null, { withCredentials: true })
     .then((res) => res)
     .catch((e) => e.response);
 }
@@ -655,6 +680,72 @@ async function DeleteMessagesById(id: string) {
     .catch((e) => e.response);
 }
 
+// Calendar
+async function UploadICS(data: FormData) {
+  return await axios
+    .post(`${apiUrl}/upload-ics`,data)
+    .then((res) => res)
+    .catch((e) => e.response);
+}
+
+async function GetEvents() {
+  return await axios
+    .get(`${apiUrl}/events`)
+    .then((res) => res)
+    .catch((e) => e.response);
+}
+
+async function UpdateEvents(id: string, data: EventInterface) {
+  return await axios
+    .put(`${apiUrl}/event/${id}`, data)
+    .then((res) => res)
+    .catch((e) => e.response);
+}
+
+async function DeleteEvents(id: string) {
+  return await axios
+    .delete(`${apiUrl}/event/${id}`)
+    .then((res) => res)
+    .catch((e) => e.response);
+}
+
+async function CreateEvents(data: EventInterface) {
+  return await axios
+    .post(`${apiUrl}/event`, data)
+    .then((res) => res)
+    .catch((e) => e.response);
+}
+
+async function GetMarquee() {
+  try {
+    const res = await axios.get(`${apiUrl}/marquee`);
+    return {
+      success: true,
+      message: res.data.message,
+    };
+  } catch (e: any) {
+    return {
+      success: false,
+      error: e.response?.data?.error || "โหลดข้อความไม่สำเร็จ",
+    };
+  }
+}
+
+async function UpdateMarquee(message: string) {
+  try {
+    const res = await axios.post(`${apiUrl}/marquee`, { message });
+    return {
+      success: true,
+      message: res.data.message,
+    };
+  } catch (e: any) {
+    return {
+      success: false,
+      error: e.response?.data?.error || "เกิดข้อผิดพลาด",
+    };
+  }
+}
+
 export {
   // User API
   getAuthToken,
@@ -755,4 +846,13 @@ export {
   GetMessages,
   GetMessagesById,
   DeleteMessagesById,
+
+  UploadICS,
+  GetEvents,
+  CreateEvents,
+  UpdateEvents,
+  DeleteEvents,
+
+  GetMarquee,
+  UpdateMarquee,
 };

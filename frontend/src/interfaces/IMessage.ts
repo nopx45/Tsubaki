@@ -1,5 +1,6 @@
 export interface MessagesInterface {
-    created_at?: string;
+    id?: string;
+    UpdatedAt?: string;
     from?: string;
     role?: string;
     content?: string;

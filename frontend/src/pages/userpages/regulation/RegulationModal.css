@@ -1,0 +1,348 @@
+/* Modal Container */
+.regulation-modal .ant-modal-content {
+  border-radius: 15px;
+  overflow: hidden;
+  padding: 0;
+  border: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.modal-container {
+  background: #f8fafc;
+  min-height: 100%;
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Modal Header */
+.modal-header {
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+/* Modal Body */
+.modal-body {
+  margin-bottom: 20px;
+  flex: 1;
+}
+
+/* Card Styling */
+.regulation-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.regulation-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Table Container */
+.table-container {
+  overflow-x: auto;
+  flex: 1;
+}
+
+/* Table Styling */
+.regulation-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 14px;
+}
+
+.regulation-table th {
+  background: linear-gradient(135deg, #0D47A1 0%, #1976D2 100%);
+  color: white;
+  padding: 15px;
+  font-weight: 500;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  border: none;
+  text-align: left;
+  position: sticky;
+  top: 0;
+}
+
+.regulation-table th:first-child {
+  border-top-left-radius: 10px;
+}
+
+.regulation-table th:last-child {
+  border-top-right-radius: 10px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-icon {
+  font-size: 0.9rem;
+}
+
+/* Table Rows */
+.table-row {
+  transition: all 0.2s ease;
+  background-color: white;
+}
+
+.table-row:nth-child(even) {
+  background-color: #f8fafc;
+}
+
+.table-row:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.table-row td {
+  padding: 12px 15px;
+  vertical-align: middle;
+  border-bottom: 1px solid #f0f4f8;
+}
+
+/* File Link Styling */
+.file-link {
+  color: #0D47A1;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 5px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.file-link:hover {
+  color: #1976D2;
+  text-decoration: underline;
+}
+
+.file-icon {
+  font-size: 0.9rem;
+  color: #42A5F5;
+}
+
+.file-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
+}
+
+.external-icon {
+  opacity: 0;
+  transition: all 0.2s ease;
+  font-size: 0.8rem;
+  color: #64B5F6;
+  margin-left: auto;
+}
+
+.file-link:hover .external-icon {
+  opacity: 1;
+}
+
+/* Date Cell */
+.date-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.date-icon {
+  font-size: 0.9rem;
+  color: #42A5F5;
+}
+
+/* Download Button */
+.download-btn {
+  background: linear-gradient(135deg, #0D47A1 0%, #42A5F5 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.download-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(13, 71, 161, 0.3);
+  color: white;
+}
+
+.download-icon {
+  font-size: 0.8rem;
+}
+
+/* Modal Close Icon */
+.modal-close-icon {
+  font-size: 1.2rem;
+  color: #666;
+  transition: all 0.2s ease;
+}
+
+.modal-close-icon:hover {
+  color: #333;
+  transform: rotate(90deg);
+}
+
+/* Close Button */
+.close-btn {
+  background: #f0f4f8;
+  color: #666;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  margin: 0 auto;
+}
+
+.close-btn:hover {
+  background: #e3e9f2;
+  color: #333;
+}
+
+.close-icon {
+  font-size: 0.9rem;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  color: #CFD8DC;
+  margin-bottom: 15px;
+}
+
+.empty-state h5 {
+  color: #546E7A;
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+}
+
+.empty-state p {
+  color: #90A4AE;
+  font-size: 0.9rem;
+}
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  flex: 1;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(13, 71, 161, 0.1);
+  border-radius: 50%;
+  border-top-color: #0D47A1;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-container p {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* Modal Footer */
+.modal-footer {
+  text-align: center;
+  padding-top: 20px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1024px) {
+  .file-name {
+    max-width: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .modal-container {
+    padding: 15px;
+  }
+  
+  .regulation-table th {
+    padding: 10px 8px;
+    font-size: 0.75rem;
+  }
+  
+  .regulation-table td {
+    padding: 8px 10px;
+    font-size: 0.85rem;
+  }
+  
+  .file-name {
+    max-width: 150px;
+  }
+  
+  .download-btn {
+    padding: 6px 8px;
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .modal-header {
+    margin-bottom: 15px;
+  }
+  
+  .regulation-table th {
+    padding: 8px 5px;
+  }
+  
+  .regulation-table td {
+    padding: 6px 5px;
+  }
+  
+  .file-name {
+    max-width: 100px;
+  }
+  
+  .header-icon, .file-icon, .date-icon {
+    display: none;
+  }
+  
+  .header-content {
+    justify-content: center;
+  }
+}

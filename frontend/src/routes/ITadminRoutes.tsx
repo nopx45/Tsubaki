@@ -1,6 +1,8 @@
 import { lazy } from "react";
 import { RouteObject } from "react-router-dom";
 import Loadable from "../components/third-patry/Loadable";
+import Carlendar from "../pages/adminpage/carlendar";
+import Dashboard from "../pages/adminpage/dashboard";
 
 const NotPage = Loadable(lazy(() => import("../pages/notpage")));
 
@@ -19,6 +21,10 @@ const ITadminRoutes = (isLoggedIn: boolean): RouteObject => {
     path: "admin/",
     element: isLoggedIn ? <FullLayout /> : <MainPages />,
     children: [
+      {
+        index: true,
+        element: <Dashboard />,
+      },
         {
             path: "it-knowledge",
             children: [
@@ -52,6 +58,10 @@ const ITadminRoutes = (isLoggedIn: boolean): RouteObject => {
               element: <EditSecurity />,
             },
           ],
+        },
+        {
+          path: "calendar",
+          element: <Carlendar />,
         },
         {
             path: "*",

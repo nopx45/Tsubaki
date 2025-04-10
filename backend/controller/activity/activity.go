@@ -140,9 +140,27 @@ func Delete(c *gin.Context) {
 
 	id := c.Param("id")
 	db := config.DB()
+
+	var img entity.Activity
+	if err := db.First(&img, id).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "file not found"})
+		return
+	}
+	var count int64
+	db.Model(&entity.Activity{}).
+		Where("image = ? AND id != ?", img.Image, id).
+		Count(&count)
+	if count == 0 {
+		// ไม่มีเรคคอร์ดอื่นใช้ไฟล์นี้ => ปลอดภัยที่จะลบ
+		if err := os.Remove(img.Image); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete Image from disk"})
+			return
+		}
+	}
+	// ลบเรคคอร์ดในฐานข้อมูล
 	if tx := db.Exec("DELETE FROM activities WHERE id = ?", id); tx.RowsAffected == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "id not found"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Deleted successful"})
+	c.JSON(http.StatusOK, gin.H{"message": "Deleted successfully"})
 }

@@ -44,6 +44,9 @@ const LogUserSocket = Loadable(lazy(() => import("../pages/adminpage/logs/user_s
 const LogPageVisitor = Loadable(lazy(() => import("../pages/adminpage/logs/page_visitor_log")));
 const LogMessage = Loadable(lazy(() => import("../pages/adminpage/logs/massage_socket_log")));
 
+//Calendar
+const Carlendar = Loadable(lazy(() => import("../pages/adminpage/carlendar")));
+
 const UploadFileWrapper = () => {
   const navigate = useNavigate();
 
@@ -245,6 +248,10 @@ const AdminRoutes = (isLoggedIn: boolean): RouteObject => {
       {
         path: "log-message",
         element: <LogMessage />,
+      },
+      {
+        path: "calendar",
+        element: <Carlendar />,
       },
       {
         path: "*",

@@ -1,293 +1,505 @@
 import { useEffect } from "react";
-import {
-  Space,
-  Button,
-  Col,
-  Row,
-  Divider,
-  Form,
-  Input,
-  Card,
-  message,
-  Select,
-  Typography,
-} from "antd";
-import { PlusOutlined } from "@ant-design/icons";
 import { UsersInterface } from "../../../../interfaces/IUser";
 import { GetUsersById, UpdateUsersById } from "../../../../services/https/index";
 import { useNavigate, Link, useParams } from "react-router-dom";
-
-const { Title } = Typography;
+import { FiUser, FiMail, FiKey, FiSave, FiArrowLeft, FiLock, FiShield, FiPhone } from "react-icons/fi";
+import { RiAdminFill } from "react-icons/ri";
 
 function CustomerEdit() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: any }>();
-  const [messageApi, contextHolder] = message.useMessage();
-  const [form] = Form.useForm(); // สำหรับข้อมูลทั่วไป
-  const [resetForm] = Form.useForm(); // สำหรับ reset password
-
+  
   const getUserById = async (id: string) => {
     let res = await GetUsersById(id);
     if (res.status == 200) {
-      form.setFieldsValue({
-        first_name: res.data.first_name,
-        last_name: res.data.last_name,
-        email: res.data.email,
-        username: res.data.username,
-        role: res.data.role,
-      });
+      // Set form values
+      const form = document.getElementById('editUserForm') as HTMLFormElement;
+      if (form) {
+        (form.elements.namedItem("first_name") as HTMLInputElement).value = res.data.first_name;
+        (form.elements.namedItem("last_name") as HTMLInputElement).value = res.data.last_name;
+        (form.elements.namedItem("email") as HTMLInputElement).value = res.data.email;
+        (form.elements.namedItem("username") as HTMLInputElement).value = res.data.username;
+        (form.elements.namedItem("phone") as HTMLInputElement).value = res.data.phone;
+        (form.elements.namedItem("role") as HTMLSelectElement).value = res.data.role;        
+      }
     } else {
-      messageApi.error("ไม่พบข้อมูลผู้ใช้");
+      showNotification("error", "ไม่พบข้อมูลผู้ใช้");
       setTimeout(() => navigate("/admin/customer"), 2000);
     }
   };
 
-  const onFinish = async (values: UsersInterface) => {
+  const onFinish = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const form = e.currentTarget as HTMLFormElement;
+    const values = {
+      first_name: (form.elements.namedItem("first_name") as HTMLInputElement).value,
+      last_name: (form.elements.namedItem("last_name") as HTMLInputElement).value,
+      email: (form.elements.namedItem("email") as HTMLInputElement).value,
+      username: (form.elements.namedItem("username") as HTMLInputElement).value,
+      phone: (form.elements.namedItem("phone") as HTMLInputElement).value,
+      role: (form.elements.namedItem("role") as HTMLInputElement).value,
+    };
+
     const res = await UpdateUsersById(id, values);
     if (res.status === 200) {
-      messageApi.success(res.data.message);
+      showNotification("success", res.data.message);
       setTimeout(() => navigate("/admin/customer"), 2000);
     } else {
-      messageApi.error(res.data.error);
+      showNotification("error", res.data.error);
     }
   };
 
-  const onFinish_reset = async (values: { reset_password?: string; confirm_reset_password?: string }) => {
-    if (values.reset_password !== values.confirm_reset_password) {
-      messageApi.error("รหัสผ่านไม่ตรงกัน");
+  const onFinishReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const form = e.currentTarget as HTMLFormElement;
+    const password = (form.elements.namedItem("reset_password") as HTMLInputElement).value;
+    const confirmPassword = (form.elements.namedItem("confirm_reset_password") as HTMLInputElement).value;
+
+    if (password !== confirmPassword) {
+      showNotification("error", "รหัสผ่านไม่ตรงกัน");
       return;
     }
 
     const payload: Partial<UsersInterface> = {
-      password: values.reset_password,
+      password: password,
       force_password_change: true,
-      
     };
 
     const res = await UpdateUsersById(id, payload);
     if (res.status === 200) {
-      messageApi.success(res.data.message);
+      showNotification("success", res.data.message);
       setTimeout(() => navigate("/admin/customer"), 2000);
     } else {
-      messageApi.error(res.data.error);
+      showNotification("error", res.data.error);
     }
+  };
+
+  const showNotification = (type: string, message: string) => {
+    const notification = document.createElement("div");
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.classList.add("show");
+    }, 10);
+    
+    setTimeout(() => {
+      notification.classList.remove("show");
+      setTimeout(() => {
+        document.body.removeChild(notification);
+      }, 300);
+    }, 3000);
   };
 
   useEffect(() => {
     getUserById(id);
-  }, []);
+  }, [id]);
 
   return (
-    <div style={{ background: "#E3F2FD", minHeight: "100vh", padding: "30px" }}>
-      {contextHolder}
-
-      {/* Form แก้ไขข้อมูล */}
-      <Row>
-        <Card
-          style={{
-            borderRadius: "12px",
-            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-            background: "white",
-            padding: "20px",
-            maxWidth: "800px",
-            margin: "auto",
-          }}
-        >
-          <Title level={3} style={{ color: "#0D47A1", textAlign: "center" }}>
-            แก้ไขข้อมูลผู้ใช้
-          </Title>
-          <Divider />
-
-          <Form
-            name="editUserForm"
-            form={form}
-            layout="vertical"
-            onFinish={onFinish}
-            autoComplete="off"
-          >
-            <Row gutter={[16, 16]}>
-              <Col xs={24} sm={12}>
-                <Form.Item
-                  label="ชื่อจริง"
+    <div className="customer-edit-container">
+      {/* Edit User Form */}
+      <div className="form-card">
+        <div className="form-header">
+          <FiUser className="header-icon" />
+          <h2>แก้ไขข้อมูลผู้ใช้</h2>
+        </div>
+        
+        <form id="editUserForm" onSubmit={onFinish} className="user-form">
+          <div className="form-grid">
+            <div className="form-group">
+              <label htmlFor="first_name">
+                <FiUser className="input-icon" />
+                ชื่อจริง
+              </label>
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  id="first_name"
                   name="first_name"
-                  rules={[{ required: true, message: "กรุณากรอกชื่อ !" }]}
-                >
-                  <Input placeholder="กรอกชื่อจริง" />
-                </Form.Item>
-              </Col>
+                  placeholder="กรอกชื่อจริง"
+                  required
+                />
+                <span className="input-focus"></span>
+              </div>
+            </div>
 
-              <Col xs={24} sm={12}>
-                <Form.Item
-                  label="นามสกุล"
+            <div className="form-group">
+              <label htmlFor="last_name">
+                <FiUser className="input-icon" />
+                นามสกุล
+              </label>
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  id="last_name"
                   name="last_name"
-                  rules={[{ required: true, message: "กรุณากรอกนามสกุล !" }]}
-                >
-                  <Input placeholder="กรอกนามสกุล" />
-                </Form.Item>
-              </Col>
+                  placeholder="กรอกนามสกุล"
+                  required
+                />
+                <span className="input-focus"></span>
+              </div>
+            </div>
 
-              <Col xs={24} sm={12}>
-                <Form.Item
-                  label="อีเมล"
+            <div className="form-group">
+              <label htmlFor="email">
+                <FiMail className="input-icon" />
+                อีเมล
+              </label>
+              <div className="input-wrapper">
+                <input
+                  type="email"
+                  id="email"
                   name="email"
-                  rules={[
-                    { type: "email", message: "รูปแบบอีเมลไม่ถูกต้อง !" },
-                    { required: true, message: "กรุณากรอกอีเมล !" },
-                  ]}
-                >
-                  <Input placeholder="กรอกอีเมล" />
-                </Form.Item>
-              </Col>
+                  placeholder="กรอกอีเมล"
+                  required
+                />
+                <span className="input-focus"></span>
+              </div>
+            </div>
 
-              <Col xs={24} sm={12}>
-                <Form.Item
-                  label="ชื่อผู้ใช้"
+            <div className="form-group">
+              <label htmlFor="username">
+                <FiUser className="input-icon" />
+                ชื่อผู้ใช้
+              </label>
+              <div className="input-wrapper">
+                <input
+                  type="text"
+                  id="username"
                   name="username"
-                  rules={[{ required: true, message: "กรุณากรอกชื่อผู้ใช้ !" }]}
-                >
-                  <Input placeholder="กรอกชื่อผู้ใช้" />
-                </Form.Item>
-              </Col>
+                  placeholder="กรอกชื่อผู้ใช้"
+                  required
+                />
+                <span className="input-focus"></span>
+              </div>
+            </div>
 
-              <Col xs={24} sm={12}>
-                <Form.Item
-                  label="สิทธิ์การใช้งาน"
-                  name="role"
-                  rules={[{ required: true, message: "กรุณาเลือกสิทธิ์ของ User !" }]}
-                >
-                  <Select
-                    placeholder="เลือกสิทธิ์การใช้งาน"
-                    options={[
-                      { value: "admin", label: "Admin" },
-                      { value: "superuser", label: "SuperUser" },
-                      { value: "user", label: "User" },
-                    ]}
-                    style={{ borderRadius: "6px", width: "100%" }}
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
+            <div className="form-group">
+              <label htmlFor="phone">
+                <FiPhone className="input-icon" />
+                เบอร์ที่ทำงาน
+              </label>
+              <div className="input-wrapper">
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  placeholder="กรอกเบอร์ที่ทำงาน"
+                  required
+                />
+                <span className="input-focus"></span>
+              </div>
+            </div>
 
-            <Row justify="end">
-              <Col>
-                <Form.Item>
-                  <Space>
-                    <Link to="/admin/customer">
-                      <Button htmlType="button" style={{ borderRadius: "6px" }}>
-                        ยกเลิก
-                      </Button>
-                    </Link>
-                    <Button
-                      type="primary"
-                      htmlType="submit"
-                      icon={<PlusOutlined />}
-                      style={{
-                        background: "#1976D2",
-                        borderColor: "#1976D2",
-                        borderRadius: "6px",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      บันทึก
-                    </Button>
-                  </Space>
-                </Form.Item>
-              </Col>
-            </Row>
-          </Form>
-        </Card>
-      </Row>
+            <div className="form-group">
+              <label htmlFor="role">
+                <RiAdminFill className="input-icon" />
+                สิทธิ์การใช้งาน
+              </label>
+              <div className="select-wrapper">
+                <select id="role" name="role" required>
+                  <option value="">เลือกสิทธิ์การใช้งาน</option>
+                  <option value="admin">Admin</option>
+                  <option value="adminhr">Admin HR</option>
+                  <option value="adminit">Admin IT</option>
+                  <option value="user">User</option>
+                </select>
+                <span className="select-focus"></span>
+              </div>
+            </div>
+          </div>
 
-      {/* Form Reset Password */}
-      <Divider />
-      <Card
-        style={{
-          borderRadius: "12px",
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-          background: "white",
-          padding: "20px",
-          maxWidth: "800px",
-          margin: "auto",
-        }}
-      >
-        <Form
-          name="resetPasswordForm"
-          form={resetForm}
-          layout="vertical"
-          onFinish={onFinish_reset}
-          autoComplete="off"
-        >
-          <Title level={3} style={{ color: "#0D47A1", textAlign: "center" }}>
-            Reset รหัสผ่านผู้ใช้
-          </Title>
-          <Divider />
-          <Row justify="center" gutter={16}>
-            <Col xs={24} style={{ display: "flex", justifyContent: "center" }}>
-              <Form.Item
-                label="รหัสผ่านใหม่"
-                name="reset_password"
-                rules={[
-                  {
-                    validator: async (_, value) => {
-                      if (value && value.length < 6) {
-                        return Promise.reject("รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร");
-                      }
-                      return Promise.resolve();
-                    },
-                  },
-                ]}
-              >
-                <Input.Password style={{ width: "300px" }} />
-              </Form.Item>
-            </Col>
-            <Col xs={24} style={{ display: "flex", justifyContent: "center" }}>
-              <Form.Item
-                label="ยืนยันรหัสผ่านใหม่"
-                name="confirm_reset_password"
-                dependencies={["reset_password"]}
-                rules={[
-                  ({ getFieldValue }) => ({
-                    validator(_, value) {
-                      if (!value || getFieldValue("reset_password") === value) {
-                        return Promise.resolve();
-                      }
-                      return Promise.reject("รหัสผ่านไม่ตรงกัน");
-                    },
-                  }),
-                ]}
-              >
-                <Input.Password style={{ width: "300px" }} />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row justify="end">
-            <Col>
-              <Form.Item>
-                <Space>
-                  <Link to="/admin/customer">
-                    <Button htmlType="button" style={{ borderRadius: "6px" }}>
-                      ยกเลิก
-                    </Button>
-                  </Link>
-                  <Button
-                    type="primary"
-                    htmlType="submit"
-                    icon={<PlusOutlined />}
-                    style={{
-                      background: "#1976D2",
-                      borderColor: "#1976D2",
-                      borderRadius: "6px",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    บันทึก
-                  </Button>
-                </Space>
-              </Form.Item>
-            </Col>
-          </Row>
-        </Form>
-      </Card>
+          <div className="form-actions">
+            <Link to="/admin/customer" className="cancel-button">
+              <FiArrowLeft className="button-icon" />
+              ยกเลิก
+            </Link>
+            <button type="submit" className="submit-button">
+              <FiSave className="button-icon" />
+              บันทึก
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Reset Password Form */}
+      <div className="form-card password-form">
+        <div className="form-header">
+          <FiLock className="header-icon" />
+          <h2>Reset รหัสผ่านผู้ใช้</h2>
+        </div>
+        
+        <form onSubmit={onFinishReset} className="user-form">
+          <div className="password-grid">
+            <div className="form-group">
+              <label htmlFor="reset_password">
+                <FiKey className="input-icon" />
+                รหัสผ่านใหม่
+              </label>
+              <div className="input-wrapper">
+                <input
+                  type="password"
+                  id="reset_password"
+                  name="reset_password"
+                  placeholder="กรอกรหัสผ่านใหม่"
+                  minLength={6}
+                  required
+                />
+                <span className="input-focus"></span>
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="confirm_reset_password">
+                <FiShield className="input-icon" />
+                ยืนยันรหัสผ่านใหม่
+              </label>
+              <div className="input-wrapper">
+                <input
+                  type="password"
+                  id="confirm_reset_password"
+                  name="confirm_reset_password"
+                  placeholder="ยืนยันรหัสผ่านใหม่"
+                  required
+                />
+                <span className="input-focus"></span>
+              </div>
+            </div>
+          </div>
+
+          <div className="form-actions">
+            <Link to="/admin/customer" className="cancel-button">
+              <FiArrowLeft className="button-icon" />
+              ยกเลิก
+            </Link>
+            <button type="submit" className="submit-button">
+              <FiSave className="button-icon" />
+              บันทึก
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <style>{`
+        .customer-edit-container {
+          min-height: 100vh;
+          font-family: 'Mali', Tahoma, Geneva, Verdana, sans-serif;
+          border-radius: 20px;
+          padding: 30px;
+          background: linear-gradient(135deg, #f5f7fa 0%, #e0e8f5 100%);
+          display: flex;
+          flex-direction: column;
+          gap: 25px;
+          align-items: center;
+        }
+        
+        .form-card {
+          width: 100%;
+          max-width: 800px;
+          background: white;
+          border-radius: 16px;
+          padding: 30px;
+          box-shadow: 0 10px 30px rgba(106, 17, 203, 0.1);
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+          position: relative;
+          overflow: hidden;
+        }
+        
+        .form-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 15px 35px rgba(106, 17, 203, 0.15);
+        }
+        
+        .form-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 5px;
+          background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+        }
+        
+        .form-header {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+          margin-bottom: 25px;
+          color: #2c3e50;
+        }
+        
+        .header-icon {
+          font-size: 28px;
+          color: #6a11cb;
+        }
+        
+        .user-form {
+          display: flex;
+          flex-direction: column;
+          gap: 25px;
+        }
+        
+        .form-grid, .password-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 20px;
+        }
+        
+        .form-group {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        
+        .form-group label {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-weight: 500;
+          color: #2c3e50;
+        }
+        
+        .input-icon {
+          color: #6a11cb;
+          font-size: 18px;
+        }
+        
+        .input-wrapper, .select-wrapper {
+          position: relative;
+        }
+        
+        input, select {
+          width: 100%;
+          padding: 12px 15px 12px 40px;
+          border: 1px solid #ddd;
+          border-radius: 8px;
+          font-size: 16px;
+          transition: all 0.3s ease;
+          background-color: #f9f9f9;
+        }
+        
+        select {
+          appearance: none;
+          background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+          background-repeat: no-repeat;
+          background-position: right 10px center;
+          background-size: 15px;
+        }
+        
+        input:focus, select:focus {
+          outline: none;
+          border-color: #6a11cb;
+          background-color: white;
+          box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+        }
+        
+        .input-focus, .select-focus {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 0;
+          height: 2px;
+          background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+          transition: width 0.3s ease;
+        }
+        
+        input:focus ~ .input-focus, 
+        select:focus ~ .select-focus {
+          width: 100%;
+        }
+        
+        .form-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 15px;
+          margin-top: 20px;
+        }
+        
+        .cancel-button, .submit-button {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 20px;
+          border: none;
+          border-radius: 8px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        
+        .cancel-button {
+          background: #f5f5f5;
+          color: #666;
+        }
+        
+        .cancel-button:hover {
+          background: #e0e0e0;
+          transform: translateY(-2px);
+        }
+        
+        .submit-button {
+          background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+          color: white;
+          box-shadow: 0 4px 15px rgba(106, 17, 203, 0.3);
+        }
+        
+        .submit-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(106, 17, 203, 0.4);
+        }
+        
+        .button-icon {
+          font-size: 18px;
+        }
+        
+        .notification {
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          padding: 15px 25px;
+          border-radius: 8px;
+          color: white;
+          font-weight: 500;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+          transform: translateX(100%);
+          opacity: 0;
+          transition: all 0.3s ease;
+          z-index: 1000;
+        }
+        
+        .notification.show {
+          transform: translateX(0);
+          opacity: 1;
+        }
+        
+        .notification.success {
+          background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        }
+        
+        .notification.error {
+          background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+        }
+        
+        @media (max-width: 768px) {
+          .form-card {
+            padding: 20px;
+          }
+          
+          .form-grid, .password-grid {
+            grid-template-columns: 1fr;
+          }
+          
+          .form-actions {
+            flex-direction: column;
+          }
+          
+          .cancel-button, .submit-button {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+      `}</style>
     </div>
   );
 }

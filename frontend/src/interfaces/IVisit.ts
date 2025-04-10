@@ -1,9 +1,10 @@
 export interface VisitsInterface {
+    CreatedAt?: string;
     id?: string;
-    Username?: string;
+    username?: string;
     user_ip?: string;
     session_id?: string;
     start_time?: string;
     end_time?: string;
-    duration?: string;
+    duration?: number;
   }
