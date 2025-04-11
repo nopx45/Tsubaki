@@ -146,6 +146,7 @@ func main() {
 		allAdminRouter.POST("/marquee", marquee.UpdateMarquee)
 		//popup
 		allAdminRouter.POST("/popup", popup.UploadPopupImage)
+		allAdminRouter.DELETE("/popup", popup.DeletePopupImage)
 
 	}
 
@@ -168,7 +169,6 @@ func main() {
 		userRouter.POST("/pagevisitors", logvisitpage.RecordlogVisit)
 		userRouter.GET("/pagevisitors", logvisitpage.GetAllPageVisitors)
 		userRouter.GET("/toppagevisitors", logvisitpage.GetTopPages)
-		userRouter.GET("/popup", popup.GetPopupImage)
 
 	}
 
@@ -198,13 +198,14 @@ func main() {
 	r.GET("/usersockets", chat.GetAll)
 	r.GET("/usersocket/:username", chat.GetUserByUsername)
 	r.GET("/marquee", marquee.GetMarquee)
+	r.GET("/popup", popup.GetPopupImage)
 
 	r.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "API RUNNING...")
 	})
 
 	// Run the server
-	r.Run("localhost:8080")
+	r.Run("0.0.0.0:8080")
 }
 
 func CORSMiddleware() gin.HandlerFunc {

@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
-import { Button, Form, Input, Layout, Menu, message, Modal, Typography} from "antd";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Pagination, Navigation } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/pagination";
+import "swiper/css/navigation";
+
+import { Button, Form, Input, Layout, Menu, message, Modal, Upload, Typography} from "antd";
 import { GlobalOutlined, SearchOutlined, SolutionOutlined, BulbOutlined,
-CloseOutlined, UserOutlined, SafetyOutlined, 
+InboxOutlined, UserOutlined, SafetyOutlined, 
 ExportOutlined,
 LogoutOutlined,
 LoginOutlined, 
@@ -10,10 +16,11 @@ GoogleOutlined,
 TranslationOutlined,
 CommentOutlined,
 EnvironmentOutlined} from "@ant-design/icons";
+import type { UploadRequestOption } from "rc-upload/lib/interface";
 import Sider from "antd/es/layout/Sider";
 import headerlogo from "../../assets/header.jpg"
 import SubMenu from "antd/es/menu/SubMenu";
-import { getAuthToken, GetLinks, GetNUsers, GetPopupImages, GetSections, GetTotalVisitors, Logouts, stopvisit, UploadPopupImages, apiUrl } from "../../services/https";
+import { getAuthToken, GetLinks, GetNUsers, GetPopupImages, GetSections, GetTotalVisitors, Logouts, stopvisit, UploadPopupImages, apiUrl, DeletePopupImage } from "../../services/https";
 import { LinksInterface } from "../../interfaces/ILink";
 import { SectionsInterface } from "../../interfaces/ISection";
 import { UsersInterface } from "../../interfaces/IUser";
@@ -24,6 +31,7 @@ import { useTranslation } from "react-i18next";
 import ChatComponent from "../../components/chat-component/chat";
 import CustomCalendar from "../../components/carlendar/Carlendar";
 import Swal from "sweetalert2";
+import { NavigationOptions } from "swiper/types";
 
 const { Content, Footer } = Layout;
 const { Title } = Typography;
@@ -43,7 +51,7 @@ const UserLayout: React.FC = () => {
   // Popup welcome
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isPopupVisible, setIsPopupVisible] = useState(false);
-  const [imgpopup, setImgPopup] = useState<string>("")
+  const [imgpopup, setImgPopup] = useState<string[]>([])
 
   // search user value
   const [searchValue, setSearchValue] = useState("");
@@ -55,17 +63,11 @@ const UserLayout: React.FC = () => {
 
   const checkLoginAndShowPopup = async () => {
     const token = await getAuthToken();
-    const loggedIn = Boolean(token); 
-
+    const loggedIn = Boolean(token);
+  
     setIsLoggedIn(loggedIn);
-
-    if (loggedIn) {
-      setIsPopupVisible(true);
-    } else {
-      setIsLoggedIn(false);
-      setIsPopupVisible(false);
-    }
-  };
+    setIsPopupVisible(true);
+  };  
 
   const Logout = async () => {
     try {
@@ -161,7 +163,7 @@ const UserLayout: React.FC = () => {
       const res = await GetPopupImages();
       console.log(res)
       if (res.success) {
-        setImgPopup(`${apiUrl}${res.image}`);
+        setImgPopup(res.image);
         console.log(imgpopup)
       } else {
         console.error(res.error);
@@ -194,30 +196,31 @@ const UserLayout: React.FC = () => {
         };
         fetchRole();
   }, []);
-
-  const handleImageUpload = async () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.click();
-  
-    input.onchange = async () => {
-      const file = input.files?.[0];
-      if (!file) return;
-  
-      const result = await UploadPopupImages(file);
-      if (result.success) {
-        setImgPopup(result.path); // อัปเดตรูป popup
-        Swal.fire("สำเร็จ", result.message, "success");
-      } else {
-        Swal.fire("ผิดพลาด", result.error, "error");
-      }
-    };
-  };
-
   
   const handlePopupClose = () => {
     setIsPopupVisible(false);
+  };
+  
+  const handleDeleteImage = async (img: string) => {
+    const result = await Swal.fire({
+      title: "ยืนยันการลบ?",
+      text: "คุณแน่ใจหรือไม่ว่าต้องการลบรูปนี้",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "ลบเลย",
+      cancelButtonText: "ยกเลิก",
+    });
+  
+    if (result.isConfirmed) {
+      const response = await DeletePopupImage(img); // ✅ ใช้ฟังก์ชันที่สร้างไว้
+  
+      if (response.success) {
+        Swal.fire("สำเร็จ", response.message, "success");
+        GetPopupImages();
+      } else {
+        Swal.fire("ผิดพลาด", response.error || "ลบไม่สำเร็จ", "error");
+      }
+    }
   };
   
   const handleSearch = async () => {
@@ -271,38 +274,116 @@ const UserLayout: React.FC = () => {
         onCancel={handlePopupClose}
         footer={null}
         centered
-        width={"50%"}
+        width={"40%"}
         closable={false}
+        className="custom-modal"
       >
-        <Button
-          onClick={handlePopupClose}
-          shape="circle"
-          icon={<CloseOutlined style={{ fontSize: "15px", color: "white" }} />}
-          style={{
-            position: "absolute",
-            top: "-20px",
-            right: "-20px",
-            width: "40px",
-            height: "40px",
-            backgroundColor: "rgba(0, 0, 0, 0.7)",
-            border: "none",
-            boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.3)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            transition: "0.3s",
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "rgba(255, 0, 0, 0.8)")}
-          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "rgba(0, 0, 0, 0.7)")}
-        />
-        <img src={imgpopup} alt="Welcome" style={{ width: "100%" }} />
-        {(userRole === "admin" || userRole === "adminhr" || userRole === "adminit") && (
-          <div style={{ textAlign: "center", marginTop: "10px" }}>
-            <Button onClick={handleImageUpload} type="primary">
-              📤 อัปโหลดรูปภาพใหม่
-            </Button>
-          </div>
-        )}
+        <button className="close-x" onClick={handlePopupClose} />
+        <div className="modal-content-container">
+          {/* ส่วนแสดงผลรูปภาพ */}
+          {imgpopup.length > 0 && (
+            <div className="swiper-container">
+              <Swiper
+                modules={[Autoplay, Pagination, Navigation]}
+                spaceBetween={30}
+                centeredSlides={true}
+                autoplay={{
+                  delay: 2500,
+                  disableOnInteraction: false
+                }}
+                pagination={{
+                  clickable: true,
+                  el: ".swiper-pagination-custom",
+                }}
+                navigation={{
+                  nextEl: ".swiper-button-next-custom",
+                  prevEl: ".swiper-button-prev-custom"
+                }}
+                loop={true}
+                onSwiper={(swiper) => {
+                  setTimeout(() => {
+                    const navigation = swiper.params.navigation as NavigationOptions;
+                    navigation.prevEl = '.swiper-button-prev-custom';
+                    navigation.nextEl = '.swiper-button-next-custom';
+
+                    swiper.navigation.destroy();
+                    swiper.navigation.init();
+                    swiper.navigation.update();
+                  });
+                }}
+              >
+                {imgpopup.map((img, index) => (
+                  <SwiperSlide key={index}>
+                      <img
+                        src={`${apiUrl}${img}`}
+                        alt={`popup-${index}`}
+                        className="swiper-image"
+                      />
+                      {(userRole === "admin" || userRole === "adminhr" || userRole === "adminit") && (
+                      <button
+                        onClick={() => handleDeleteImage(img)}
+                        className="delete-button-overlay"
+                      >
+                        ลบรูปภาพนี้
+                      </button>
+                      )}
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+              {/* ปุ่มนำทางแบบ custom */}
+              <div className="swiper-controls">
+                <div className="swiper-button-prev-custom">
+                  ❮
+                </div>
+                <div className="swiper-pagination-custom"></div>
+                <div className="swiper-button-next-custom">
+                  ❯
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* ส่วนอัพโหลดสำหรับ Admin */}
+          {(userRole === "admin" || userRole === "adminhr" || userRole === "adminit") && (
+            <div className="upload-section">
+              <h3>อัพโหลดรูปภาพใหม่ (ขนาด 1200 x 1500 px เท่านั้น)</h3>
+              <Upload.Dragger
+                name="images"
+                multiple
+                listType="picture-card"
+                customRequest={async (options: UploadRequestOption) => {
+                  const { file, onSuccess, onError } = options;
+
+                  try {
+                    const result = await UploadPopupImages([file as File]);
+
+                    if (result.success) {
+                      Swal.fire("สำเร็จ", result.message, "success");
+                      GetPopupImages();
+                      onSuccess?.("อัปโหลดสำเร็จ");
+                      window.location.href=("/")
+                    } else {
+                      Swal.fire("ผิดพลาด", result.error, "error");
+                      onError?.(new Error(result.error));
+                    }
+                  } catch (err) {
+                    console.error(err);
+                    onError?.(err as Error);
+                  }
+                }}
+                className="upload-dragger"
+              >
+                <div className="upload-content">
+                  <p className="ant-upload-drag-icon">
+                    <InboxOutlined />
+                  </p>
+                  <p className="ant-upload-text">คลิกหรือลากไฟล์มาวางที่นี่</p>
+                  <p className="ant-upload-hint">กรุณาอัพโหลดรูปภาพทีละรูป</p>
+                </div>
+              </Upload.Dragger>
+            </div>
+          )}
+        </div>
       </Modal>
       <AppHeader />
       <Layout style={{background: "transparent", backdropFilter: "blur(10px)"}}>
@@ -1311,6 +1392,229 @@ const UserLayout: React.FC = () => {
               .other-web-item:hover::after {
                 width: 100%;
               }
+                /* Custom Modal Styles - Blue, Sky, Purple, White Theme */
+.custom-modal {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(6px);
+}
+
+.custom-modal .ant-modal-content {
+  padding: 0;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #f0f8ff, #e6e6fa);
+  position: relative;
+}
+
+.modal-content-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+}
+
+.custom-modal .close-x {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1100;
+  border: none;
+  color: #8a2be2;
+  transition: all 0.3s ease;
+  width: 32px;
+  height: 32px;
+}
+
+.custom-modal .close-x:hover {
+  background: rgba(255, 0, 0, 0.8);
+  color: white;
+  transform: rotate(90deg);
+}
+
+.custom-modal .close-x::before,
+.custom-modal .close-x::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 2px;
+  background-color: #333;
+}
+
+.custom-modal .close-x:hover::before,
+.custom-modal .close-x:hover::after {
+  background-color: white;
+}
+
+.custom-modal .close-x::before {
+  transform: rotate(45deg);
+}
+
+.custom-modal .close-x::after {
+  transform: rotate(-45deg);
+}
+
+.swiper-container {
+  width: 100%;
+  height: auto;
+  position: relative;
+  padding: 0;
+  background: linear-gradient(120deg, #f0f8ff, #e6e6fa);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+
+.swiper-image {
+  width: 100%;
+  height: 95vh;
+  object-fit: unset;
+  display: block;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  background: rgb(244, 243, 255);
+  border-radius: 16px;
+}
+
+.swiper-controls {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.swiper-button-prev-custom,
+.swiper-button-next-custom {
+  width: 44px;
+  height: 44px;
+  background: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  font-size: 20px;
+  color: #7f5af0;
+  pointer-events: auto;
+}
+
+.swiper-button-prev-custom:hover,
+.swiper-button-next-custom:hover {
+  background: #7f5af0;
+  color: white;
+  transform: scale(1.1);
+}
+
+.swiper-pagination-custom {
+  display: flex;
+  justify-content: center;
+  margin: 0 20px;
+}
+
+.swiper-pagination-custom .swiper-pagination-bullet {
+  width: 12px;
+  height: 12px;
+  margin: 0 5px;
+  background: #ccc;
+  opacity: 1;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.swiper-pagination-custom .swiper-pagination-bullet-active {
+  background: #7f5af0;
+  transform: scale(1.3);
+}
+
+.upload-section {
+  padding: 24px;
+  background: #f8f9ff;
+  border-top: 1px solid #e0e0f0;
+  text-align: center;
+}
+
+.upload-section h3 {
+  margin-bottom: 16px;
+  color: #4b0082;
+  font-size: 1.4rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.upload-dragger {
+  border: 2px dashed #b39ddb !important;
+  border-radius: 12px !important;
+  background: white !important;
+  padding: 24px !important;
+  transition: border-color 0.3s ease;
+}
+
+.upload-dragger:hover {
+  border-color: #7f5af0 !important;
+}
+
+.upload-content {
+  padding: 16px 0;
+}
+
+.upload-content .ant-upload-drag-icon {
+  margin-bottom: 12px;
+}
+
+.upload-content .ant-upload-drag-icon .anticon {
+  font-size: 48px;
+  color: #7f5af0;
+}
+
+.upload-content .ant-upload-text {
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.upload-content .ant-upload-hint {
+  color: #777;
+  font-size: 14px;
+}
+
+.delete-button-overlay {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #ff4d4f;
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  z-index: 10;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.delete-button-overlay:hover {
+  background-color: #d9363e;
+  transform: translateX(-50%) scale(1.05);
+}
+
             `}</style>
     </Layout>
   );

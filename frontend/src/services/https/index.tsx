@@ -10,7 +10,7 @@ import { SignInInterface } from "../../interfaces/SignIn";
 import axios from "axios";
 import Swal from "sweetalert2";
 
-export const apiUrl = "http://localhost:8080";
+export const apiUrl = "http://tat-webcenter:8080";
 axios.defaults.withCredentials = true;
 
 axios.interceptors.response.use(
@@ -750,7 +750,7 @@ async function GetPopupImages() {
   try {
     const res = await axios.get(`${apiUrl}/popup`);
     if (res.status === 200) {
-      return { success: true, image: res.data.image };
+      return { success: true, image: res.data.images };
     } else {
       return { success: false, error: res.data.error || "เกิดข้อผิดพลาด" };
     }
@@ -759,10 +759,12 @@ async function GetPopupImages() {
   }
 }
 
-async function UploadPopupImages(file: File) {
+async function UploadPopupImages(files: File[]) {
   try {
     const formData = new FormData();
-    formData.append("image", file);
+    files.forEach((file) => {
+      formData.append("images", file);
+    });
 
     const res = await axios.post(`${apiUrl}/popup`, formData, {
       headers: {
@@ -771,9 +773,25 @@ async function UploadPopupImages(file: File) {
     });
 
     if (res.status === 200) {
-      return { success: true, path: res.data.path, message: res.data.message };
+      return { success: true, paths: res.data.paths, message: res.data.message };
     } else {
       return { success: false, error: res.data.error || "อัปโหลดไม่สำเร็จ" };
+    }
+  } catch (err) {
+    return { success: false, error: "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้" };
+  }
+}
+
+async function DeletePopupImage(imagePath: string) {
+  try {
+    const res = await axios.delete(`${apiUrl}/popup`, {
+      data: { image: imagePath },
+    });
+
+    if (res.status === 200) {
+      return { success: true, message: res.data.message };
+    } else {
+      return { success: false, error: res.data.error || "ลบไม่สำเร็จ" };
     }
   } catch (err) {
     return { success: false, error: "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้" };
@@ -892,4 +910,5 @@ export {
 
   GetPopupImages,
   UploadPopupImages,
+  DeletePopupImage,
 };
