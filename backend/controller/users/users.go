@@ -129,7 +129,6 @@ func Update(c *gin.Context) {
 func GetUserProfile(c *gin.Context) {
 	tokenString, err := c.Cookie("auth_token")
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -139,7 +138,6 @@ func GetUserProfile(c *gin.Context) {
 	}
 	claims, err := jwtWrapper.ValidateToken(tokenString)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 

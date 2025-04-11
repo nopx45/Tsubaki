@@ -22,6 +22,8 @@ const ArticleEdit = Loadable(lazy(() => import("../pages/adminpage/article/edit"
 const Regulation = Loadable(lazy(() => import("../pages/adminpage/regulation")));
 const RegulationCreate = Loadable(lazy(() => import("../pages/adminpage/regulation/create")));
 const RegulationEdit = Loadable(lazy(() => import("../pages/adminpage/regulation/edit")));
+//PopupImage
+const PopupImage = Loadable(lazy(() => import("../pages/adminpage/popup-images")));
 
 const HRadminRoutes = (isLoggedIn: boolean): RouteObject => {
     const UploadFileWrapper = () => {
@@ -106,6 +108,10 @@ const HRadminRoutes = (isLoggedIn: boolean): RouteObject => {
             element: <ArticleEdit />,
           },
         ],
+      },
+      {
+        path: "popup-images",
+        element: <PopupImage />,
       },
       {
         path: "regulation",

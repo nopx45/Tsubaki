@@ -47,6 +47,9 @@ const HRadminLayout: React.FC = () => {
           <Menu.Item key="it-knowledge" icon={<ReadOutlined />}>
             <Link to="/admin/it-knowledge">ข่าวสารไอที</Link>
           </Menu.Item>
+          <Menu.Item key="popupimages" icon={<ReadOutlined />}>
+            <Link to="/admin/popup-images">รูปภาพป๊อบอัพ</Link>
+          </Menu.Item>          
           <Menu.Item key="security" icon={<SafetyOutlined />}>
             <Link to="/admin/security">ข่าวสารด้านความปลอดภัย</Link>
           </Menu.Item>

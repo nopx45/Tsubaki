@@ -167,7 +167,6 @@ func SignIn(c *gin.Context) {
 func GetAuthToken(c *gin.Context) {
 	cookie, err := c.Request.Cookie("auth_token")
 	if err != nil || cookie.Value == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Missing auth token"})
 		return
 	}
 

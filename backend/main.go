@@ -146,6 +146,7 @@ func main() {
 		allAdminRouter.POST("/marquee", marquee.UpdateMarquee)
 		//popup
 		allAdminRouter.POST("/popup", popup.UploadPopupImage)
+		allAdminRouter.POST("/popup/order", popup.SavePopupOrder)
 		allAdminRouter.DELETE("/popup", popup.DeletePopupImage)
 
 	}

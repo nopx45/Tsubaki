@@ -15,6 +15,8 @@ const EditITKnowledges = Loadable(lazy(() => import("../pages/adminpage/it-knowl
 const Security = Loadable(lazy(() => import("../pages/adminpage/security")));
 const EditSecurity = Loadable(lazy(() => import("../pages/adminpage/security/edit")));
 const SecurityCreate = Loadable(lazy(() => import("../pages/adminpage/security/create")));
+//PopupImage
+const PopupImage = Loadable(lazy(() => import("../pages/adminpage/popup-images")));
 
 const ITadminRoutes = (isLoggedIn: boolean): RouteObject => {
   return {
@@ -58,6 +60,10 @@ const ITadminRoutes = (isLoggedIn: boolean): RouteObject => {
               element: <EditSecurity />,
             },
           ],
+        },
+        {
+          path: "popup-images",
+          element: <PopupImage />,
         },
         {
           path: "calendar",

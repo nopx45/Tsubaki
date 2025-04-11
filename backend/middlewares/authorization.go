@@ -19,7 +19,6 @@ func Authorizes(roles ...string) gin.HandlerFunc {
 
 		cookie, err := c.Request.Cookie("auth_token")
 		if err != nil || cookie.Value == "" {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "MissingToken"})
 			return
 		}
 

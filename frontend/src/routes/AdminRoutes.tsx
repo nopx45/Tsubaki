@@ -47,6 +47,9 @@ const LogMessage = Loadable(lazy(() => import("../pages/adminpage/logs/massage_s
 //Calendar
 const Carlendar = Loadable(lazy(() => import("../pages/adminpage/carlendar")));
 
+//PopupImage
+const PopupImage = Loadable(lazy(() => import("../pages/adminpage/popup-images")));
+
 const UploadFileWrapper = () => {
   const navigate = useNavigate();
 
@@ -181,6 +184,10 @@ const AdminRoutes = (isLoggedIn: boolean): RouteObject => {
             element: <ArticleEdit />,
           },
         ],
+      },
+      {
+        path: "popup-images",
+        element: <PopupImage />,
       },
       {
         path: "regulation",

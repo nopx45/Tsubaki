@@ -24,7 +24,6 @@ function Regulation() {
       const res = await GetRegulations();
       if (res.status === 200) {
         setRegulations(res.data);
-        console.log(res);
       } else {
         setRegulations([]);
         showNotification("error", res.data.error);

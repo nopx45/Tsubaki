@@ -798,6 +798,21 @@ async function DeletePopupImage(imagePath: string) {
   }
 }
 
+async function UpdatePopupOrder(images: string[]) {
+  try {
+    const res = await axios.post(`${apiUrl}/popup/order`, { images });
+
+    if (res.status === 200) {
+      return { success: true, message: res.data.message };
+    } else {
+      return { success: false, error: res.data.error || "ไม่สามารถบันทึกลำดับได้" };
+    }
+  } catch (err) {
+    return { success: false, error: "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้" };
+  }
+}
+
+
 export {
   // User API
   getAuthToken,
@@ -911,4 +926,5 @@ export {
   GetPopupImages,
   UploadPopupImages,
   DeletePopupImage,
+  UpdatePopupOrder,
 };

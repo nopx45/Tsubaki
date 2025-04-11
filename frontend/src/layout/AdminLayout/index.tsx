@@ -5,10 +5,10 @@ import { Layout, Menu, Button, message, Typography } from "antd";
 import logo from "../../assets/logo.png";
 import { stopvisit, Logouts } from "../../services/https";
 import Chat from "../../components/chat/chat";
-import SubMenu from "antd/es/menu/SubMenu";
 import Swal from "sweetalert2";
 
 const { Header, Content, Footer, Sider } = Layout;
+const { SubMenu } = Menu;
 
 const AdminLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -67,6 +67,9 @@ const AdminLayout: React.FC = () => {
           </Menu.Item>
           <Menu.Item key="article" icon={<ReadOutlined />}>
             <Link to="/admin/article">บทความ</Link>
+          </Menu.Item>
+          <Menu.Item key="popupimages" icon={<ReadOutlined />}>
+            <Link to="/admin/popup-images">รูปภาพป๊อบอัพ</Link>
           </Menu.Item>
           <Menu.Item key="regulation" icon={<WarningOutlined />}>
             <Link to="/admin/regulation">ระเบียบข้อบังคับ</Link>

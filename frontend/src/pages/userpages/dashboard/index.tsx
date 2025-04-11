@@ -115,7 +115,6 @@ export default function Announcements() {
       });
   
       setMarqueeText(newText); // 👈 อัปเดตข้อความใน state ด้วย
-      console.log(result);
     } else {
       await Swal.fire({
         icon: "error",

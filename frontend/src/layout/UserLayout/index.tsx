@@ -19,7 +19,6 @@ EnvironmentOutlined} from "@ant-design/icons";
 import type { UploadRequestOption } from "rc-upload/lib/interface";
 import Sider from "antd/es/layout/Sider";
 import headerlogo from "../../assets/header.jpg"
-import SubMenu from "antd/es/menu/SubMenu";
 import { getAuthToken, GetLinks, GetNUsers, GetPopupImages, GetSections, GetTotalVisitors, Logouts, stopvisit, UploadPopupImages, apiUrl, DeletePopupImage } from "../../services/https";
 import { LinksInterface } from "../../interfaces/ILink";
 import { SectionsInterface } from "../../interfaces/ISection";
@@ -36,6 +35,7 @@ import { NavigationOptions } from "swiper/types";
 const { Content, Footer } = Layout;
 const { Title } = Typography;
 const categories = ["HR", "IT", "ACC", "QA", "MKT", "ME/PE", "Safety", "WH", "PC"];
+const { SubMenu } = Menu;
 
 const UserLayout: React.FC = () => {
   const navigate = useNavigate();
@@ -161,10 +161,8 @@ const UserLayout: React.FC = () => {
   useEffect(() => {
     const fetchPopup = async () => {
       const res = await GetPopupImages();
-      console.log(res)
       if (res.success) {
         setImgPopup(res.image);
-        console.log(imgpopup)
       } else {
         console.error(res.error);
       }

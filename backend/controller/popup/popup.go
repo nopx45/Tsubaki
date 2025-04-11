@@ -140,3 +140,29 @@ func DeletePopupImage(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "ลบรูปสำเร็จ", "image": req.Image})
 }
 
+func SavePopupOrder(c *gin.Context) {
+	role := c.GetString("role")
+	if role != "admin" && role != "adminit" && role != "adminhr" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "ไม่มีสิทธิ์บันทึกลำดับรูป"})
+		return
+	}
+
+	var req PopupImage
+	if err := c.ShouldBindJSON(&req); err != nil || len(req.Images) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "รูปแบบข้อมูลไม่ถูกต้อง หรือไม่มีข้อมูลรูปภาพ"})
+		return
+	}
+
+	data, err := json.MarshalIndent(req, "", "  ")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "ไม่สามารถจัดรูปแบบข้อมูลได้"})
+		return
+	}
+
+	if err := os.WriteFile("popup.json", data, 0644); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "ไม่สามารถเขียนไฟล์ popup.json ได้"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "บันทึกลำดับรูปภาพเรียบร้อยแล้ว"})
+}
