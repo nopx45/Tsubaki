@@ -73,6 +73,7 @@ const ImagePopupManager = () => {
   };
 
   const handleDeleteImage = async (imgId: string) => {
+    
     const result = await Swal.fire({
       title: 'ยืนยันการลบ?',
       text: 'คุณแน่ใจหรือไม่ว่าต้องการลบรูปนี้',
@@ -203,234 +204,234 @@ const ImagePopupManager = () => {
       )}
       <style>{`
       /* src/components/ImagePopupManager.css */
-.image-popup-manager {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
+        .image-popup-manager {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 2rem;
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-.title {
-  text-align: center;
-  color: #2c3e50;
-  margin-bottom: 2rem;
-  font-size: 2.2rem;
-  background: linear-gradient(90deg, #3498db, #9b59b6);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  position: relative;
-}
+        .title {
+          text-align: center;
+          color: #2c3e50;
+          margin-bottom: 2rem;
+          font-size: 2.2rem;
+          background: linear-gradient(90deg, #3498db, #9b59b6);
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          position: relative;
+        }
 
-.title::after {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100px;
-  height: 4px;
-  background: linear-gradient(90deg, #3498db, #9b59b6);
-  border-radius: 2px;
-}
+        .title::after {
+          content: '';
+          position: absolute;
+          bottom: -10px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 100px;
+          height: 4px;
+          background: linear-gradient(90deg, #3498db, #9b59b6);
+          border-radius: 2px;
+        }
 
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 300px;
-  color: #7f8c8d;
-}
+        .loading-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          min-height: 300px;
+          color: #7f8c8d;
+        }
 
-.spinner {
-  animation: spin 1s linear infinite;
-  font-size: 3rem;
-  color: #3498db;
-  margin-bottom: 1rem;
-}
+        .spinner {
+          animation: spin 1s linear infinite;
+          font-size: 3rem;
+          color: #3498db;
+          margin-bottom: 1rem;
+        }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
 
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 300px;
-  color: #bdc3c7;
-  text-align: center;
-}
+        .empty-state {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          min-height: 300px;
+          color: #bdc3c7;
+          text-align: center;
+        }
 
-.empty-icon {
-  font-size: 5rem;
-  margin-bottom: 1rem;
-  opacity: 0.5;
-}
+        .empty-icon {
+          font-size: 5rem;
+          margin-bottom: 1rem;
+          opacity: 0.5;
+        }
 
-.image-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 2rem;
-  margin-bottom: 3rem;
-}
+        .image-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+          gap: 2rem;
+          margin-bottom: 3rem;
+        }
 
-.image-card {
-  background: white;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  position: relative;
-}
+        .image-card {
+          background: white;
+          border-radius: 10px;
+          overflow: hidden;
+          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+          transition: all 0.3s ease;
+          position: relative;
+        }
 
-.image-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-}
+        .image-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
 
-.image-container {
-  position: relative;
-  padding-top: 66.67%; /* 3:2 aspect ratio */
-  overflow: hidden;
-}
+        .image-container {
+          position: relative;
+          padding-top: 66.67%; /* 3:2 aspect ratio */
+          overflow: hidden;
+        }
 
-.popup-image {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.5s ease;
-}
+        .popup-image {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: transform 0.5s ease;
+        }
 
-.image-card:hover .popup-image {
-  transform: scale(1.05);
-}
+        .image-card:hover .popup-image {
+          transform: scale(1.05);
+        }
 
-.image-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.3);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+        .image-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.3);
+          opacity: 0;
+          transition: opacity 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
 
-.image-card:hover .image-overlay {
-  opacity: 1;
-}
+        .image-card:hover .image-overlay {
+          opacity: 1;
+        }
 
-.delete-btn {
-  background: rgba(231, 76, 60, 0.9);
-  color: white;
-  border: none;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 1.2rem;
-}
+        .delete-btn {
+          background: rgba(231, 76, 60, 0.9);
+          color: white;
+          border: none;
+          width: 50px;
+          height: 50px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          font-size: 1.2rem;
+        }
 
-.delete-btn:hover {
-  background: #e74c3c;
-  transform: scale(1.1);
-}
+        .delete-btn:hover {
+          background: #e74c3c;
+          transform: scale(1.1);
+        }
 
-.image-meta {
-  padding: 1rem;
-  background: #f8f9fa;
-  color: #7f8c8d;
-  font-size: 0.9rem;
-  text-align: right;
-}
+        .image-meta {
+          padding: 1rem;
+          background: #f8f9fa;
+          color: #7f8c8d;
+          font-size: 0.9rem;
+          text-align: right;
+        }
 
-.upload-area {
-  border: 2px dashed #bdc3c7;
-  border-radius: 10px;
-  padding: 3rem 2rem;
-  text-align: center;
-  transition: all 0.3s ease;
-  margin-top: 2rem;
-  background: #f8f9fa;
-}
+        .upload-area {
+          border: 2px dashed #bdc3c7;
+          border-radius: 10px;
+          padding: 3rem 2rem;
+          text-align: center;
+          transition: all 0.3s ease;
+          margin-top: 2rem;
+          background: #f8f9fa;
+        }
 
-.upload-area.drag-active {
-  border-color: #3498db;
-  background: rgba(52, 152, 219, 0.1);
-}
+        .upload-area.drag-active {
+          border-color: #3498db;
+          background: rgba(52, 152, 219, 0.1);
+        }
 
-.file-input {
-  display: none;
-}
+        .file-input {
+          display: none;
+        }
 
-.upload-label {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #7f8c8d;
-  transition: all 0.3s ease;
-}
+        .upload-label {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          color: #7f8c8d;
+          transition: all 0.3s ease;
+        }
 
-.upload-area:hover .upload-label,
-.upload-area.drag-active .upload-label {
-  color: #3498db;
-}
+        .upload-area:hover .upload-label,
+        .upload-area.drag-active .upload-label {
+          color: #3498db;
+        }
 
-.upload-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  transition: all 0.3s ease;
-}
+        .upload-icon {
+          font-size: 3rem;
+          margin-bottom: 1rem;
+          transition: all 0.3s ease;
+        }
 
-.upload-area:hover .upload-icon,
-.upload-area.drag-active .upload-icon {
-  transform: translateY(-5px);
-  color: #9b59b6;
-}
+        .upload-area:hover .upload-icon,
+        .upload-area.drag-active .upload-icon {
+          transform: translateY(-5px);
+          color: #9b59b6;
+        }
 
-.upload-hint {
-  margin-top: 0.5rem;
-  font-size: 0.9rem;
-  color: #95a5a6;
-}
+        .upload-hint {
+          margin-top: 0.5rem;
+          font-size: 0.9rem;
+          color: #95a5a6;
+        }
 
-/* Pulse animation for upload area when empty */
-.empty-state p {
-  animation: pulse 2s infinite;
-}
+        /* Pulse animation for upload area when empty */
+        .empty-state p {
+          animation: pulse 2s infinite;
+        }
 
-@keyframes pulse {
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
-}
+        @keyframes pulse {
+          0% { opacity: 0.6; }
+          50% { opacity: 1; }
+          100% { opacity: 0.6; }
+        }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .image-grid {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  }
-  
-  .title {
-    font-size: 1.8rem;
-  }
-}
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+          .image-grid {
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+          }
+          
+          .title {
+            font-size: 1.8rem;
+          }
+        }
       `}</style>
     </div>
   );
