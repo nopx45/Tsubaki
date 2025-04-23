@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import { getAuthToken } from "./services/https";
 
+export const WS_URL = "ws://192.168.0.85:8080/ws";
+
 const useWebSocket = (url: string) => {
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [messages, setMessages] = useState<{ from: string; role: string; content: string }[]>([]);

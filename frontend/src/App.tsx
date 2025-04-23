@@ -5,8 +5,7 @@ import { AuthProvider } from "./pages/authentication/contexts/authcontext";
 import "./App.css";
 import { getAuthToken, StartPageVisit } from "./services/https";
 import ScrollToTop from "./components/ScrollToTop/ScrollToTop";
-
-const apiUrl = "http://localhost:8080";
+import { apiUrl } from "../src/services/https";
 
 const PageVisitLogger = () => {
   const location = useLocation();

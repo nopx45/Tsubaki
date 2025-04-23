@@ -215,18 +215,6 @@ func (c *ChatController) HandleWebSocket(w http.ResponseWriter, r *http.Request)
 				log.Println("Error saving user socket:", err)
 			}
 			c.ChatService.AddUser(conn, currentUser)
-			greetingMessage := map[string]interface{}{
-				"type":    "send_message",
-				"from":    "admin",
-				"role":    "admin",
-				"content": "สวัสดีครับ/ค่ะ หากมีข้อสงสัย กรุณาพิมพ์คำถามไว้ เมื่อ admin ออนไลน์ จะรีบตอบกลับโดยเร็วที่สุด.",
-			}
-			messageJSON, err := json.Marshal(greetingMessage)
-			if err != nil {
-				log.Println("Error encoding JSON:", err)
-				return
-			}
-			c.WriteMessageToUser(conn, string(messageJSON))
 		case "send_message":
 			username, ok := data["from"].(string)
 			if !ok {
