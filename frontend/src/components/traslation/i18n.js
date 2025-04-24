@@ -78,7 +78,7 @@ const resources = {
         detail : "รายละเอียด",
         loading : "กำลังโหลดข้อมูล...",
         back : "กลับ",
-        visit : "ผู้เข้าชม",
+        visit : "ผู้ชม",
         centralweb : "เว็บกลาง",
         security : "ความปลอดภัย",
         no_activity: "ไม่มีกิจกรรมในขณะนี้",

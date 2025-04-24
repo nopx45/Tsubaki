@@ -4,12 +4,18 @@ import { UserSocketsInterface } from "../../../../interfaces/IUserSocket";
 import { FaTrash, FaPlug } from "react-icons/fa";
 import { FiSearch } from "react-icons/fi";
 import dayjs from "dayjs";
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import Pagination from "../../../../components/Pagination/Pagination";
 import "dayjs/locale/th";
 
 dayjs.locale("th");
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
 
 function UserSocketLog() {
+  const [exportOnlyCurrentPage, setExportOnlyCurrentPage] = useState(false);
+
   const [userSockets, setUserSockets] = useState<UserSocketsInterface[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -60,17 +66,47 @@ function UserSocketLog() {
     fetchUserSockets();
   }, []);
 
-  const filtered = userSockets.filter((v) =>
+  const filtered = userSockets.filter((v) => {
+    const matchSearch =
     v.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     v.socketId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    v.role?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    dayjs(v.UpdatedAt).format("DD/MM/YYYY HH:mm").includes(searchTerm)
-  );
+    v.role?.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchSearch;
+  });  
 
   const totalPages = Math.ceil(filtered.length / perPage);
   const indexOfLast = currentPage * perPage;
   const indexOfFirst = indexOfLast - perPage;
   const currentData = filtered.slice(indexOfFirst, indexOfLast);
+
+  const handleExportCSV = () => {
+    const csvRows: string[] = [];
+  
+    const headers = ['ID', 'ชื่อผู้ใช้', 'Socket ID', 'role'];
+    csvRows.push(headers.join(','));
+  
+    const dataToExport = exportOnlyCurrentPage ? currentData : filtered;
+  
+    dataToExport.forEach((v) => {
+      const row = [
+        `"${v.id || ''}"`,
+        `"${v.username || ''}"`,
+        `"${v.socketId || ''}"`,
+        `"${v.role || ''}"`,
+      ];
+      csvRows.push(row.join(','));
+    });
+  
+    const csvContent = '\uFEFF' + csvRows.join('\n'); // มี BOM รองรับภาษาไทย
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `visitor-log-${dayjs().format('YYYY-MM-DD')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="activity-management-container">
@@ -80,17 +116,29 @@ function UserSocketLog() {
             <FaPlug className="title-icon" />
             <h1>บันทึกการเชื่อมต่อ Socket ของผู้ใช้</h1>
           </div>
-          <div className="header-actions">
+          <div className="header-actions" style={{ display: "flex", gap: 35, alignItems: "center", flexWrap: "wrap" }}>
             <div className="search-container">
               <FiSearch className="search-icon" />
               <input
                 type="text"
-                placeholder="ค้นหาด้วยชื่อผู้ใช้ / Socket ID / Role / วันที่..."
+                placeholder="ค้นหาด้วย User / SocketID / Role..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="search-input"
               />
             </div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <input
+                type="checkbox"
+                checked={exportOnlyCurrentPage}
+                onChange={(e) => setExportOnlyCurrentPage(e.target.checked)}
+              />
+              Export เฉพาะหน้าปัจจุบัน
+            </label>
+
+            <button className="export-button" onClick={handleExportCSV}>
+              📤 Export CSV
+            </button>
           </div>
         </div>
 
@@ -443,6 +491,23 @@ function UserSocketLog() {
           opacity: 1;
           visibility: visible;
           top: -40px;
+        }
+        
+        .export-button {
+          padding: 10px 16px;
+          background: linear-gradient(135deg, #00c9ff 0%,rgb(120, 82, 245) 100%);
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-weight: 600;
+          cursor: pointer;
+          box-shadow: 0 4px 12px rgba(0, 201, 255, 0.3);
+          transition: all 0.3s ease;
+        }
+
+        .export-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(0, 201, 255, 0.4);
         }
       `}</style>
     </div>

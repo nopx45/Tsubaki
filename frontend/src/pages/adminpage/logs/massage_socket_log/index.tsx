@@ -5,11 +5,19 @@ import { FaTrash, FaEnvelopeOpenText } from "react-icons/fa";
 import { FiSearch } from "react-icons/fi";
 import Pagination from "../../../../components/Pagination/Pagination";
 import dayjs from "dayjs";
+import { DatePicker } from "antd";
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import "dayjs/locale/th";
 
 dayjs.locale("th");
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
 
 function MessagesLog() {
+  const [exportOnlyCurrentPage, setExportOnlyCurrentPage] = useState(false);
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
+
   const [messages, setMessages] = useState<MessagesInterface[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -60,17 +68,58 @@ function MessagesLog() {
     fetchMessages();
   }, []);
 
-  const filtered = messages.filter((m) =>
+  const filtered = messages.filter((m) => {
+    const matchSearch =
     m.from?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     m.role?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     m.content?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    dayjs(m.UpdatedAt).format("DD/MM/YYYY HH:mm").includes(searchTerm)
-  );
+    dayjs(m.UpdatedAt).format("DD/MM/YYYY HH:mm").includes(searchTerm);
+    
+    const startTime = dayjs(m.UpdatedAt);
+    const isInRange = !dateRange ||
+      (
+        dateRange[0] &&
+        dateRange[1] &&
+        startTime.isSameOrAfter(dateRange[0].startOf("day")) &&
+        startTime.isSameOrBefore(dateRange[1].endOf("day"))
+      );
+  
+    return matchSearch && isInRange;
+  });
 
   const totalPages = Math.ceil(filtered.length / perPage);
   const indexOfLast = currentPage * perPage;
   const indexOfFirst = indexOfLast - perPage;
   const currentData = filtered.slice(indexOfFirst, indexOfLast);
+
+  const handleExportCSV = () => {
+    const csvRows: string[] = [];
+  
+    const headers = ['วันที่', 'ผู้ส่ง', 'role', 'ข้อความ'];
+    csvRows.push(headers.join(','));
+  
+    const dataToExport = exportOnlyCurrentPage ? currentData : filtered;
+  
+    dataToExport.forEach((v) => {
+      const row = [
+        `"${dayjs(v.UpdatedAt).format('DD/MM/YYYY HH:mm:ss')}"`,
+        `"${v.from || ''}"`,
+        `"${v.role || ''}"`,
+        `"${v.content || ''}"`,
+      ];
+      csvRows.push(row.join(','));
+    });
+  
+    const csvContent = '\uFEFF' + csvRows.join('\n'); // มี BOM รองรับภาษาไทย
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `visitor-log-${dayjs().format('YYYY-MM-DD')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="activity-management-container">
@@ -80,17 +129,38 @@ function MessagesLog() {
             <FaEnvelopeOpenText className="title-icon" />
             <h1>บันทึกข้อความที่ส่งในระบบ</h1>
           </div>
-          <div className="header-actions">
+          <div className="header-actions" style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
             <div className="search-container">
               <FiSearch className="search-icon" />
               <input
                 type="text"
-                placeholder="ค้นหาด้วยชื่อผู้ใช้ / Role / ข้อความ / วันที่..."
+                placeholder="ค้นหาด้วยชื่อ / role / วันที่..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="search-input"
               />
             </div>
+
+            <DatePicker.RangePicker
+              format="DD/MM/YYYY"
+              value={dateRange}
+              onChange={(range) => setDateRange(range)}
+              style={{ borderRadius: 8 }}
+              placeholder={["เริ่มต้น", "สิ้นสุด"]}
+            />
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <input
+                type="checkbox"
+                checked={exportOnlyCurrentPage}
+                onChange={(e) => setExportOnlyCurrentPage(e.target.checked)}
+              />
+              Export เฉพาะหน้าปัจจุบัน
+            </label>
+
+            <button className="export-button" onClick={handleExportCSV}>
+              📤 Export CSV
+            </button>
           </div>
         </div>
 
@@ -444,6 +514,23 @@ function MessagesLog() {
           opacity: 1;
           visibility: visible;
           top: -40px;
+        }
+
+        .export-button {
+          padding: 10px 16px;
+          background: linear-gradient(135deg, #00c9ff 0%,rgb(120, 82, 245) 100%);
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-weight: 600;
+          cursor: pointer;
+          box-shadow: 0 4px 12px rgba(0, 201, 255, 0.3);
+          transition: all 0.3s ease;
+        }
+
+        .export-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(0, 201, 255, 0.4);
         }
       `}</style>
     </div>

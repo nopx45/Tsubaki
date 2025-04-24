@@ -83,6 +83,7 @@ const HRadminLayout: React.FC = () => {
 
         <Footer style={{ textAlign: "center" }}>
           Copyright © 2024 TSUBAKIMOTO AUTOMOTIVE (THAILAND) Co,.Ltd
+          <a>Design & Developed by Nopx</a>
         </Footer>
       </Layout>
     </Layout>

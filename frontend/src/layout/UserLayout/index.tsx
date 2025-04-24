@@ -1097,7 +1097,7 @@ const UserLayout: React.FC = () => {
       </Layout>
       <Footer style={{ textAlign: "center", backgroundColor: "rgba(239, 239, 255, 0.9)"}}>
         <p>Copyright © 2024 TSUBAKIMOTO AUTOMOTIVE (THAILAND) Co,.Ltd</p>
-        <p style={{color: '#989898'}}>Powered by Nopx</p>
+        <a>Design & Developed by Nopx</a>
       </Footer>
       {/* ✅ แสดง Modal รายละเอียดผู้ใช้ */}
       <UserListModal

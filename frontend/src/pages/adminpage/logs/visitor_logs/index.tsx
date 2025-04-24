@@ -1,14 +1,22 @@
 import { useState, useEffect } from "react";
+import { DatePicker } from "antd";
 import { DeleteVisitorsById, GetAllTotalVisitors } from "../../../../services/https";
 import { VisitsInterface } from "../../../../interfaces/IVisit";
 import { FaTrash, FaUserClock } from "react-icons/fa";
 import { FiSearch } from "react-icons/fi";
 import dayjs from "dayjs";
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import Pagination from "../../../../components/Pagination/Pagination";
 
 dayjs.locale("th");
+dayjs.extend(isSameOrAfter);
+dayjs.extend(isSameOrBefore);
 
 function VisitorLog() {
+  const [exportOnlyCurrentPage, setExportOnlyCurrentPage] = useState(false);
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
+
   const [visitors, setVisitors] = useState<VisitsInterface[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -34,7 +42,6 @@ function VisitorLog() {
       const res = await GetAllTotalVisitors();
       if (res.status === 200) {
         setVisitors(res.data);
-        console.log(res.data)
       } else {
         showNotification("error", res.data.error);
       }
@@ -60,17 +67,60 @@ function VisitorLog() {
     getAllTotalVisitors();
   }, []);
 
-  const filtered = visitors.filter((v) =>
-    v.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    v.user_ip?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    dayjs(v.start_time).format("DD/MM/YYYY HH:mm:ss").includes(searchTerm) ||
-    dayjs(v.CreatedAt).format("DD/MM/YYYY HH:mm:ss").includes(searchTerm)
-  );
+  const filtered = visitors.filter((v) => {
+    const matchSearch =
+      v.username?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      v.user_ip?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      dayjs(v.start_time).format("DD/MM/YYYY HH:mm:ss").includes(searchTerm) ||
+      dayjs(v.CreatedAt).format("DD/MM/YYYY HH:mm:ss").includes(searchTerm);
+  
+    const startTime = dayjs(v.start_time);
+    const isInRange = !dateRange ||
+      (
+        dateRange[0] &&
+        dateRange[1] &&
+        startTime.isSameOrAfter(dateRange[0].startOf("day")) &&
+        startTime.isSameOrBefore(dateRange[1].endOf("day"))
+      );
+  
+    return matchSearch && isInRange;
+  });  
 
   const totalPages = Math.ceil(filtered.length / perPage);
   const indexOfLast = currentPage * perPage;
   const indexOfFirst = indexOfLast - perPage;
   const currentData = filtered.slice(indexOfFirst, indexOfLast);
+
+  const handleExportCSV = () => {
+    const csvRows: string[] = [];
+  
+    const headers = ['ชื่อผู้ใช้', 'IP', 'เวลาเข้า', 'เวลาออก', 'ระยะเวลา (นาที)'];
+    csvRows.push(headers.join(','));
+  
+    const dataToExport = exportOnlyCurrentPage ? currentData : filtered;
+  
+    dataToExport.forEach((v) => {
+      const row = [
+        `"${v.username || ''}"`,
+        `"${v.user_ip || ''}"`,
+        `"${dayjs(v.start_time).format('DD/MM/YYYY HH:mm:ss')}"`,
+        `"${dayjs(v.end_time).format('DD/MM/YYYY HH:mm:ss')}"`,
+        `"${((v.duration ?? 0) / 60).toFixed(2)}"`
+      ];
+      csvRows.push(row.join(','));
+    });
+  
+    const csvContent = '\uFEFF' + csvRows.join('\n'); // มี BOM รองรับภาษาไทย
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `visitor-log-${dayjs().format('YYYY-MM-DD')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  
 
   return (
     <div className="activity-management-container">
@@ -80,7 +130,7 @@ function VisitorLog() {
             <FaUserClock className="title-icon" />
             <h1>บันทึกการเข้าใช้งานระบบ</h1>
           </div>
-          <div className="header-actions">
+          <div className="header-actions" style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
             <div className="search-container">
               <FiSearch className="search-icon" />
               <input
@@ -91,6 +141,27 @@ function VisitorLog() {
                 className="search-input"
               />
             </div>
+
+            <DatePicker.RangePicker
+              format="DD/MM/YYYY"
+              value={dateRange}
+              onChange={(range) => setDateRange(range)}
+              style={{ borderRadius: 8 }}
+              placeholder={["เริ่มต้น", "สิ้นสุด"]}
+            />
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <input
+                type="checkbox"
+                checked={exportOnlyCurrentPage}
+                onChange={(e) => setExportOnlyCurrentPage(e.target.checked)}
+              />
+              Export เฉพาะหน้าปัจจุบัน
+            </label>
+
+            <button className="export-button" onClick={handleExportCSV}>
+              📤 Export CSV
+            </button>
           </div>
         </div>
 
@@ -446,6 +517,23 @@ function VisitorLog() {
           opacity: 1;
           visibility: visible;
           top: -40px;
+        }
+
+        .export-button {
+          padding: 10px 16px;
+          background: linear-gradient(135deg, #00c9ff 0%,rgb(120, 82, 245) 100%);
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-weight: 600;
+          cursor: pointer;
+          box-shadow: 0 4px 12px rgba(0, 201, 255, 0.3);
+          transition: all 0.3s ease;
+        }
+
+        .export-button:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(0, 201, 255, 0.4);
         }
       `}</style>
     </div>

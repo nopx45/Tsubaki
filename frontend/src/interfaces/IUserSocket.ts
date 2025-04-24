@@ -3,5 +3,5 @@ export interface UserSocketsInterface {
     username?: string;
     socketId?: string;
     role?: string;
-    UpdatedAt?: string;
+    CreatedAt?: string;
   }

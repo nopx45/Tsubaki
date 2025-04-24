@@ -117,7 +117,8 @@ const AdminLayout: React.FC = () => {
         </Content>
 
         <Footer style={{ textAlign: "center" }}>
-          Copyright © 2024 TSUBAKIMOTO AUTOMOTIVE (THAILAND) Co,.Ltd
+          Copyright © 2024 TSUBAKIMOTO AUTOMOTIVE (THAILAND) Co,.Ltd <br />
+          <a>Design & Developed by Nopx</a>
         </Footer>
       </Layout>
       <Chat isLoggedIn={localStorage.getItem("isLoggedIn") === "true"} />
