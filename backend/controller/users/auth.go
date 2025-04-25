@@ -2,7 +2,9 @@ package users
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/asaskevich/govalidator"
 	"github.com/gin-gonic/gin"
@@ -13,6 +15,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
+
+var loginAttempts = make(map[string]int)
+var blockedUntil = make(map[string]time.Time)
+
+const maxLoginAttempts = 5
+const blockDuration = 15 * time.Minute
 
 type (
 	Authen struct {
@@ -111,25 +119,58 @@ func SignUp(c *gin.Context) {
 func SignIn(c *gin.Context) {
 	var payload Authen
 	var user entity.Users
+
 	if err := c.ShouldBindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	// ค้นหา user ด้วย Username ที่ผู้ใช้กรอกเข้ามา
+	username := payload.Username
 
-	if err := config.DB().Raw("SELECT * FROM users WHERE username = ?", payload.Username).Scan(&user).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	// ถ้ามีการบล็อกการเข้าใช้งาน
+	if unblockTime, exists := blockedUntil[username]; exists {
+		if time.Now().Before(unblockTime) {
+			c.JSON(http.StatusTooManyRequests, gin.H{
+				"error": fmt.Sprintf("Account locked. Try again at %s", unblockTime.Format("15:04:05")),
+			})
+			return
+		}
+		// ครบเวลาแล้ว ยกเลิกบล็อก
+		delete(blockedUntil, username)
+		delete(loginAttempts, username)
+	}
+
+	// ดึงข้อมูล user จาก DB
+	if err := config.DB().Where("username = ?", username).First(&user).Error; err != nil {
+		// เพิ่มการนับจำนวนความพยายาม (เฉพาะถ้ามี user จริง)
+		loginAttempts[username]++
+		if loginAttempts[username] >= maxLoginAttempts {
+			blockedUntil[username] = time.Now().Add(blockDuration)
+			c.JSON(http.StatusTooManyRequests, gin.H{"error": "Too many login attempts. Try again later."})
+			return
+		}
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	}
 
 	// ตรวจสอบรหัสผ่าน
 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(payload.Password))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "password is incerrect"})
+		loginAttempts[username]++
+		if loginAttempts[username] >= maxLoginAttempts {
+			blockedUntil[username] = time.Now().Add(blockDuration)
+			c.JSON(http.StatusTooManyRequests, gin.H{"error": "Too many login attempts. Try again later."})
+			return
+		}
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Password is incorrect"})
 		return
 	}
 
+	// ล้างความพยายามเมื่อเข้าสู่ระบบสำเร็จ
+	delete(loginAttempts, username)
+	delete(blockedUntil, username)
+
+	// สร้าง Token
 	jwtWrapper := services.JwtWrapper{
 		SecretKey:       "SvNQpBN8y3qlVrsGAYYWoJJk56LtzFHx",
 		Issuer:          "AuthService",
@@ -143,13 +184,14 @@ func SignIn(c *gin.Context) {
 	}
 
 	var redirectURL string
-	if user.Role == "admin" {
+	switch user.Role {
+	case "admin":
 		redirectURL = "/admin"
-	} else if user.Role == "adminit" {
+	case "adminit":
 		redirectURL = "admin/it-knowledge"
-	} else if user.Role == "adminhr" {
+	case "adminhr":
 		redirectURL = "admin"
-	} else {
+	default:
 		redirectURL = "/"
 	}
 
