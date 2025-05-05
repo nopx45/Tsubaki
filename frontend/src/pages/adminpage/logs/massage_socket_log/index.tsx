@@ -54,6 +54,7 @@ function MessagesLog() {
   };
 
   const deleteMessage = async (id: string) => {
+    console.log(id)
     if (!window.confirm("คุณแน่ใจว่าจะลบข้อความนี้ใช่หรือไม่?")) return;
     const res = await DeleteMessagesById(id);
     if (res.status === 200) {
@@ -95,13 +96,14 @@ function MessagesLog() {
   const handleExportCSV = () => {
     const csvRows: string[] = [];
   
-    const headers = ['วันที่', 'ผู้ส่ง', 'role', 'ข้อความ'];
+    const headers = ['ID','วันที่', 'ผู้ส่ง', 'role', 'ข้อความ'];
     csvRows.push(headers.join(','));
   
     const dataToExport = exportOnlyCurrentPage ? currentData : filtered;
   
     dataToExport.forEach((v) => {
       const row = [
+        `"${v.ID || ''}"`,
         `"${dayjs(v.UpdatedAt).format('DD/MM/YYYY HH:mm:ss')}"`,
         `"${v.from || ''}"`,
         `"${v.role || ''}"`,
@@ -188,14 +190,14 @@ function MessagesLog() {
                 </thead>
                 <tbody>
                   {currentData.map((m) => (
-                    <tr key={m.id} className="activity-row">
+                    <tr key={m.ID} className="activity-row">
                       <td>{dayjs(m.UpdatedAt).format("DD/MM/YYYY HH:mm")}</td>
                       <td style={{ color: "#17d632" }}>{m.from}</td>
                       <td style={{ color: "#c19c1c" }}>{m.role}</td>
                       <td style={{ color: "#0D47A1" }}>{m.content}</td>
                       <td>
                         <div className="action-buttons">
-                          <button className="delete-button" onClick={() => deleteMessage(String(m.id))}>
+                          <button className="delete-button" onClick={() => deleteMessage(String(m.ID))}>
                             <FaTrash />
                             <span className="tooltip">ลบ</span>
                           </button>

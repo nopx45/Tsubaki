@@ -1,5 +1,5 @@
 export interface MessagesInterface {
-    id?: string;
+    ID?: string;
     UpdatedAt?: string;
     from?: string;
     role?: string;
