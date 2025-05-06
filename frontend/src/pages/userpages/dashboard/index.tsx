@@ -61,8 +61,13 @@ export default function Announcements() {
     fetchData();
     const fetchActivity = async () => {
       try {
-        const response = await GetActivities();
-        setActivity(response.data);
+        const res = await GetActivities();
+        const mappedData = res.data.map((activity: any) => ({
+          ...activity,
+          Image: activity.image ? activity.image.split(",") : [], // ✅ สร้าง property ชื่อ Image (array)
+        }));
+        setActivity(mappedData);
+        
       } catch (error) {
         console.error("Error fetching Activities:", error);
       }
@@ -417,7 +422,7 @@ export default function Announcements() {
                     <div className="activity-image">
                       <img
                         alt={activity.title}
-                        src={activity.Image}
+                        src={activity.Image?.[0]}
                         style={{
                           width: "100%",
                           height: "100%",

@@ -24,6 +24,7 @@ const Announcement = Loadable(lazy(() => import("../pages/adminpage/announcement
 const Activity = Loadable(lazy(() => import("../pages/adminpage/activity")));
 const ActivityCreate = Loadable(lazy(() => import("../pages/adminpage/activity/create")));
 const ActivityEdit = Loadable(lazy(() => import("../pages/adminpage/activity/edit")));
+const ActivityAllImages = Loadable(lazy(() => import("../pages/userpages/activity/all-image/aImage")));
 const Article = Loadable(lazy(() => import("../pages/adminpage/article")));
 const ArticleCreate = Loadable(lazy(() => import("../pages/adminpage/article/create")));
 const ArticleEdit = Loadable(lazy(() => import("../pages/adminpage/article/edit")));
@@ -165,6 +166,10 @@ const AdminRoutes = (isLoggedIn: boolean): RouteObject => {
           {
             path: "edit/:id",
             element: <ActivityEdit />,
+          },
+          {
+            path: "detail/all-images/:id",
+            element: <ActivityAllImages />,
           },
         ],
       },

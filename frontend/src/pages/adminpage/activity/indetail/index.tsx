@@ -8,6 +8,12 @@ import { useTranslation } from "react-i18next";
 import { FiArrowLeft, FiCalendar } from "react-icons/fi";
 import './detail.css'
 
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import 'swiper/css/pagination';
+
 dayjs.locale("th");
 
 export default function ActivityDetails() {
@@ -49,16 +55,35 @@ export default function ActivityDetails() {
               <FiArrowLeft className="activity-details__back-icon" />
               {t("back")}
             </button>
+
+            <button
+              onClick={() => navigate(`/activity/detail/all-images/${id}`)}
+              className="activity-details__view-images-button"
+            >
+              {t("viewallimage")}
+            </button>
           </div>
 
           <div className="activity-details__image-container">
-            <img
-              src={activity.Image}
-              alt={activity.title}
-              className="activity-details__image"
-            />
+            <Swiper
+              modules={[Navigation, Pagination, Autoplay]}
+              spaceBetween={10}
+              slidesPerView={1}
+              navigation
+              pagination={{ clickable: true }}
+              autoplay={{ delay: 3000, disableOnInteraction: false }}
+            >
+              {activity.image && activity.image.split(",").map((url, index) => (
+                <SwiperSlide key={index}>
+                  <img
+                    src={url.trim()}
+                    alt={`${activity.title} - image ${index + 1}`}
+                    className="activity-details__image"
+                  />
+                </SwiperSlide>
+              ))}
+            </Swiper>
           </div>
-
           <div className="activity-details__content">
             <h1 className="activity-details__title">{activity.title}</h1>
             

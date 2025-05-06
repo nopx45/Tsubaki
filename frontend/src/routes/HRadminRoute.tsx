@@ -13,6 +13,7 @@ const UploadFile = Loadable(lazy(() => import("../pages/adminpage/file/create"))
 const Activity = Loadable(lazy(() => import("../pages/adminpage/activity")));
 const ActivityCreate = Loadable(lazy(() => import("../pages/adminpage/activity/create")));
 const EditActivity = Loadable(lazy(() => import("../pages/adminpage/activity/edit")));
+const ActivityAllImages = Loadable(lazy(() => import("../pages/userpages/activity/all-image/aImage")));
 const Announcement = Loadable(lazy(() => import("../pages/adminpage/announcement")));
 const AnnouncementCreate = Loadable(lazy(() => import("../pages/adminpage/announcement/create")));
 const AnnouncementEdit = Loadable(lazy(() => import("../pages/adminpage/announcement/edit")));
@@ -59,6 +60,10 @@ const HRadminRoutes = (isLoggedIn: boolean): RouteObject => {
               {
                 path: "edit/:id",
                 element: <EditActivity />,
+              },
+              {
+                path: "detail/all-images/:id",
+                element: <ActivityAllImages />,
               },
             ],
           },

@@ -2,14 +2,12 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link, useParams } from "react-router-dom";
 import { GetActivitiesById, UpdateActivitiesById } from "../../../../services/https";
 import { FaSave, FaTimes, FaImage, FaBullhorn, FaAlignLeft } from "react-icons/fa";
-import { FiUpload } from "react-icons/fi";
+import { FiTrash, FiUpload } from "react-icons/fi";
 
 function ActivityEdit() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: any }>();
-  const [prevActivityImage, setPrevActivityImage] = useState<string | undefined>();
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [allImages, setAllImages] = useState<(File | string)[]>([]);
 
   const showNotification = (type: string, message: string) => {
     const notification = document.createElement("div");
@@ -31,10 +29,11 @@ function ActivityEdit() {
 
   const getActivitiesById = async (id: string) => {
     try {
-      let res = await GetActivitiesById(id);
+      const res = await GetActivitiesById(id);
       if (res.status === 200) {
-        setPrevActivityImage(res.data.image);
-        // Set form values
+        const imageUrls = res.data.image.split(",");
+        setAllImages(imageUrls); // เก็บ URL รูปเก่าเข้า allImages
+  
         const form = document.getElementById('activityForm') as HTMLFormElement;
         if (form) {
           (form.elements.namedItem("title") as HTMLInputElement).value = res.data.title;
@@ -42,60 +41,56 @@ function ActivityEdit() {
         }
       } else {
         showNotification("error", "ไม่พบข้อมูลกิจกรรม");
-        setTimeout(() => {
-          navigate("/admin/activity");
-        }, 2000);
+        setTimeout(() => navigate("/admin/activity"), 2000);
       }
     } catch (error) {
       console.error("Error fetching activity:", error);
       showNotification("error", "เกิดข้อผิดพลาดในการโหลดข้อมูล");
     }
-  };
+  };  
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setSelectedImage(file);
-      
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+    if (e.target.files) {
+      const selectedFiles = Array.from(e.target.files);
+      setAllImages(prev => [...prev, ...selectedFiles]); // append ไฟล์ใหม่เข้า allImages
     }
-  };
+  };  
 
+  const handleRemoveImage = (index: number) => {
+    const updatedImages = [...allImages];
+    updatedImages.splice(index, 1); // remove รูปตาม index
+    setAllImages(updatedImages);
+  };    
+  
   const onFinish = async (e: React.FormEvent) => {
     e.preventDefault();
     const form = e.currentTarget as HTMLFormElement;
     const formData = new FormData();
-    
+  
     formData.append("title", (form.elements.namedItem("title") as HTMLInputElement).value);
     formData.append("content", (form.elements.namedItem("content") as HTMLInputElement).value);
-
-    if (selectedImage) {
-      formData.append("image", selectedImage);
-    } else if (prevActivityImage) {
-      formData.append("image", prevActivityImage);
-    }
-
+  
+    allImages.forEach((img) => {
+      if (img instanceof File) {
+        formData.append("image", img);
+      } else if (typeof img === "string") {
+        formData.append("image_url", img);
+      }
+    });
+  
     try {
-      let res = await UpdateActivitiesById(id, formData);
-      if (res?.data?.message === "Updated successfully" || res?.data?.message === "Upload successful") {
+      const res = await UpdateActivitiesById(id, formData);
+      if (res?.data?.message === "Activity updated successfully" || res?.data?.message === "Upload successful") {
         showNotification("success", res?.message || "อัปเดตกิจกรรมสำเร็จ!");
-        setTimeout(() => {
-          navigate("/admin/activity");
-        }, 2000);
+        setTimeout(() => navigate("/admin/activity"), 2000);
       } else {
-        console.error("Upload failed:", res);
         showNotification("error", res?.error || "อัปเดตกิจกรรมไม่สำเร็จ");
       }
     } catch (err: any) {
-      console.error("Upload error:", err);
       showNotification("error", err?.response?.data?.error || "เกิดข้อผิดพลาด!");
     }
   };
-
+  
   useEffect(() => {
     getActivitiesById(id);
   }, [id]);
@@ -160,26 +155,38 @@ function ActivityEdit() {
                   id="image-upload"
                   type="file"
                   accept="image/*"
+                  multiple
                   onChange={handleImageChange}
                   style={{ display: 'none' }}
                 />
               </label>
-              
-              {(previewImage || prevActivityImage) && (
+
+              {allImages.length > 0 && (
                 <div className="image-preview-container">
-                  <img
-                    src={previewImage || prevActivityImage}
-                    alt="Preview"
-                    className="image-preview"
-                  />
-                  <div className="image-overlay">
-                    <span>ภาพกิจกรรม</span>
-                  </div>
-                </div>
+                  {allImages.map((img, index) => (
+                    <div key={index} className="image-preview-item">
+                      <img
+                        src={img instanceof File ? URL.createObjectURL(img) : img}
+                        alt={`Image ${index}`}
+                        className="image-preview"
+                      />
+                      <div className="image-overlay">
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(index)}
+                          className="delete-button"
+                          aria-label="Remove image"
+                        >
+                          <FiTrash />
+                        </button>
+                        <span className="image-number">Image {index + 1}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>              
               )}
             </div>
           </div>
-
           <div className="form-actions">
             <Link to="/admin/activity" className="cancel-button">
               <FaTimes className="button-icon" />
@@ -355,6 +362,12 @@ function ActivityEdit() {
           width: fit-content;
         }
         
+        .image-preview-container {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);  /* แสดง 4 ภาพต่อแถว */
+          gap: 15px;  /* ระยะห่างระหว่างภาพ */
+          margin-top: 15px;
+        }
         .upload-button:hover {
           background: linear-gradient(135deg, #e4e8f0 0%, #d5dde8 100%);
         }
@@ -363,36 +376,74 @@ function ActivityEdit() {
           font-size: 18px;
         }
         
-        .image-preview-container {
+        /* Each individual image item */
+        .image-preview-item {
           position: relative;
           width: 100%;
-          max-width: 400px;
-          border-radius: 8px;
+          aspect-ratio: 1/1; /* Square aspect ratio */
           overflow: hidden;
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        
+
+        /* The actual preview image */
         .image-preview {
           width: 100%;
-          height: auto;
+          height: 100%;
+          object-fit: cover;
           display: block;
-          transition: transform 0.3s ease;
         }
-        
+
+        /* Overlay that appears on hover */
         .image-overlay {
           position: absolute;
-          bottom: 0;
+          top: 0;
           left: 0;
-          width: 100%;
-          padding: 10px;
-          background: linear-gradient(transparent, rgba(106, 17, 203, 0.7));
-          color: white;
-          text-align: center;
-          font-weight: 500;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent);
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          padding: 8px;
+          opacity: 0;
+          transition: opacity 0.3s ease;
         }
-        
-        .image-preview-container:hover .image-preview {
-          transform: scale(1.05);
+
+        .image-preview-item:hover .image-overlay {
+          opacity: 1;
+        }
+
+        /* Delete button styles */
+        .delete-button {
+          align-self: flex-end;
+          background: #ff4444;
+          border: none;
+          border-radius: 50%;
+          width: 28px;
+          height: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+
+        .delete-button:hover {
+          background: #cc0000;
+        }
+
+        .delete-button svg {
+          width: 16px;
+          height: 16px;
+        }
+
+        /* Image number text */
+        .image-number {
+          color: white;
+          font-size: 14px;
+          font-weight: 500;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
         }
         
         .form-actions {

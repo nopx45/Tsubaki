@@ -2,12 +2,12 @@ import { useState } from "react";
 import { CreateActivity } from "../../../../services/https";
 import { useNavigate, Link } from "react-router-dom";
 import { FaPlus, FaTimes, FaImage, FaBullhorn, FaAlignLeft } from "react-icons/fa";
-import { FiUpload } from "react-icons/fi";
+import { FiTrash, FiUpload,  } from "react-icons/fi";
 
 function ActivityCreate() {
   const navigate = useNavigate();
-  const [file, setFile] = useState<File | null>(null);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [file, setFile] = useState<File[]>([]);
+  const [previewImage, setPreviewImage] = useState<string[]>([]);
 
   const showNotification = (type: string, message: string) => {
     const notification = document.createElement("div");
@@ -28,30 +28,42 @@ function ActivityCreate() {
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0];
-      setFile(selectedFile);
-      
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewImage(reader.result as string);
-      };
-      reader.readAsDataURL(selectedFile);
+    if (e.target.files) {
+      const selectedFiles = Array.from(e.target.files);
+
+      // รวมไฟล์ใหม่กับไฟล์เก่า
+      const updatedFiles = [...file, ...selectedFiles];
+      setFile(updatedFiles);
+
+      // สร้างพรีวิวสำหรับไฟล์ที่เลือกใหม่ทั้งหมด
+      const previews = updatedFiles.map(file => URL.createObjectURL(file));
+      setPreviewImage(previews);
     }
   };
+
+  const handleRemoveImage = (index: number) => {
+    const updatedFiles = [...file];
+    updatedFiles.splice(index, 1); // ลบไฟล์ตาม index
+    setFile(updatedFiles);
+
+    const updatedPreviews = [...previewImage];
+    updatedPreviews.splice(index, 1); // ลบพรีวิวภาพตาม index
+    setPreviewImage(updatedPreviews);
+  };  
 
   const onFinish = async (e: React.FormEvent) => {
     e.preventDefault();
     const form = e.currentTarget as HTMLFormElement;
     const formData = new FormData();
-    
+  
     formData.append("title", (form.elements.namedItem("title") as HTMLInputElement).value);
     formData.append("content", (form.elements.namedItem("content") as HTMLInputElement).value);
-
-    if (file) {
-      formData.append("image", file);
-    }
-
+  
+    // เพิ่มไฟล์ภาพทั้งหมด
+    file.forEach(file => {
+      formData.append("image", file); // ส่งเป็นอาร์เรย์
+    });
+  
     try {
       let res = await CreateActivity(formData);
       if (res?.message === "Upload successful") {
@@ -130,21 +142,35 @@ function ActivityCreate() {
                   type="file"
                   accept="image/*"
                   onChange={handleImageChange}
+                  multiple
                   required
                   style={{ display: 'none' }}
                 />
               </label>
-              
-              {previewImage && (
+              {previewImage.length > 0 && (
                 <div className="image-preview-container">
-                  <img
-                    src={previewImage}
-                    alt="Preview"
-                    className="image-preview"
-                  />
-                  <div className="image-overlay">
-                    <span>ภาพกิจกรรม</span>
-                  </div>
+                  {previewImage.map((src, index) => (
+                    <div key={index} className="image-preview-item">
+                      <img 
+                        src={src} 
+                        alt={`Preview ${index}`} 
+                        className="image-preview" 
+                      />
+                      
+                      <div className="image-overlay">
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(index)}
+                          className="delete-button"
+                          aria-label="Remove image"
+                        >
+                          <FiTrash />
+                        </button>
+                        
+                        <span className="image-number">Image {index + 1}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -329,39 +355,85 @@ function ActivityCreate() {
         .upload-icon {
           font-size: 18px;
         }
-        
+
+        /* Container for all preview images */
         .image-preview-container {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 16px;
+          margin: 16px 0;
+        }
+
+        /* Each individual image item */
+        .image-preview-item {
           position: relative;
           width: 100%;
-          max-width: 400px;
-          border-radius: 8px;
+          aspect-ratio: 1/1; /* Square aspect ratio */
           overflow: hidden;
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        
+
+        /* The actual preview image */
         .image-preview {
           width: 100%;
-          height: auto;
+          height: 100%;
+          object-fit: cover;
           display: block;
-          transition: transform 0.3s ease;
         }
-        
+
+        /* Overlay that appears on hover */
         .image-overlay {
           position: absolute;
-          bottom: 0;
+          top: 0;
           left: 0;
-          width: 100%;
-          padding: 10px;
-          background: linear-gradient(transparent, rgba(106, 17, 203, 0.7));
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent);
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          padding: 8px;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+
+        .image-preview-item:hover .image-overlay {
+          opacity: 1;
+        }
+
+        /* Delete button styles */
+        .delete-button {
+          align-self: flex-end;
+          background: #ff4444;
+          border: none;
+          border-radius: 50%;
+          width: 28px;
+          height: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+
+        .delete-button:hover {
+          background: #cc0000;
+        }
+
+        .delete-button svg {
+          width: 16px;
+          height: 16px;
+        }
+
+        /* Image number text */
+        .image-number {
           color: white;
-          text-align: center;
+          font-size: 14px;
           font-weight: 500;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
         }
-        
-        .image-preview-container:hover .image-preview {
-          transform: scale(1.05);
-        }
-        
+
         .form-actions {
           display: flex;
           justify-content: flex-end;
