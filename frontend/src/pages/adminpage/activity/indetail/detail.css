@@ -62,6 +62,9 @@
   
   /* Header */
   .activity-details__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: 1.5rem;
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   }
@@ -89,6 +92,22 @@
   .activity-details__back-icon {
     font-size: 1.2rem;
   }
+  
+  .activity-details__view-images-button {
+    background: linear-gradient(135deg, #6a11cb, #2575fc);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .activity-details__view-images-button:hover {
+    background: linear-gradient(135deg, #2575fc, #6a11cb);
+  }
+
   
   /* Image */
   .activity-details__image-container {

@@ -61,7 +61,11 @@ function Activity() {
     try {
       let res = await GetActivities();
       if (res.status === 200) {
-        setActivities(res.data);
+        const mappedData = res.data.map((activity: any) => ({
+          ...activity,
+          Image: activity.image ? activity.image.split(",") : [], // ✅ สร้าง property ชื่อ Image (array)
+        }));
+        setActivities(mappedData);        
       } else {
         setActivities([]);
         showNotification("error", res.data.error);
@@ -71,7 +75,7 @@ function Activity() {
     } finally {
       setLoading(false);
     }
-  };
+  };  
 
   useEffect(() => {
     getActivities();
@@ -177,13 +181,10 @@ function Activity() {
                         {activity.Image ? (
                           <div className="image-container">
                             <img
-                              src={activity.Image}
+                              src={activity.Image[0]}
                               alt="รูปภาพกิจกรรม"
                               className="activity-image"
                             />
-                            <div className="image-hover">
-                              <span>ดูรูปภาพ</span>
-                            </div>
                           </div>
                         ) : (
                           <span className="no-image">ไม่มีรูปภาพ</span>
@@ -488,21 +489,6 @@ function Activity() {
           height: 100%;
           object-fit: cover;
           transition: transform 0.3s ease;
-        }
-        
-        .image-hover {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: rgba(106, 17, 203, 0.7);
-          color: white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          opacity: 0;
-          transition: opacity 0.3s ease;
         }
         
         .image-container:hover .activity-image {

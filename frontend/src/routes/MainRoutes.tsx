@@ -6,6 +6,7 @@ import ITKnowledge from "../pages/userpages/it-knowledge";
 import Announcement from "../pages/userpages/announcement";
 import Activity from "../pages/userpages/activity";
 import ActivityDetails from "../pages/adminpage/activity/indetail";
+import ActivityAllImages from "../pages/userpages/activity/all-image/aImage";
 import Article from "../pages/userpages/article";
 import ArticleDetails from "../pages/userpages/article/indetail";
 import Security from "../pages/userpages/security";
@@ -67,6 +68,10 @@ const MainRoutes = (): RouteObject[] => {
             {
               path: "detail/:id",
               element: <ActivityDetails />,
+            },
+            {
+              path: "detail/all-images/:id",
+              element: <ActivityAllImages />,
             },
           ],
         },

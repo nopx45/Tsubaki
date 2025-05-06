@@ -12,6 +12,7 @@ import ArticleDetails from "../pages/userpages/article/indetail";
 import ChangePassword from "../pages/authentication/change-password";
 import UserProfile from "../pages/userpages/profile";
 import Calendar from "../pages/userpages/carlendar";
+import ActivityAllImages from "../pages/userpages/activity/all-image/aImage";
 
 const NotPage = Loadable(lazy(() => import("../pages/notpage")));
 
@@ -60,6 +61,10 @@ const UserRoutes = (isLoggedIn: boolean): RouteObject[] => {
           {
             path: "detail/:id",
             element: <ActivityDetails />,
+          },
+          {
+            path: "detail/all-images/:id",
+            element: <ActivityAllImages />,
           },
         ],
       },

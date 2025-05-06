@@ -3,6 +3,7 @@ import { RouteObject } from "react-router-dom";
 import Loadable from "../components/third-patry/Loadable";
 import Carlendar from "../pages/adminpage/carlendar";
 import Dashboard from "../pages/adminpage/dashboard";
+import ActivityAllImages from "../pages/userpages/activity/all-image/aImage";
 
 const NotPage = Loadable(lazy(() => import("../pages/notpage")));
 
@@ -60,6 +61,10 @@ const ITadminRoutes = (isLoggedIn: boolean): RouteObject => {
               element: <EditSecurity />,
             },
           ],
+        },
+        {
+          path: "detail/all-images/:id",
+          element: <ActivityAllImages />,
         },
         {
           path: "popup-images",
