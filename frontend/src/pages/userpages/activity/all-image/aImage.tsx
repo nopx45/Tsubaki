@@ -29,7 +29,7 @@ export default function ActivityAllImages() {
     fetchActivity();
   }, [id]);
 
-  const openImageModal = (imgUrl: string, index: number) => {
+  const openImageModal = (imgUrl: string, index: number) => { // close model
     setSelectedImage(imgUrl);
     setCurrentIndex(index);
   };
