@@ -11,6 +11,7 @@ import Article from "../pages/userpages/article";
 import ArticleDetails from "../pages/userpages/article/indetail";
 import Security from "../pages/userpages/security";
 import Calendar from "../pages/userpages/carlendar";
+import ITKnowledgeDetail from "../pages/userpages/it-knowledge/detail/detail";
 
 const NotPage = Loadable(lazy(() => import("../pages/notpage")));
 
@@ -46,7 +47,11 @@ const MainRoutes = (): RouteObject[] => {
             {
               index: true,
               element: <ITKnowledge />,
-            }
+            },
+            {
+              path: "detail/:id",
+              element: <ITKnowledgeDetail />,
+            },
           ],
         },
         {

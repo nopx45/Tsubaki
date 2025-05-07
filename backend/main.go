@@ -44,7 +44,10 @@ func main() {
 
 	r := gin.Default()
 	r.Static("/uploads/images", "./uploads/images")
-	r.Static("/static/popup", "./uploads/images/popup")
+	r.Static("/uploads/videos", "./uploads/videos")
+	r.Static("/uploads/gifs", "./uploads/gifs")
+	r.Static("/uploads/pdfs", "./uploads/pdfs")
+
 	r.Use(CORSMiddleware())
 
 	// Auth Route

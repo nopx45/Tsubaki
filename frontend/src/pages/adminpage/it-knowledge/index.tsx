@@ -152,7 +152,7 @@ function ITKnowledges() {
                     <th>
                       <div className="header-cell">
                         <FaImage className="column-icon" />
-                        <span>รูปภาพ</span>
+                        <span>รูปหน้าปก</span>
                       </div>
                     </th>
                     <th>จัดการ</th>
@@ -184,16 +184,13 @@ function ITKnowledges() {
                         </span>
                       </td>
                       <td>
-                        {knowledge.Image ? (
+                        {knowledge.thumbnail ? (
                           <div className="image-container">
                             <img
-                              src={knowledge.Image}
+                              src={knowledge.thumbnail}
                               alt="รูปภาพข่าวสาร"
                               className="knowledge-image"
                             />
-                            <div className="image-overlay">
-                              <span>ดูรูปภาพ</span>
-                            </div>
                           </div>
                         ) : (
                           <span className="no-image">ไม่มีรูปภาพ</span>

@@ -3,6 +3,7 @@ import { RouteObject, useNavigate } from "react-router-dom";
 import Loadable from "../components/third-patry/Loadable";
 import Carlendar from "../pages/adminpage/carlendar";
 import Dashboard from "../pages/adminpage/dashboard";
+import ITKnowledgeDetail from "../pages/userpages/it-knowledge/detail/detail";
 
 const NotPage = Loadable(lazy(() => import("../pages/notpage")));
 
@@ -138,6 +139,10 @@ const HRadminRoutes = (isLoggedIn: boolean): RouteObject => {
       {
         path: "calendar",
         element: <Carlendar />,
+      },
+      {
+        path: "detail/:id",
+        element: <ITKnowledgeDetail />,
       },
       {
         path: "*",

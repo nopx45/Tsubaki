@@ -2,12 +2,23 @@ import { useState } from "react";
 import { CreateKnowledge } from "../../../../services/https";
 import { useNavigate, Link } from "react-router-dom";
 import { FaPlus, FaTimes, FaNewspaper, FaAlignLeft, FaImage, FaUpload } from "react-icons/fa";
+import Swal from "sweetalert2";
 
 function ITKnowledgeCreate() {
   const navigate = useNavigate();
   const [file, setFile] = useState<File | null>(null);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [gifFile, setGifFile] = useState<File | null>(null);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+
+  const [previewThumbnail, setPreviewThumbnail] = useState<string | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [previewVideo, setPreviewVideo] = useState<string | null>(null);
+  const [previewGif, setPreviewGif] = useState<string | null>(null);
+
 
   const showNotification = (type: string, message: string) => {
     const notification = document.createElement("div");
@@ -30,6 +41,19 @@ function ITKnowledgeCreate() {
     }, 3000);
   };
 
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
+      setThumbnailFile(selectedFile);
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewThumbnail(reader.result as string);
+      };
+      reader.readAsDataURL(selectedFile);
+    }
+  };
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
@@ -43,20 +67,64 @@ function ITKnowledgeCreate() {
     }
   };
 
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
+      setVideoFile(selectedFile);
+      setPreviewVideo(URL.createObjectURL(selectedFile));
+    }
+  };
+  
+  const handleGifChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
+      setGifFile(selectedFile);
+      setPreviewGif(URL.createObjectURL(selectedFile));
+    }
+  };
+  
+  const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
+      setPdfFile(selectedFile);
+    }
+  };
+  
   const onFinish = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+  
     const form = e.currentTarget as HTMLFormElement;
     const formData = new FormData();
-    
+  
     formData.append("title", (form.elements.namedItem("title") as HTMLInputElement).value);
     formData.append("content", (form.elements.namedItem("content") as HTMLInputElement).value);
-
+  
+    if (!thumbnailFile) {
+      await Swal.fire({
+        icon: 'warning',
+        title: 'กรุณาเลือกรูปหน้าปก!!',
+        text: 'คุณต้องเลือกภาพหน้าปก ก่อนทำการอัปโหลด',
+      });
+      setIsSubmitting(false);
+      return;
+    } else {
+      formData.append("thumbnail", thumbnailFile);
+    }
+  
     if (file) {
       formData.append("image", file);
     }
-
+    if (videoFile) {
+      formData.append("video", videoFile);
+    }
+    if (gifFile) {
+      formData.append("gif", gifFile);
+    }
+    if (pdfFile) {
+      formData.append("pdf", pdfFile);
+    }
+  
     try {
       let res = await CreateKnowledge(formData);
       if (res?.message === "Upload successful") {
@@ -74,7 +142,7 @@ function ITKnowledgeCreate() {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  };  
 
   return (
     <div className="it-knowledge-create-container">
@@ -101,6 +169,7 @@ function ITKnowledgeCreate() {
                 name="title"
                 placeholder="กรอกหัวข้อข่าวสาร IT"
                 required
+                maxLength={55}
               />
               <span className="input-focus"></span>
             </div>
@@ -124,6 +193,39 @@ function ITKnowledgeCreate() {
           </div>
 
           <div className="form-group">
+            <label htmlFor="thumbnail">
+              <FaImage className="input-icon" />
+              รูปหน้าปก
+            </label>
+            <div className="image-upload-container">
+              <label htmlFor="thumbnail-upload" className="upload-button">
+                <FaUpload className="upload-icon" />
+                <span>เลือกรูปหน้าปก</span>
+                <input
+                  id="thumbnail-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleThumbnailChange}
+                  style={{ display: 'none' }}
+                />
+              </label>
+              
+              {previewThumbnail && (
+                <div className="image-preview-container">
+                  <img
+                    src={previewThumbnail ? previewThumbnail : undefined}
+                    alt="Preview"
+                    className="image-preview"
+                  />
+                  <div className="image-overlay">
+                    <span>ภาพข่าวสาร</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="form-group">
             <label htmlFor="image">
               <FaImage className="input-icon" />
               รูปข่าวสาร
@@ -137,7 +239,6 @@ function ITKnowledgeCreate() {
                   type="file"
                   accept="image/*"
                   onChange={handleImageChange}
-                  required
                   style={{ display: 'none' }}
                 />
               </label>
@@ -154,6 +255,83 @@ function ITKnowledgeCreate() {
                   </div>
                 </div>
               )}
+            </div>
+            <div className="form-group">
+              <label htmlFor="video">
+                <FaUpload className="input-icon" />
+                วิดีโอ (.mp4)
+              </label>
+              <div className="image-upload-container">
+                <label htmlFor="video-upload" className="upload-button">
+                  <FaUpload className="upload-icon" />
+                  <span>เลือกไฟล์วิดีโอ</span>
+                  <input
+                    id="video-upload"
+                    type="file"
+                    accept="video/mp4"
+                    onChange={handleVideoChange}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+
+                {previewVideo && (
+                  <div className="video-preview-container">
+                    <video src={previewVideo} controls className="video-preview" />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="gif">
+                <FaUpload className="input-icon" />
+                ไฟล์ GIF (.gif)
+              </label>
+              <div className="image-upload-container">
+                <label htmlFor="gif-upload" className="upload-button">
+                  <FaUpload className="upload-icon" />
+                  <span>เลือกไฟล์ GIF</span>
+                  <input
+                    id="gif-upload"
+                    type="file"
+                    accept="image/gif"
+                    onChange={handleGifChange}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+
+                {previewGif && (
+                  <div className="image-preview-container">
+                    <img src={previewGif} alt="GIF Preview" className="image-preview" />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="pdf">
+                <FaUpload className="input-icon" />
+                ไฟล์ PDF (.pdf)
+              </label>
+              <div className="image-upload-container">
+                <label htmlFor="pdf-upload" className="upload-button">
+                  <FaUpload className="upload-icon" />
+                  <span>เลือกไฟล์ PDF</span>
+                  <input
+                    id="pdf-upload"
+                    type="file"
+                    accept="application/pdf"
+                    onChange={handlePdfChange}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+
+                {pdfFile && (
+                  <div className="pdf-file-name">
+                    <span>{pdfFile.name}</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -400,7 +578,22 @@ function ITKnowledgeCreate() {
         .image-preview-container:hover .image-preview {
           transform: scale(1.05);
         }
-        
+
+        .video-preview-container {
+          position: relative;
+          width: 100%;
+          max-width: 400px;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .video-preview {
+          width: 100%;
+          height: auto;
+          display: block;
+        }
+                 
         .form-actions {
           display: flex;
           justify-content: flex-end;

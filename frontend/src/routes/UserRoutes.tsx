@@ -13,6 +13,7 @@ import ChangePassword from "../pages/authentication/change-password";
 import UserProfile from "../pages/userpages/profile";
 import Calendar from "../pages/userpages/carlendar";
 import ActivityAllImages from "../pages/userpages/activity/all-image/aImage";
+import ITKnowledgeDetail from "../pages/userpages/it-knowledge/detail/detail";
 
 const NotPage = Loadable(lazy(() => import("../pages/notpage")));
 
@@ -39,7 +40,11 @@ const UserRoutes = (isLoggedIn: boolean): RouteObject[] => {
           {
             index: true,
             element: <ITKnowledge />,
-          }
+          },
+          {
+            path: "detail/:id",
+            element: <ITKnowledgeDetail />,
+          },
         ],
       },
       {

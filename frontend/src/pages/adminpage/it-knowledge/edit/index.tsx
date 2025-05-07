@@ -1,65 +1,128 @@
 import { useEffect, useState } from "react";
 import { GetKnowledgesById, UpdateKnowledgesById } from "../../../../services/https/index";
 import { useNavigate, Link, useParams } from "react-router-dom";
-import { ImageUpload } from "../../../../interfaces/IUpload";
 import { FaSave, FaTimes, FaNewspaper, FaAlignLeft, FaImage, FaUpload } from "react-icons/fa";
 
 function ITKnowledgeEdit() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: any }>();
-  const [itKnowledge, setIIKnowledge] = useState<ImageUpload>();
   const [prevKnowledgeImage, setPrevKnowledgeImage] = useState<string | undefined>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [previewThumbnail, setPreviewThumbnail] = useState<string | null>(null);
+  const [previewVideo, setPreviewVideo] = useState<string | null>(null);
+  const [previewGif, setPreviewGif] = useState<string | null>(null);
+  const [prevThumbnailImage, setPrevThumbnailImage] = useState<string | undefined>();
+  const [prevVideoFile, setPrevVideoFile] = useState<string | undefined>();
+  const [prevGifFile, setPrevGifFile] = useState<string | undefined>();
+  const [prevPdfFile, setPrevPdfFile] = useState<string | undefined>();
+  const [file, setFile] = useState<File | null>(null);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [gifFile, setGifFile] = useState<File | null>(null);
 
   const showNotification = (type: string, message: string) => {
     const notification = document.createElement("div");
     notification.className = `notification ${type}`;
-    notification.innerHTML = `
-      <span class="notification-icon">${type === "success" ? "✓" : "✗"}</span>
-      <span>${message}</span>
-    `;
+    notification.innerHTML = `<span class="notification-icon">${type === "success" ? "✓" : "✗"}</span><span>${message}</span>`;
     document.body.appendChild(notification);
-    
-    setTimeout(() => {
-      notification.classList.add("show");
-    }, 10);
-    
+
+    setTimeout(() => notification.classList.add("show"), 10);
     setTimeout(() => {
       notification.classList.remove("show");
-      setTimeout(() => {
-        document.body.removeChild(notification);
-      }, 300);
+      setTimeout(() => document.body.removeChild(notification), 300);
     }, 3000);
   };
 
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setThumbnailFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setPreviewThumbnail(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+  
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0];
-      setIIKnowledge({ originFileObj: selectedFile } as unknown as ImageUpload);
-      
+      const file = e.target.files[0];
+      setFile(file);
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewImage(reader.result as string);
-      };
-      reader.readAsDataURL(selectedFile);
+      reader.onloadend = () => setPreviewImage(reader.result as string);
+      reader.readAsDataURL(file);
     }
+  };
+  
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setVideoFile(file);
+      setPreviewVideo(URL.createObjectURL(file));
+    }
+  };
+  
+  const handleGifChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setGifFile(file);
+      setPreviewGif(URL.createObjectURL(file));
+    }
+  };
+  
+  const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setPdfFile(file);
+    }
+  };
+
+  const removeThumbnail = () => {
+    setThumbnailFile(null);
+    setPreviewThumbnail(null);
+    setPrevThumbnailImage(undefined);
+  };
+  
+  const removeImage = () => {
+    setFile(null);
+    setPreviewImage(null);
+    setPrevKnowledgeImage(undefined);
+  };
+  
+  const removeVideo = () => {
+    setVideoFile(null);
+    setPreviewVideo(null);
+    setPrevVideoFile(undefined);
+  };
+  
+  const removeGif = () => {
+    setGifFile(null);
+    setPreviewGif(null);
+    setPrevGifFile(undefined);
+  };
+  
+  const removePdf = () => {
+    setPdfFile(null);
+    setPrevPdfFile(undefined);
   };
 
   const getKnowledgesById = async (id: string) => {
     try {
       let res = await GetKnowledgesById(id);
       if (res.status === 200) {
-        setPrevKnowledgeImage(res.data.image);
+        setPrevThumbnailImage(res.data.thumbnail);
+        setPrevKnowledgeImage(res.data.Image);
+        setPrevVideoFile(res.data.video);
+        setPrevGifFile(res.data.gif);
+        setPrevPdfFile(res.data.pdf);
         setFormValues({
           title: res.data.title,
           content: res.data.content,
         });
       } else {
         showNotification("error", "ไม่พบข้อมูลข่าวสารไอที");
-        setTimeout(() => {
-          navigate("/admin/it-knowledge");
-        }, 2000);
+        setTimeout(() => navigate("/admin/it-knowledge"), 2000);
       }
     } catch (error) {
       console.error("Error fetching knowledge:", error);
@@ -67,10 +130,7 @@ function ITKnowledgeEdit() {
     }
   };
 
-  const [formValues, setFormValues] = useState({
-    title: "",
-    content: "",
-  });
+  const [formValues, setFormValues] = useState({ title: "", content: "" });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -80,25 +140,46 @@ function ITKnowledgeEdit() {
   const onFinish = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     const formData = new FormData();
     formData.append("title", formValues.title);
     formData.append("content", formValues.content);
 
-    if (itKnowledge?.originFileObj && itKnowledge.originFileObj instanceof File) {
-      formData.append("image", itKnowledge.originFileObj);
-    } 
-    else if (prevKnowledgeImage) {
-      formData.append("image", prevKnowledgeImage);
+    if (thumbnailFile) {
+      formData.append("thumbnail", thumbnailFile);
+    } else if (!prevThumbnailImage) {
+      formData.append("removeThumbnail", "true");
     }
+    
+    if (file) {
+      formData.append("image", file);
+    } else if (!prevKnowledgeImage) {
+      formData.append("removeImage", "true");
+    }
+    
+    if (videoFile) {
+      formData.append("video", videoFile);
+    } else if (!prevVideoFile) {
+      formData.append("removeVideo", "true");
+    }
+    
+    if (gifFile) {
+      formData.append("gif", gifFile);
+    } else if (!prevGifFile) {
+      formData.append("removeGif", "true");
+    }
+    
+    if (pdfFile) {
+      formData.append("pdf", pdfFile);
+    } else if (!prevPdfFile) {
+      formData.append("removePdf", "true");
+    }    
 
     try {
       let res = await UpdateKnowledgesById(id, formData);
       if (res?.data?.message === "Updated successfully" || res?.data?.message === "Upload successful") {
         showNotification("success", "อัปเดตข่าวสารสำเร็จ!");
-        setTimeout(() => {
-          navigate("/admin/it-knowledge");
-        }, 2000);
+        setTimeout(() => navigate("/admin/it-knowledge"), 2000);
       } else {
         showNotification("error", res?.error || "อัปเดตข่าวสารไม่สำเร็จ");
       }
@@ -112,7 +193,6 @@ function ITKnowledgeEdit() {
   useEffect(() => {
     getKnowledgesById(id);
   }, [id]);
-
   return (
     <div className="it-knowledge-edit-container">
       <div className="it-knowledge-edit-card">
@@ -140,6 +220,7 @@ function ITKnowledgeEdit() {
                 onChange={handleInputChange}
                 placeholder="กรอกหัวข้อข่าวสาร IT"
                 required
+                maxLength={55}
               />
               <span className="input-focus"></span>
             </div>
@@ -165,6 +246,49 @@ function ITKnowledgeEdit() {
           </div>
 
           <div className="form-group">
+            <label htmlFor="thumbnail">
+              <FaImage className="input-icon" />
+              รูปหน้าปก
+            </label>
+            <div className="image-upload-container">
+              <label htmlFor="thumbnail-upload" className="upload-button">
+                <FaUpload className="upload-icon" />
+                <span>เลือกรูปหน้าปก</span>
+                <input
+                  id="thumbnail-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleThumbnailChange}
+                  style={{ display: 'none' }}
+                />
+              </label>
+              
+              {(previewThumbnail || prevThumbnailImage) && (
+                <div className="image-preview-container">
+                  <img
+                    src={previewThumbnail || prevThumbnailImage}
+                    alt="Thumbnail Preview"
+                    className="image-preview"
+                  />
+                  <button 
+                    type="button" 
+                    className="remove-button"
+                    onClick={removeThumbnail}
+                    title="ลบรูปหน้าปก"
+                  >
+                    <svg className="remove-icon" viewBox="0 0 24 24">
+                      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                  </button>
+                  <div className="image-overlay">
+                    <span>ภาพหน้าปก</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="form-group">
             <label htmlFor="image">
               <FaImage className="input-icon" />
               รูปภาพข่าวสาร
@@ -185,13 +309,156 @@ function ITKnowledgeEdit() {
               {(previewImage || prevKnowledgeImage) && (
                 <div className="image-preview-container">
                   <img
-                    src={previewImage || `http://localhost:8080/${prevKnowledgeImage}`}
-                    alt="Preview"
+                    src={previewImage || prevKnowledgeImage}
+                    alt="Image Preview"
                     className="image-preview"
                   />
+                  <button 
+                    type="button" 
+                    className="remove-button"
+                    onClick={removeImage}
+                    title="ลบรูปภาพ"
+                  >
+                    <svg className="remove-icon" viewBox="0 0 24 24">
+                      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                  </button>
                   <div className="image-overlay">
                     <span>ภาพข่าวสาร</span>
                   </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="video">
+              <FaImage className="input-icon" />
+              วิดีโอ (mp4)
+            </label>
+            <div className="image-upload-container">
+              <label htmlFor="video-upload" className="upload-button">
+                <FaUpload className="upload-icon" />
+                <span>เลือกไฟล์วิดีโอ</span>
+                <input
+                  id="video-upload"
+                  type="file"
+                  accept="video/mp4"
+                  onChange={handleVideoChange}
+                  style={{ display: 'none' }}
+                />
+              </label>
+              
+              {(previewVideo || prevVideoFile) && (
+                <div className="video-preview-container">
+                  <video
+                    src={previewVideo || prevVideoFile}
+                    controls
+                    className="video-preview"
+                  />
+                  <button 
+                    type="button" 
+                    className="remove-button video-remove-button"
+                    onClick={removeVideo}
+                    title="ลบวิดีโอ"
+                  >
+                    <svg className="remove-icon" viewBox="0 0 24 24">
+                      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="gif">
+              <FaImage className="input-icon" />
+              รูปภาพ gif
+            </label>
+            <div className="image-upload-container">
+              <label htmlFor="gif-upload" className="upload-button">
+                <FaUpload className="upload-icon" />
+                <span>เลือกไฟล์ภาพ gif</span>
+                <input
+                  id="gif-upload"
+                  type="file"
+                  accept="image/gif"
+                  onChange={handleGifChange}
+                  style={{ display: 'none' }}
+                />
+              </label>
+              
+              {(previewGif || prevGifFile) && (
+                <div className="image-preview-container">
+                  <img
+                    src={previewGif || prevGifFile}
+                    alt="GIF Preview"
+                    className="image-preview"
+                  />
+                  <button 
+                    type="button" 
+                    className="remove-button"
+                    onClick={removeGif}
+                    title="ลบ GIF"
+                  >
+                    <svg className="remove-icon" viewBox="0 0 24 24">
+                      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                  </button>
+                  <div className="image-overlay">
+                    <span>GIF</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="pdf">
+              <FaImage className="input-icon" />
+              ไฟล์ pdf
+            </label>
+            <div className="image-upload-container">
+              <label htmlFor="pdf-upload" className="upload-button">
+                <FaUpload className="upload-icon" />
+                <span>เลือกไฟล์ pdf</span>
+                <input
+                  id="pdf-upload"
+                  type="file"
+                  accept="application/pdf"
+                  onChange={handlePdfChange}
+                  style={{ display: 'none' }}
+                />
+              </label>
+              
+              {(pdfFile || prevPdfFile) && (
+                <div className="pdf-file-container">
+                  <div className="pdf-file-content">
+                    <div className="pdf-icon">
+                      <svg viewBox="0 0 24 24">
+                        <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-1h8v1zm0-3H8v-1h8v1zm-3-5V3.5L18.5 10H13z"/>
+                      </svg>
+                    </div>
+                    <a 
+                      href={pdfFile ? URL.createObjectURL(pdfFile) : prevPdfFile} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="pdf-file-link"
+                    >
+                      {pdfFile ? pdfFile.name : "ไฟล์ PDF เดิม"}
+                    </a>
+                  </div>
+                  <button 
+                    type="button" 
+                    className="remove-button pdf-remove-button"
+                    onClick={removePdf}
+                    title="ลบ PDF"
+                  >
+                    <svg className="remove-icon" viewBox="0 0 24 24">
+                      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                  </button>
                 </div>
               )}
             </div>
@@ -411,10 +678,116 @@ function ITKnowledgeEdit() {
           font-size: 18px;
         }
         
+        /* Improved Remove Button Styles */
+        .remove-button {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          width: 28px;
+          height: 28px;
+          background: rgba(255, 255, 255, 0.9);
+          border: none;
+          border-radius: 50%;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+          transition: all 0.3s ease;
+          padding: 0;
+          z-index: 2;
+        }
+
+        .remove-button:hover {
+          background: #ff4b2b;
+          transform: scale(1.1);
+        }
+
+        .remove-icon {
+          width: 18px;
+          height: 18px;
+          fill: #ff4b2b;
+          transition: all 0.3s ease;
+        }
+
+        .remove-button:hover .remove-icon {
+          fill: white;
+        }
+
+        /* Video Remove Button Specific */
+        .video-remove-button {
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          width: 28px;
+          height: 28px;
+          background: rgba(255, 255, 255, 0.9);
+          border: none;
+          border-radius: 50%;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+          z-index: 10; /* สูงกว่าวิดีโอ controls */
+        }
+
+        /* PDF File Container */
+        .pdf-file-container {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          background: #f5f7fa;
+          border-radius: 8px;
+          padding: 12px 15px;
+          margin-top: 10px;
+          border: 1px solid #e0e0e0;
+        }
+
+        .pdf-file-content {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          flex: 1;
+        }
+
+        .pdf-icon {
+          width: 24px;
+          height: 24px;
+        }
+
+        .pdf-icon svg {
+          width: 100%;
+          height: 100%;
+          fill: #e74c3c;
+        }
+
+        .pdf-file-link {
+          color: #2c3e50;
+          text-decoration: none;
+          flex: 1;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          transition: color 0.2s;
+        }
+
+        .pdf-file-link:hover {
+          color: #6a11cb;
+          text-decoration: underline;
+        }
+
+        .pdf-remove-button {
+          position: relative;
+          top: auto;
+          right: auto;
+          margin-left: 10px;
+        }
+
         .image-preview-container {
           position: relative;
           width: 100%;
-          max-width: 400px;
+          max-width: 300px;
           border-radius: 8px;
           overflow: hidden;
           box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -426,7 +799,19 @@ function ITKnowledgeEdit() {
           display: block;
           transition: transform 0.3s ease;
         }
+
+        .video-preview-container {
+          position: relative;
+          display: inline-block; /* หรือ flex ตามการใช้งาน */
+          width: 300px; /* กำหนดขนาดตามต้องการ */
+        }
+
+        .video-preview {
+          width: 300px;
+          height: 225px;
+        }
         
+        /* Overlay that appears on hover */
         .image-overlay {
           position: absolute;
           bottom: 0;
