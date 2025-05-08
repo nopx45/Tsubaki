@@ -5,9 +5,20 @@ import { FaPlus, FaTimes, FaShieldAlt, FaAlignLeft, FaImage, FaUpload } from "re
 
 function SecurityCreate() {
   const navigate = useNavigate();
-  const [file, setFile] = useState<File | null>(null);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // state ของไฟล์แต่ละประเภท
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [gifFile, setGifFile] = useState<File | null>(null);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+
+  // state ของ preview
+  const [previewThumbnail, setPreviewThumbnail] = useState<string | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [previewVideo, setPreviewVideo] = useState<string | null>(null);
+  const [previewGif, setPreviewGif] = useState<string | null>(null);
 
   const showNotification = (type: string, message: string) => {
     const notification = document.createElement("div");
@@ -17,11 +28,11 @@ function SecurityCreate() {
       <span>${message}</span>
     `;
     document.body.appendChild(notification);
-    
+
     setTimeout(() => {
       notification.classList.add("show");
     }, 10);
-    
+
     setTimeout(() => {
       notification.classList.remove("show");
       setTimeout(() => {
@@ -30,32 +41,65 @@ function SecurityCreate() {
     }, 3000);
   };
 
+  // handleChange ของแต่ละไฟล์
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setThumbnailFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setPreviewThumbnail(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0];
-      setFile(selectedFile);
-      
+      const file = e.target.files[0];
+      setImageFile(file);
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewImage(reader.result as string);
-      };
-      reader.readAsDataURL(selectedFile);
+      reader.onloadend = () => setPreviewImage(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setVideoFile(file);
+      setPreviewVideo(URL.createObjectURL(file));
+    }
+  };
+
+  const handleGifChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setGifFile(file);
+      setPreviewGif(URL.createObjectURL(file));
+    }
+  };
+
+  const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setPdfFile(file);
     }
   };
 
   const onFinish = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     const form = e.currentTarget as HTMLFormElement;
     const formData = new FormData();
-    
+
     formData.append("title", (form.elements.namedItem("title") as HTMLInputElement).value);
     formData.append("content", (form.elements.namedItem("content") as HTMLInputElement).value);
 
-    if (file) {
-      formData.append("image", file);
-    }
+    if (thumbnailFile) formData.append("thumbnail", thumbnailFile);
+    if (imageFile) formData.append("image", imageFile);
+    if (videoFile) formData.append("video", videoFile);
+    if (gifFile) formData.append("gif", gifFile);
+    if (pdfFile) formData.append("pdf", pdfFile);
 
     try {
       let res = await CreateSecurity(formData);
@@ -94,16 +138,7 @@ function SecurityCreate() {
               <FaShieldAlt className="input-icon" />
               ชื่อหัวข้อ
             </label>
-            <div className="input-wrapper">
-              <input
-                type="text"
-                id="title"
-                name="title"
-                placeholder="กรอกหัวข้อ"
-                required
-              />
-              <span className="input-focus"></span>
-            </div>
+            <input type="text" id="title" name="title" required />
           </div>
 
           <div className="form-group">
@@ -111,22 +146,47 @@ function SecurityCreate() {
               <FaAlignLeft className="input-icon" />
               รายละเอียด
             </label>
-            <div className="input-wrapper">
-              <textarea
-                id="content"
-                name="content"
-                placeholder="กรอกรายละเอียด"
-                rows={4}
-                required
-              ></textarea>
-              <span className="input-focus"></span>
+            <textarea id="content" name="content" rows={4} required></textarea>
+          </div>
+
+          {/* thumbnail */}
+          <div className="form-group">
+            <label htmlFor="thumbnail">
+              <FaImage className="input-icon" />
+              รูปหน้าปก
+            </label>
+            <div className="image-upload-container">
+              <label htmlFor="thumbnail-upload" className="upload-button">
+                <FaUpload className="upload-icon" />
+                <span>เลือกรูปหน้าปก</span>
+                <input
+                  id="thumbnail-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleThumbnailChange}
+                  style={{ display: 'none' }}
+                />
+              </label>
+              
+              {previewThumbnail && (
+                <div className="image-preview-container">
+                  <img
+                    src={previewThumbnail ? previewThumbnail : undefined}
+                    alt="Preview"
+                    className="image-preview"
+                  />
+                  <div className="image-overlay">
+                    <span>ภาพข่าวสาร</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
           <div className="form-group">
             <label htmlFor="image">
               <FaImage className="input-icon" />
-              รูป
+              รูปข่าวสาร
             </label>
             <div className="image-upload-container">
               <label htmlFor="image-upload" className="upload-button">
@@ -137,7 +197,6 @@ function SecurityCreate() {
                   type="file"
                   accept="image/*"
                   onChange={handleImageChange}
-                  required
                   style={{ display: 'none' }}
                 />
               </label>
@@ -155,12 +214,88 @@ function SecurityCreate() {
                 </div>
               )}
             </div>
+            <div className="form-group">
+              <label htmlFor="video">
+                <FaUpload className="input-icon" />
+                วิดีโอ (.mp4)
+              </label>
+              <div className="image-upload-container">
+                <label htmlFor="video-upload" className="upload-button">
+                  <FaUpload className="upload-icon" />
+                  <span>เลือกไฟล์วิดีโอ</span>
+                  <input
+                    id="video-upload"
+                    type="file"
+                    accept="video/mp4"
+                    onChange={handleVideoChange}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+
+                {previewVideo && (
+                  <div className="video-preview-container">
+                    <video src={previewVideo} controls className="video-preview" />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          <div className="form-group">
+            <label htmlFor="gif">
+              <FaUpload className="input-icon" />
+              ไฟล์ GIF (.gif)
+            </label>
+            <div className="image-upload-container">
+              <label htmlFor="gif-upload" className="upload-button">
+                <FaUpload className="upload-icon" />
+                <span>เลือกไฟล์ GIF</span>
+                <input
+                  id="gif-upload"
+                  type="file"
+                  accept="image/gif"
+                  onChange={handleGifChange}
+                  style={{ display: 'none' }}
+                />
+              </label>
+
+              {previewGif && (
+                <div className="image-preview-container">
+                  <img src={previewGif} alt="GIF Preview" className="image-preview" />
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="pdf">
+              <FaUpload className="input-icon" />
+              ไฟล์ PDF (.pdf)
+            </label>
+            <div className="image-upload-container">
+              <label htmlFor="pdf-upload" className="upload-button">
+                <FaUpload className="upload-icon" />
+                <span>เลือกไฟล์ PDF</span>
+                <input
+                  id="pdf-upload"
+                  type="file"
+                  accept="application/pdf"
+                  onChange={handlePdfChange}
+                  style={{ display: 'none' }}
+                />
+              </label>
+
+              {pdfFile && (
+                <div className="pdf-file-name">
+                  <span>{pdfFile.name}</span>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="form-actions">
             <Link to="/admin/security" className="cancel-button">
-              <FaTimes className="button-icon" />
-              ยกเลิก
+              <FaTimes /> ยกเลิก
             </Link>
             <button 
               type="submit" 
@@ -173,19 +308,6 @@ function SecurityCreate() {
             </button>
           </div>
         </form>
-      </div>
-
-      <div className="floating-bubbles">
-        {[...Array(10)].map((_, i) => (
-          <div key={i} className="bubble" style={{
-            left: `${Math.random() * 100}%`,
-            animationDuration: `${10 + Math.random() * 20}s`,
-            animationDelay: `${Math.random() * 5}s`,
-            width: `${10 + Math.random() * 20}px`,
-            height: `${10 + Math.random() * 20}px`,
-            opacity: 0.2 + Math.random() * 0.5
-          }}></div>
-        ))}
       </div>
 
       <style>{`
@@ -384,6 +506,14 @@ function SecurityCreate() {
           display: block;
           transition: transform 0.3s ease;
         }
+        
+        .video-preview-container {
+          position: relative;
+          display: inline-block;
+          width: 300px;
+        }
+
+        .video-preview { width: 300px; height: 225px; }
         
         .image-overlay {
           position: absolute;

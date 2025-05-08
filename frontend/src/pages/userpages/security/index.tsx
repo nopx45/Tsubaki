@@ -1,22 +1,27 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { SecurityInterface } from "../../../interfaces/ISecurity";
 import { GetSecurity } from "../../../services/https";
 import { useTranslation } from "react-i18next";
 import Regulations from "../../../components/ranbow-text/ranbow_text";
-import { FaChevronDown, FaChevronUp, FaCalendarAlt, FaUserTag } from "react-icons/fa";
-import { IoShieldCheckmark } from "react-icons/io5";
-import './security.css'
+import { FaUserTag, FaCalendarAlt, FaExternalLinkAlt, FaLock, FaShieldAlt, FaKey } from "react-icons/fa";
+import { RiNotification3Fill } from "react-icons/ri";
+import './security.css';
 
 const Security: React.FC = () => {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const [security, setSecurity] = useState<SecurityInterface[]>([]);
-  const [expanded, setExpanded] = useState<{ [key: number]: boolean }>({});
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await GetSecurity();
-        setSecurity(response.data);
+        console.log("API Response:", response.data);
+        const sortedData = response.data.sort((a: SecurityInterface, b: SecurityInterface) =>
+          new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime()
+        );
+        setSecurity(sortedData);
       } catch (error) {
         console.error("Error fetching security:", error);
       }
@@ -24,8 +29,13 @@ const Security: React.FC = () => {
     fetchData();
   }, []);
 
-  const toggleExpand = (id: number) => {
-    setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
+  const getRandomIcon = (id: number) => {
+    const icons = [
+      <FaShieldAlt className="security-icon" style={{ color: "#6a5acd" }} />,
+      <FaLock className="security-icon" style={{ color: "#ff6b6b" }} />,
+      <FaKey className="security-icon" style={{ color: "#ffd166" }} />
+    ];
+    return icons[id % icons.length];
   };
 
   return (
@@ -33,63 +43,64 @@ const Security: React.FC = () => {
       <div className="knowledge-header-right">
         <Regulations text={t("security")} />
       </div>
-      {security.map((securities) => (
-        <div 
-          key={securities.ID}
-          className={`security-card ${expanded[securities.ID!] ? 'expanded' : ''}`}
-        >
-          <div className="security-card-header">
-            <IoShieldCheckmark className="security-icon" />
-            <h3 className="security-title">{securities.title}</h3>
-            <div className="security-meta">
-              <span className="meta-item">
-                <FaUserTag className="meta-icon" />
-                <span>TAT</span>
-              </span>
-              <span className="meta-item">
-                <FaCalendarAlt className="meta-icon" />
-                <span>{new Date(securities.created_at ?? "").toLocaleDateString("th-TH")}</span>
-              </span>
+      {security.slice(0, 10).map((securities, index) => {
+        const isNew = index === 0;
+        return (
+          <div key={securities.ID} className="security-card">
+            <div className="security-card-header">
+              {getRandomIcon(securities.ID!)}
+              <h3 className="security-title">{securities.title}</h3>
+              <div className="security-meta">
+                <span className="meta-item">
+                  <FaUserTag className="meta-icon" />
+                  <span>TAT</span>
+                </span>
+                <span className="meta-item">
+                  <FaCalendarAlt className="meta-icon" />
+                  <span>{new Date(securities.created_at ?? "").toLocaleDateString("th-TH")}</span>
+                </span>
+              </div>
+            </div>
+            {isNew && (
+              <div className="new-badge">
+                <RiNotification3Fill className="new-icon" />
+                <span>NEW</span>
+              </div>
+            )}
+            <div className="security-content">
+              <div className="image-container">
+                <img
+                  alt={securities.title || "Image"}
+                  src={securities.Image}
+                  className="security-image"
+                />
+                <div className="image-overlay"></div>
+              </div>
+
+              <div className="text-content">
+                <p className="security-paragraph">
+                  {securities.content?.substring(0, 700)}...
+                </p>
+
+                <button
+                  onClick={() => navigate(`/security/detail/${securities.ID}`)}
+                  className="toggle-button"
+                >
+                  <span>{t("read_more")}</span>
+                  <FaExternalLinkAlt />
+                </button>
+              </div>
             </div>
           </div>
-
-          <div className="security-content">
-            <div className="image-container">
-              <img
-                alt={securities.title || "Image"}
-                src={securities.Image}
-                className="security-image"
-              />
-              <div className="image-overlay"></div>
-            </div>
-
-            <div className="text-content">
-              <p className={`security-paragraph ${expanded[securities.ID!] ? 'expanded' : ''}`}>
-                {expanded[securities.ID!]
-                  ? securities.content
-                  : `${securities.content?.substring(0, 300)}...`}
-              </p>
-
-              <button 
-                onClick={() => toggleExpand(securities.ID!)} 
-                className="toggle-button"
-              >
-                {expanded[securities.ID!] ? (
-                  <>
-                    <span>{t("collapse_text")}</span>
-                    <FaChevronUp className="button-icon" />
-                  </>
-                ) : (
-                  <>
-                    <span>{t("read_more")}</span>
-                    <FaChevronDown className="button-icon" />
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      ))}
+        );
+      })}
+      <button
+        onClick={() => navigate(`/security/all`)}
+        className="all-button"
+      >
+        <span>{t("view_all")}</span>
+        <FaExternalLinkAlt />
+      </button>
     </div>
   );
 };

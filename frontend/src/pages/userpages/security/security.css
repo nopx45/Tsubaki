@@ -8,14 +8,15 @@
   
   .security-card {
     background: white;
-    border-radius: 12px;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
+    border-radius: 15px;
+    margin-bottom: 1.8rem;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     overflow: hidden;
-    border-left: 5px solid #4a6bff;
+    position: relative;
+    border-left: 4px solid #4a6bff;
   }
-  
+
   .security-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
@@ -104,6 +105,24 @@
     transform: scale(1.05);
   }
   
+   /* New Badge */
+   .new-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: linear-gradient(90deg, #ff0000, #ff0000);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    z-index: 2;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    animation: pulse 2s infinite;
+  }
+
   .image-overlay {
     position: absolute;
     top: 0;
@@ -127,11 +146,11 @@
   
   .security-paragraph {
     top: -50px;
-    color: #34495e;
+    color: #00468d;
     line-height: 1.6;
     margin-bottom: 1.5rem;
     position: relative;
-    max-height: 100px;
+    max-height: 200px;
     overflow: hidden;
     transition: max-height 0.5s ease;
   }

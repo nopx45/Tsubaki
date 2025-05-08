@@ -45,7 +45,7 @@ const ITKnowledge: React.FC = () => {
       <div className="knowledge-header-right">
         <Regulations text={t("it_knowledge")} />
       </div>
-      {knowledges.map((knowledge, index) => {
+      {knowledges.slice(0, 10).map((knowledge, index) => {
         const isNew = index === 0;
           return (
             <div key={knowledge.ID} className="knowledge-card">
@@ -96,6 +96,13 @@ const ITKnowledge: React.FC = () => {
             </div>
           );
       })}
+      <button
+        onClick={() => navigate(`/it-knowledge/all`)}
+        className="all-button"
+      >
+        <span>{t("view_all")}</span>
+        <FaExternalLinkAlt />
+      </button>
     </div>
   );
 };

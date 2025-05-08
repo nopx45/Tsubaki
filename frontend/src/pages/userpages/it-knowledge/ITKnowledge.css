@@ -236,6 +236,30 @@
     box-shadow: 0 8px 16px rgba(106, 90, 205, 0.3);
     background: linear-gradient(45deg, #4a6bff, #6a5acd);
   }
+
+  .all-button {
+    background: linear-gradient(45deg, #6a5acd, #4a6bff);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 30px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 12px rgba(106, 90, 205, 0.2);
+    font-size: 0.9rem;
+    margin: 0 auto;
+}
+
+  
+  .all-button:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 16px rgba(106, 90, 205, 0.3);
+    background: linear-gradient(45deg, #4a6bff, #6a5acd);
+  }
   
   .button-icon {
     transition: transform 0.3s ease;

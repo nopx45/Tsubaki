@@ -14,6 +14,9 @@ import UserProfile from "../pages/userpages/profile";
 import Calendar from "../pages/userpages/carlendar";
 import ActivityAllImages from "../pages/userpages/activity/all-image/aImage";
 import ITKnowledgeDetail from "../pages/userpages/it-knowledge/detail/detail";
+import AllITKnowledges from "../pages/userpages/it-knowledge/detail/view_all";
+import SecurityDetail from "../pages/userpages/security/detail/detail";
+import AllSecurities from "../pages/userpages/security/detail/view_all";
 
 const NotPage = Loadable(lazy(() => import("../pages/notpage")));
 
@@ -44,6 +47,10 @@ const UserRoutes = (isLoggedIn: boolean): RouteObject[] => {
           {
             path: "detail/:id",
             element: <ITKnowledgeDetail />,
+          },
+          {
+            path: "all",
+            element: <AllITKnowledges />,
           },
         ],
       },
@@ -92,7 +99,15 @@ const UserRoutes = (isLoggedIn: boolean): RouteObject[] => {
           {
             index: true,
             element: <Security />,
-          }
+          },
+          {
+            path: "detail/:id",
+            element: <SecurityDetail />,
+          },
+          {
+            path: "all",
+            element: <AllSecurities />,
+          },
         ],
       },
       {

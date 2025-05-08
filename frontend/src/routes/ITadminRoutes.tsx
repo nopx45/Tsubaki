@@ -10,7 +10,6 @@ const NotPage = Loadable(lazy(() => import("../pages/notpage")));
 const MainPages = Loadable(lazy(() => import("../pages/authentication/Login")));
 const FullLayout = Loadable(lazy(() => import("../layout/ITadminLayout")));
 const ITKnowledge = Loadable(lazy(() => import("../pages/adminpage/it-knowledge")));
-const ITKnowledgeDetail = Loadable(lazy(() => import("../pages/userpages/it-knowledge/detail/detail")));
 const ITKnowledgeCreate = Loadable(lazy(() => import("../pages/adminpage/it-knowledge/create")));
 const EditITKnowledges = Loadable(lazy(() => import("../pages/adminpage/it-knowledge/edit")));
 
@@ -43,10 +42,6 @@ const ITadminRoutes = (isLoggedIn: boolean): RouteObject => {
                 {
                 path: "edit/:id",
                 element: <EditITKnowledges />,
-                },
-                {
-                  path: "detail/:id",
-                  element: <ITKnowledgeDetail />,
                 },
             ],
         },

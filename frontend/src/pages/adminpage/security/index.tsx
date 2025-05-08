@@ -1,12 +1,15 @@
 import { useState, useEffect } from "react";
 import { DeleteSecurityById, GetSecurity } from "../../../services/https/index";
 import { Link, Outlet, useNavigate } from "react-router-dom";
+import dayjs from "dayjs";
 import { SecurityInterface } from "../../../interfaces/ISecurity";
-import { FaPlus, FaTrash, FaEdit, FaShieldAlt, FaIdCard, FaImage, FaSearch } from "react-icons/fa";
+import { FaPlus, FaTrash, FaEdit, FaShieldAlt, FaIdCard, FaImage, FaSearch, FaCalendarAlt } from "react-icons/fa";
 import Pagination from "../../../components/Pagination/Pagination";
 
 function Security() {
   const navigate = useNavigate();
+  dayjs.locale("th");
+
   const [security, setSecurity] = useState<SecurityInterface[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -86,13 +89,13 @@ function Security() {
         <div className="header-section">
           <div className="title-wrapper">
             <FaShieldAlt className="title-icon" />
-            <h1>จัดการบทความด้านความปลอดภัย</h1>
+            <h1>จัดการข่าวสารด้านความปลอดภัย</h1>
           </div>
           <div className="search-container">
             <FaSearch className="search-icon" />
             <input
               type="text"
-              placeholder="ค้นหาบทความ..."
+              placeholder="ค้นหาข่าวสาร..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="search-input"
@@ -125,6 +128,12 @@ function Security() {
               <table className="security-table">
                 <thead>
                   <tr>
+                  <th>
+                      <div className="header-cell">
+                        <FaCalendarAlt className="column-icon" />
+                        <span>วันที่สร้าง</span>
+                      </div>
+                    </th>
                     <th>
                       <div className="header-cell">
                         <FaIdCard className="column-icon" />
@@ -161,6 +170,11 @@ function Security() {
                       onMouseLeave={() => setHoveredRow(null)}
                     >
                       <td>
+                      <span className="id-cell">
+                        {dayjs(item.created_at).format("DD/MM/YYYY HH:mm")}
+                      </span>
+                      </td>
+                      <td>
                         <span className="id-cell">{item.ID}</span>
                       </td>
                       <td>
@@ -174,16 +188,13 @@ function Security() {
                         </span>
                       </td>
                       <td>
-                        {item.Image ? (
+                        {item.thumbnail ? (
                           <div className="image-container">
                             <img
-                              src={item.Image}
+                              src={item.thumbnail}
                               alt="รูปภาพบทความ"
                               className="security-image"
                             />
-                            <div className="image-hover">
-                              <span>ดูรูปภาพ</span>
-                            </div>
                           </div>
                         ) : (
                           <span className="no-image">ไม่มีรูปภาพ</span>
