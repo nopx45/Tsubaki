@@ -11,6 +11,8 @@ const FullLayout = Loadable(lazy(() => import("../layout/HRadminlayout")));
 const MainPages = Loadable(lazy(() => import("../pages/authentication/Login")));
 const File = Loadable(lazy(() => import("../pages/adminpage/file")));
 const UploadFile = Loadable(lazy(() => import("../pages/adminpage/file/create")));
+const Customer = Loadable(lazy(() => import("../pages/adminpage/customer")));
+const EditCustomer = Loadable(lazy(() => import("../pages/adminpage/customer/edit")));
 const Activity = Loadable(lazy(() => import("../pages/adminpage/activity")));
 const ActivityCreate = Loadable(lazy(() => import("../pages/adminpage/activity/create")));
 const EditActivity = Loadable(lazy(() => import("../pages/adminpage/activity/edit")));
@@ -46,6 +48,19 @@ const HRadminRoutes = (isLoggedIn: boolean): RouteObject => {
         {
           index: true,
           element: <Dashboard />,
+        },
+        {
+          path: "customer",
+          children: [
+            {
+              index: true,
+              element: <Customer />,
+            },
+            {
+              path: "edit/:id",
+              element: <EditCustomer />,
+            },
+          ],
         },
         {
             path: "activity",

@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { UsersInterface } from "../../../../interfaces/IUser";
-import { GetUsersById, UpdateUsersById } from "../../../../services/https/index";
+import { GetUsersById, UpdateUsersById, getAuthToken } from "../../../../services/https/index";
 import { useNavigate, Link, useParams } from "react-router-dom";
 import { FiUser, FiMail, FiKey, FiSave, FiArrowLeft, FiLock, FiShield, FiPhone } from "react-icons/fi";
 import { RiAdminFill } from "react-icons/ri";
@@ -8,6 +8,8 @@ import { RiAdminFill } from "react-icons/ri";
 function CustomerEdit() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: any }>();
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const isAdmin = userRole === "admin";
   
   const getUserById = async (id: string) => {
     let res = await GetUsersById(id);
@@ -94,6 +96,18 @@ function CustomerEdit() {
 
   useEffect(() => {
     getUserById(id);
+    const fetchRole = async () => {
+      try {
+        const token = await getAuthToken();
+        if (token) {
+          const payload = JSON.parse(atob(token.split(".")[1]));
+          setUserRole(payload?.role ?? null);
+        }
+      } catch (err) {
+        console.error("Error decoding token:", err);
+      }
+    };
+    fetchRole();
   }, [id]);
 
   return (
@@ -102,7 +116,7 @@ function CustomerEdit() {
       <div className="form-card">
         <div className="form-header">
           <FiUser className="header-icon" />
-          <h2>แก้ไขข้อมูลผู้ใช้</h2>
+          <h2>{userRole === "admin" ? "แก้ไขข้อมูลผู้ใช้" : "แก้ไขเบอร์ผู้ใช้"}</h2>
         </div>
         
         <form id="editUserForm" onSubmit={onFinish} className="user-form">
@@ -119,6 +133,7 @@ function CustomerEdit() {
                   name="first_name"
                   placeholder="กรอกชื่อจริง"
                   required
+                  disabled={!isAdmin}
                 />
                 <span className="input-focus"></span>
               </div>
@@ -136,6 +151,7 @@ function CustomerEdit() {
                   name="last_name"
                   placeholder="กรอกนามสกุล"
                   required
+                  disabled={!isAdmin}
                 />
                 <span className="input-focus"></span>
               </div>
@@ -153,6 +169,7 @@ function CustomerEdit() {
                   name="email"
                   placeholder="กรอกอีเมล"
                   required
+                  disabled={!isAdmin}
                 />
                 <span className="input-focus"></span>
               </div>
@@ -170,6 +187,7 @@ function CustomerEdit() {
                   name="username"
                   placeholder="กรอกชื่อผู้ใช้"
                   required
+                  disabled={!isAdmin}
                 />
                 <span className="input-focus"></span>
               </div>
@@ -198,7 +216,7 @@ function CustomerEdit() {
                 สิทธิ์การใช้งาน
               </label>
               <div className="select-wrapper">
-                <select id="role" name="role" required>
+                <select id="role" name="role" required disabled={!isAdmin}>
                   <option value="">เลือกสิทธิ์การใช้งาน</option>
                   <option value="admin">Admin</option>
                   <option value="adminhr">Admin HR</option>
@@ -224,6 +242,7 @@ function CustomerEdit() {
       </div>
 
       {/* Reset Password Form */}
+      {isAdmin && (
       <div className="form-card password-form">
         <div className="form-header">
           <FiLock className="header-icon" />
@@ -280,6 +299,7 @@ function CustomerEdit() {
           </div>
         </form>
       </div>
+      )}
 
       <style>{`
         .customer-edit-container {

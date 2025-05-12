@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { UsersInterface } from "../../../interfaces/IUser";
 import { Link, useNavigate } from "react-router-dom";
-import { GetUsers, DeleteUsersById } from "../../../services/https/index";
+import { GetUsers, DeleteUsersById, getAuthToken } from "../../../services/https/index";
 import { FaUserPlus, FaEdit, FaTrash, FaUsers, FaIdBadge, FaUserTag, FaEnvelope, FaSearch } from "react-icons/fa";
 import { RiAdminFill } from "react-icons/ri";
 import { IoMdPerson } from "react-icons/io";
@@ -10,6 +10,7 @@ import Pagination from "../../../components/Pagination/Pagination";
 function Customers() {
   const navigate = useNavigate();
   const [users, setUsers] = useState<UsersInterface[]>([]);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [filteredUsers, setFilteredUsers] = useState<UsersInterface[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -122,7 +123,7 @@ function Customers() {
       key: "action",
       render: (record: UsersInterface) => (
         <div className="action-buttons">
-          {Number(myId) !== record?.ID && (
+          {Number(myId) !== record?.ID && userRole === "admin" && (
             <button 
               className="delete-button"
               onClick={() => {
@@ -201,6 +202,18 @@ function Customers() {
 
   useEffect(() => {
     getUsers();
+    const fetchRole = async () => {
+      try {
+        const token = await getAuthToken();
+        if (token) {
+          const payload = JSON.parse(atob(token.split(".")[1]));
+          setUserRole(payload?.role ?? null);
+        }
+      } catch (err) {
+        console.error("Error decoding token:", err);
+      }
+    };
+    fetchRole();
   }, []);
 
   return (
@@ -222,10 +235,12 @@ function Customers() {
                 className="search-input"
               />
             </div>
+            {userRole === "admin" &&(
             <Link to="/admin/customer/create" className="create-button">
               <FaUserPlus className="button-icon" />
               <span>สร้างข้อมูล</span>
             </Link>
+            )}
           </div>
         </div>
         

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, Outlet } from "react-router-dom";
-import { DashboardOutlined, FileOutlined, NotificationOutlined, ReadOutlined, RocketOutlined, WarningOutlined } from "@ant-design/icons";
+import { DashboardOutlined, FileOutlined, NotificationOutlined, ReadOutlined, RocketOutlined, UserOutlined, WarningOutlined, CalendarFilled } from "@ant-design/icons";
 import { Layout, Menu, Button, message, Typography } from "antd";
 import logo from "../../assets/logo.png";
 import { Logouts, stopvisit } from "../../services/https";
@@ -51,6 +51,9 @@ const HRadminLayout: React.FC = () => {
           <Menu.Item key="announce" icon={<NotificationOutlined />}>
             <Link to="/admin/announcement">ประกาศ</Link>
           </Menu.Item>
+          <Menu.Item key="calendar" icon={<CalendarFilled />}>
+            <Link to="/admin/calendar">ปฏิทิน</Link>
+          </Menu.Item>
           <Menu.Item key="activity" icon={<RocketOutlined />}>
             <Link to="/admin/activity">กิจกรรม</Link>
           </Menu.Item>
@@ -62,6 +65,9 @@ const HRadminLayout: React.FC = () => {
           </Menu.Item>
           <Menu.Item key="regulation" icon={<WarningOutlined />}>
             <Link to="/admin/regulation">ระเบียบข้อบังคับ</Link>
+          </Menu.Item>
+          <Menu.Item key="customer" icon={<UserOutlined />}>
+            <Link to="/admin/customer">จัดการสมาชิก</Link>
           </Menu.Item>
         </Menu>
 
