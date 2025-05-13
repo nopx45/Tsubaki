@@ -71,7 +71,7 @@ const Security: React.FC = () => {
               <div className="image-container">
                 <img
                   alt={securities.title || "Image"}
-                  src={securities.Image}
+                  src={securities.thumbnail}
                   className="security-image"
                 />
                 <div className="image-overlay"></div>
