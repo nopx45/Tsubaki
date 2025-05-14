@@ -123,12 +123,13 @@ type ChatService struct {
 // ฟังก์ชันส่งอีเมลแจ้งเตือน
 func SendEmailNotification(toEmail, subject, body string) error {
 	m := gomail.NewMessage()
-	m.SetHeader("From", "nopziio02@gmail.com") // เปลี่ยนเป็นอีเมลของคุณ
+	m.SetHeader("From", "TAT-Chat@tsubaki.co.th")
 	m.SetHeader("To", toEmail)
 	m.SetHeader("Subject", subject)
 	m.SetBody("text/plain", body)
 
-	d := gomail.NewDialer("smtp.gmail.com", 587, "nopziio02@gmail.com", "lcyp rlit ieee miei")
+	d := gomail.NewDialer("192.168.0.61", 25, "", "")
+	d.Auth = nil
 
 	if err := d.DialAndSend(m); err != nil {
 		log.Println("Error sending email:", err)
@@ -315,7 +316,7 @@ func (c *ChatController) handleIncomingMessage(_ *websocket.Conn, senderUsername
 	// หากไม่มี admin ออนไลน์ ส่งอีเมลแจ้งเตือน
 	if !adminOnline {
 		emailBody := "New message received from " + senderUsername + ":\n\n" + message.Content
-		err := SendEmailNotification("nopziio01@gmail.com", "New Chat Message !!", emailBody)
+		err := SendEmailNotification("nuttaya.n@tsubaki.co.th", senderUsername+" sent message!", emailBody)
 		if err != nil {
 			log.Println("Failed to send email notification:", err)
 		}

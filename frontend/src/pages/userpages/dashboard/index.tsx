@@ -210,89 +210,6 @@ export default function Announcements() {
         </div>
       </div>
 
-      {/* Articles Section */}
-      <section className="dashboard-section articles-section">
-        <div className="section-header">
-          <FaRocket className="section-icon float" />
-          <h2>{t("article")}</h2>
-          <FaRocket className="section-icon float-delay" />
-        </div>
-
-        {articles.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-icon">
-              <svg viewBox="0 0 24 24">
-                <path d="M12 4V6M12 18V20M6 12H4M20 12H18M17.6568 17.6568L16.2426 16.2426M7.75732 7.75732L6.34314 6.34314M17.6568 6.34314L16.2426 7.75732M7.75732 16.2426L6.34314 17.6568" />
-              </svg>
-            </div>
-            <h3>{t("no_article")}</h3>
-            <p>{t("no_article_detail")}</p>
-          </div>
-        ) : (
-          <>
-            <div className="articles-list">
-              {articles.slice(-2).reverse().map((article, index) => {
-                const isLatest = index === 0;
-                return (
-                  <div 
-                    key={article.ID} 
-                    className="article-card"
-                    onClick={() => handleArticleClick(article.ID ?? 0)}
-                  >
-                    {isLatest && (
-                      <div className="new-badge">
-                        <RiNotification3Fill className="new-icon" />
-                        <span>NEW</span>
-                      </div>
-                    )}
-                    <div className="article-image"> <img
-                        alt={article.title}
-                        src={article.Image}
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                          borderTopLeftRadius: "15px",
-                          borderTopRightRadius: "15px"
-                        }}
-                      /></div>
-                    <div className="article-content">
-                      <h3>
-                        <IoIosRocket className="title-icon" />
-                        {article.title}
-                      </h3>
-                      <div className="article-meta">
-                        <div className="meta-item">
-                          <FaUserTie className="meta-icon" />
-                          <span>TAT</span>
-                        </div>
-                        <div className="meta-item">
-                          <FaCalendarAlt className="meta-icon" />
-                          <span>{new Date(article.created_at ?? "").toLocaleDateString("th-TH")}</span>
-                        </div>
-                      </div>
-                      <p className="article-excerpt">
-                        {article.content?.substring(0, 300)}...
-                      </p>
-                      <button className="read-more-button">
-                        <span>{t("more")}</span>
-                        <FaArrowRight className="arrow-icon" />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {articles.length > 1 && (
-              <button className="more-button" onClick={handleMoreArtClick}>
-                {t("view_all_articles")} <FaArrowRight className="arrow" />
-              </button>
-            )}
-          </>
-        )}
-      </section>
-
       {/* Announcements Section */}
       <section className="dashboard-section announcements-section">
         <div className="section-header">
@@ -378,6 +295,89 @@ export default function Announcements() {
             {buttons.length > 5 && (
               <button className="more-button" onClick={handleMoreClick}>
                 {t("more")} <FaArrowRight className="arrow" />
+              </button>
+            )}
+          </>
+        )}
+      </section>
+
+      {/* Articles Section */}
+      <section className="dashboard-section articles-section">
+        <div className="section-header">
+          <FaRocket className="section-icon float" />
+          <h2>{t("article")}</h2>
+          <FaRocket className="section-icon float-delay" />
+        </div>
+
+        {articles.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 4V6M12 18V20M6 12H4M20 12H18M17.6568 17.6568L16.2426 16.2426M7.75732 7.75732L6.34314 6.34314M17.6568 6.34314L16.2426 7.75732M7.75732 16.2426L6.34314 17.6568" />
+              </svg>
+            </div>
+            <h3>{t("no_article")}</h3>
+            <p>{t("no_article_detail")}</p>
+          </div>
+        ) : (
+          <>
+            <div className="articles-list">
+              {articles.slice(-2).reverse().map((article, index) => {
+                const isLatest = index === 0;
+                return (
+                  <div 
+                    key={article.ID} 
+                    className="article-card"
+                    onClick={() => handleArticleClick(article.ID ?? 0)}
+                  >
+                    {isLatest && (
+                      <div className="new-badge">
+                        <RiNotification3Fill className="new-icon" />
+                        <span>NEW</span>
+                      </div>
+                    )}
+                    <div className="article-image"> <img
+                        alt={article.title}
+                        src={article.thumbnail}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          borderTopLeftRadius: "15px",
+                          borderTopRightRadius: "15px"
+                        }}
+                      /></div>
+                    <div className="article-content">
+                      <h3>
+                        <IoIosRocket className="title-icon" />
+                        {article.title}
+                      </h3>
+                      <div className="article-meta">
+                        <div className="meta-item">
+                          <FaUserTie className="meta-icon" />
+                          <span>TAT</span>
+                        </div>
+                        <div className="meta-item">
+                          <FaCalendarAlt className="meta-icon" />
+                          <span>{new Date(article.created_at ?? "").toLocaleDateString("th-TH")}</span>
+                        </div>
+                      </div>
+                      <p className="article-excerpt">
+                        {article.content?.substring(0, 300)}...
+                      </p>
+                      <button className="read-more-button">
+                        <span>{t("more")}</span>
+                        <FaArrowRight className="arrow-icon" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {articles.length > 1 && (
+              <button className="more-button" onClick={handleMoreArtClick}>
+                {t("view_all_articles")} <FaArrowRight className="arrow" />
               </button>
             )}
           </>

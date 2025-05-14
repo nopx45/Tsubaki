@@ -12,4 +12,8 @@ type Article struct {
 	Title     string    `json:"title"`
 	Content   string    `json:"content"`
 	Image     string    `gorm:"type:longtext"`
+	Thumbnail string    `json:"thumbnail"`
+	Video     string    `json:"video"`
+	Gif       string    `json:"gif"`
+	Pdf       string    `json:"pdf"`
 }

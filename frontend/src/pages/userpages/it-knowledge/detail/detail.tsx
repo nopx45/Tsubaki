@@ -4,7 +4,6 @@ import { GetKnowledgesById } from "../../../../services/https";
 import { KnowledgesInterface } from "../../../../interfaces/IKnowledge";
 import { FaCalendarAlt, FaFilePdf, FaImage, FaVideo, FaFileImage } from "react-icons/fa";
 import { motion } from "framer-motion";
-import { FiExternalLink } from "react-icons/fi";
 
 const ITKnowledgeDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -145,14 +144,13 @@ const ITKnowledgeDetail: React.FC = () => {
               <FaFilePdf className="media-icon" />
               <h3>เอกสารประกอบ</h3>
             </div>
-            <a 
-              href={knowledge.pdf} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="pdf-link"
-            >
-              เปิดไฟล์ PDF <FiExternalLink className="link-icon" />
-            </a>
+            <iframe
+              src={knowledge.pdf}
+              title="PDF Viewer"
+              className="pdf-viewer"
+              width="100%"
+              height="600px"
+            ></iframe>
           </motion.div>
         )}
       </div>
@@ -304,6 +302,11 @@ const ITKnowledgeDetail: React.FC = () => {
         .pdf-link:hover {
           transform: translateY(-2px);
           box-shadow: 0 6px 15px rgba(26, 115, 232, 0.3);
+        }
+
+        .pdf-viewer {
+          border: none;
+          margin-top: 10px;
         }
         
         .link-icon {

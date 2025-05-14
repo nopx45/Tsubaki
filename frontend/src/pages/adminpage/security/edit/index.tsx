@@ -655,11 +655,11 @@ function SecurityEdit() {
   }
 
   .pdf-remove-button {
-          position: relative;
-          top: auto;
-          right: auto;
-          margin-left: 10px;
-        }
+    position: relative;
+    top: auto;
+    right: auto;
+    margin-left: 10px;
+  }
 
   .remove-button:hover, .video-remove-button:hover, .pdf-remove-button:hover {
     background: #ff4b2b;

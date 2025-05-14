@@ -1,16 +1,30 @@
 import { useEffect, useState } from "react";
 import { GetArticlesById, UpdateArticlesById } from "../../../../services/https";
 import { useNavigate, Link, useParams } from "react-router-dom";
-import { ImageUpload } from "../../../../interfaces/IUpload";
 import { FaSave, FaTimes, FaNewspaper, FaAlignLeft, FaImage, FaUpload } from "react-icons/fa";
+import Swal from "sweetalert2";
 
 function ArticleEdit() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: any }>();
-  const [article, setArticle] = useState<ImageUpload>();
-  const [prevArticleImage, setPrevArticleImage] = useState<string | undefined>();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [prevThumbnail, setPrevThumbnail] = useState<string | undefined>();
+  const [prevImage, setPrevImage] = useState<string | undefined>();
+  const [prevVideo, setPrevVideo] = useState<string | undefined>();
+  const [prevGif, setPrevGif] = useState<string | undefined>();
+  const [prevPdf, setPrevPdf] = useState<string | undefined>();
+
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [gifFile, setGifFile] = useState<File | null>(null);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+
+  const [previewThumbnail, setPreviewThumbnail] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [previewVideo, setPreviewVideo] = useState<string | null>(null);
+  const [previewGif, setPreviewGif] = useState<string | null>(null);
 
   const showNotification = (type: string, message: string) => {
     const notification = document.createElement("div");
@@ -43,24 +57,87 @@ function ArticleEdit() {
     setFormValues((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setThumbnailFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => setPreviewThumbnail(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+  
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0];
-      setArticle({ originFileObj: selectedFile } as unknown as ImageUpload);
-
+      const file = e.target.files[0];
+      setImageFile(file);
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewImage(reader.result as string);
-      };
-      reader.readAsDataURL(selectedFile);
+      reader.onloadend = () => setPreviewImage(reader.result as string);
+      reader.readAsDataURL(file);
     }
+  };
+  
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setVideoFile(file);
+      setPreviewVideo(URL.createObjectURL(file));
+    }
+  };
+  
+  const handleGifChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setGifFile(file);
+      setPreviewGif(URL.createObjectURL(file));
+    }
+  };
+  
+  const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setPdfFile(file);
+    }
+  };
+
+  const removeThumbnail = () => {
+    setThumbnailFile(null);
+    setPreviewThumbnail(null);
+    setPrevThumbnail(undefined);
+  };
+  
+  const removeImage = () => {
+    setImageFile(null);
+    setPreviewImage(null);
+    setPrevImage(undefined);
+  };
+  
+  const removeVideo = () => {
+    setVideoFile(null);
+    setPreviewVideo(null);
+    setPrevVideo(undefined);
+  };
+  
+  const removeGif = () => {
+    setGifFile(null);
+    setPreviewGif(null);
+    setPrevGif(undefined);
+  };
+  
+  const removePdf = () => {
+    setPdfFile(null);
+    setPrevPdf(undefined);
   };
 
   const getArticleById = async (id: string) => {
     try {
       let res = await GetArticlesById(id);
       if (res.status === 200) {
-        setPrevArticleImage(res.data.image);
+        setPrevThumbnail(res.data.thumbnail);
+        setPrevImage(res.data.Image);
+        setPrevVideo(res.data.video);
+        setPrevGif(res.data.gif);
+        setPrevPdf(res.data.pdf);
         setFormValues({
           title: res.data.title,
           content: res.data.content,
@@ -82,12 +159,30 @@ function ArticleEdit() {
     const formData = new FormData();
     formData.append("title", formValues.title);
     formData.append("content", formValues.content);
+    
 
-    if (article?.originFileObj && article.originFileObj instanceof File) {
-      formData.append("image", article.originFileObj);
-    } else if (prevArticleImage) {
-      formData.append("image", prevArticleImage);
-    }
+    if (thumbnailFile) formData.append("thumbnail", thumbnailFile);
+    else if (!prevThumbnail) {
+      await Swal.fire({
+                  icon: 'warning',
+                  title: 'กรุณาเลือกรูปหน้าปก!!',
+                  text: 'คุณต้องเลือกภาพหน้าปก ก่อนทำการอัปโหลด',
+                });
+                setIsSubmitting(false);
+                return;
+    };
+
+    if (imageFile) formData.append("image", imageFile);
+    else if (!prevImage) formData.append("removeImage", "true");
+
+    if (videoFile) formData.append("video", videoFile);
+    else if (!prevVideo) formData.append("removeVideo", "true");
+
+    if (gifFile) formData.append("gif", gifFile);
+    else if (!prevGif) formData.append("removeGif", "true");
+
+    if (pdfFile) formData.append("pdf", pdfFile);
+    else if (!prevPdf) formData.append("removePdf", "true");
 
     try {
       let res = await UpdateArticlesById(id, formData);
@@ -160,9 +255,52 @@ function ArticleEdit() {
           </div>
 
           <div className="form-group">
+            <label htmlFor="thumbnail">
+              <FaImage className="input-icon" />
+              รูปหน้าปก
+            </label>
+            <div className="image-upload-container">
+              <label htmlFor="thumbnail-upload" className="upload-button">
+                <FaUpload className="upload-icon" />
+                <span>เลือกรูปหน้าปก</span>
+                <input
+                  id="thumbnail-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleThumbnailChange}
+                  style={{ display: 'none' }}
+                />
+              </label>
+              
+              {(previewThumbnail || prevThumbnail) && (
+                <div className="image-preview-container">
+                  <img
+                    src={previewThumbnail || prevThumbnail}
+                    alt="Thumbnail Preview"
+                    className="image-preview"
+                  />
+                  <button 
+                    type="button" 
+                    className="remove-button"
+                    onClick={removeThumbnail}
+                    title="ลบรูปหน้าปก"
+                  >
+                    <svg className="remove-icon" viewBox="0 0 24 24">
+                      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                  </button>
+                  <div className="image-overlay">
+                    <span>ภาพหน้าปก</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="form-group">
             <label htmlFor="image">
               <FaImage className="input-icon" />
-              รูปบทความ
+              รูปภาพข่าวสาร
             </label>
             <div className="image-upload-container">
               <label htmlFor="image-upload" className="upload-button">
@@ -176,17 +314,160 @@ function ArticleEdit() {
                   style={{ display: 'none' }}
                 />
               </label>
-
-              {(previewImage || prevArticleImage) && (
+              
+              {(previewImage || prevImage) && (
                 <div className="image-preview-container">
                   <img
-                    src={previewImage || `http://localhost:8080/${prevArticleImage}`}
-                    alt="Preview"
+                    src={previewImage || prevImage}
+                    alt="Image Preview"
                     className="image-preview"
                   />
+                  <button 
+                    type="button" 
+                    className="remove-button"
+                    onClick={removeImage}
+                    title="ลบรูปภาพ"
+                  >
+                    <svg className="remove-icon" viewBox="0 0 24 24">
+                      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                  </button>
                   <div className="image-overlay">
-                    <span>ภาพบทความ</span>
+                    <span>ภาพข่าวสาร</span>
                   </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="video">
+              <FaImage className="input-icon" />
+              วิดีโอ (mp4)
+            </label>
+            <div className="image-upload-container">
+              <label htmlFor="video-upload" className="upload-button">
+                <FaUpload className="upload-icon" />
+                <span>เลือกไฟล์วิดีโอ</span>
+                <input
+                  id="video-upload"
+                  type="file"
+                  accept="video/mp4"
+                  onChange={handleVideoChange}
+                  style={{ display: 'none' }}
+                />
+              </label>
+              
+              {(previewVideo || prevVideo) && (
+                <div className="video-preview-container">
+                  <video
+                    src={previewVideo || prevVideo}
+                    controls
+                    className="video-preview"
+                  />
+                  <button 
+                    type="button" 
+                    className="remove-button video-remove-button"
+                    onClick={removeVideo}
+                    title="ลบวิดีโอ"
+                  >
+                    <svg className="remove-icon" viewBox="0 0 24 24">
+                      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="gif">
+              <FaImage className="input-icon" />
+              รูปภาพ gif
+            </label>
+            <div className="image-upload-container">
+              <label htmlFor="gif-upload" className="upload-button">
+                <FaUpload className="upload-icon" />
+                <span>เลือกไฟล์ภาพ gif</span>
+                <input
+                  id="gif-upload"
+                  type="file"
+                  accept="image/gif"
+                  onChange={handleGifChange}
+                  style={{ display: 'none' }}
+                />
+              </label>
+              
+              {(previewGif || prevGif) && (
+                <div className="image-preview-container">
+                  <img
+                    src={previewGif || prevGif}
+                    alt="GIF Preview"
+                    className="image-preview"
+                  />
+                  <button 
+                    type="button" 
+                    className="remove-button"
+                    onClick={removeGif}
+                    title="ลบ GIF"
+                  >
+                    <svg className="remove-icon" viewBox="0 0 24 24">
+                      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                  </button>
+                  <div className="image-overlay">
+                    <span>GIF</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="pdf">
+              <FaImage className="input-icon" />
+              ไฟล์ pdf
+            </label>
+            <div className="image-upload-container">
+              <label htmlFor="pdf-upload" className="upload-button">
+                <FaUpload className="upload-icon" />
+                <span>เลือกไฟล์ pdf</span>
+                <input
+                  id="pdf-upload"
+                  type="file"
+                  accept="application/pdf"
+                  onChange={handlePdfChange}
+                  style={{ display: 'none' }}
+                />
+              </label>
+              
+              {(pdfFile || prevPdf) && (
+                <div className="pdf-file-container">
+                  <div className="pdf-file-content">
+                    <div className="pdf-icon">
+                      <svg viewBox="0 0 24 24">
+                        <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-1h8v1zm0-3H8v-1h8v1zm-3-5V3.5L18.5 10H13z"/>
+                      </svg>
+                    </div>
+                    <a 
+                      href={pdfFile ? URL.createObjectURL(pdfFile) : prevPdf} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="pdf-file-link"
+                    >
+                      {pdfFile ? pdfFile.name : "ไฟล์ PDF เดิม"}
+                    </a>
+                  </div>
+                  <button 
+                    type="button" 
+                    className="pdf-remove-button"
+                    onClick={removePdf}
+                    title="ลบ PDF"
+                  >
+                    <svg className="remove-icon" viewBox="0 0 24 24">
+                      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                  </button>
                 </div>
               )}
             </div>
@@ -436,7 +717,137 @@ function ArticleEdit() {
         .image-preview-container:hover .image-preview {
           transform: scale(1.05);
         }
-        
+
+
+        .remove-button, .video-remove-button{
+          position: relative;
+          top: 10px;
+          right: 10px;
+          width: 28px;
+          height: 28px;
+          background: rgba(255, 255, 255, 0.9);
+          border: none;
+          border-radius: 50%;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+          transition: all 0.3s ease;
+          padding: 0;
+          z-index: 2;
+        }
+      
+        .remove-icon {
+          width: 18px;
+          height: 18px;
+          fill: #ff4b2b;
+          transition: all 0.3s ease;
+        }
+
+        .remove-button:hover .remove-icon,
+        .video-remove-button:hover .remove-icon,
+
+        .video-preview-container {
+          position: relative;
+          display: inline-block;
+          width: 300px;
+        }
+        .video-preview { width: 300px; height: 200px; }
+
+        .pdf-remove-button {
+          position: relative;
+          top: auto;
+          right: auto;
+          margin-left: 10px;
+          width: 28px;
+          height: 28px;
+          background: rgba(255, 255, 255, 0.9);
+          border: none;
+          border-radius: 50%;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+          transition: all 0.3s ease;
+          padding: 0;
+          z-index: 2;
+        }
+
+  .remove-button:hover, .video-remove-button:hover, .pdf-remove-button:hover {
+    background: #ff4b2b;
+    transform: scale(1.1);
+  }
+
+  .remove-icon {
+    width: 18px;
+    height: 18px;
+    fill: #ff4b2b;
+    transition: all 0.3s ease;
+  }
+
+  .remove-button:hover .remove-icon,
+  .video-remove-button:hover .remove-icon,
+  .pdf-remove-button:hover .remove-icon {
+    fill: white;
+  }
+
+  .pdf-file-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f5f7fa;
+    border-radius: 8px;
+    padding: 12px 15px;
+    margin-top: 10px;
+    border: 1px solid #e0e0e0;
+  }
+
+  .pdf-file-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+  }
+
+  .pdf-icon { width: 24px; height: 24px; }
+  .pdf-icon svg { width: 100%; height: 100%; fill: #e74c3c; }
+
+      .pdf-file-link {
+        color: #2c3e50;
+        text-decoration: none;
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        transition: color 0.2s;
+      }
+
+      .pdf-file-link:hover {
+        color: #6a11cb;
+        text-decoration: underline;
+      }
+
+        .remove-button, .video-remove-button{
+          position: absolute;
+          top: 15px;
+          right: 10px;
+          width: 28px;
+          height: 28px;
+          background: rgba(255, 255, 255, 0.9);
+          border: none;
+          border-radius: 50%;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+          transition: all 0.3s ease;
+          padding: 0;
+          z-index: 2;
+        }
+
         .form-actions {
           display: flex;
           justify-content: flex-end;

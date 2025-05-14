@@ -4,7 +4,6 @@ import { GetSecurityById } from "../../../../services/https";
 import { SecurityInterface } from "../../../../interfaces/ISecurity";
 import { FaCalendarAlt, FaFilePdf, FaImage, FaVideo, FaFileImage } from "react-icons/fa";
 import { motion } from "framer-motion";
-import { FiExternalLink } from "react-icons/fi";
 
 const SecurityDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -145,14 +144,13 @@ const SecurityDetail: React.FC = () => {
               <FaFilePdf className="media-icon" />
               <h3>เอกสารประกอบ</h3>
             </div>
-            <a 
-              href={security.pdf} 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className="pdf-link"
-            >
-              เปิดไฟล์ PDF <FiExternalLink className="link-icon" />
-            </a>
+            <iframe
+              src={security.pdf}
+              title="PDF Viewer"
+              className="pdf-viewer"
+              width="100%"
+              height="600px"
+            ></iframe>
           </motion.div>
         )}
       </div>
@@ -306,6 +304,11 @@ const SecurityDetail: React.FC = () => {
           box-shadow: 0 6px 15px rgba(26, 115, 232, 0.3);
         }
         
+        .pdf-viewer {
+          border: none;
+          margin-top: 10px;
+        }
+
         .link-icon {
           font-size: 0.9rem;
         }

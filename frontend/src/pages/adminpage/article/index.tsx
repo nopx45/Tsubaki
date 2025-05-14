@@ -128,8 +128,7 @@ function Article() {
                   <td>
                     {article.Image ? (
                       <div className="image-container">
-                        <img src={article.Image} alt="Article" className="knowledge-image" />
-                        <div className="image-overlay">ดูรูปภาพ</div>
+                        <img src={article.thumbnail} alt="Article" className="knowledge-image" />
                       </div>
                     ) : (
                       <span className="no-image">ไม่มีรูปภาพ</span>
