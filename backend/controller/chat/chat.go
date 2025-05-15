@@ -74,6 +74,30 @@ func Delete(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Deleted successful"})
 }
 
+func DeleteMultipleMessages(c *gin.Context) {
+	var req struct {
+		IDs []uint `json:"ids"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	if len(req.IDs) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "No message IDs provided"})
+		return
+	}
+
+	db := config.DB()
+	if err := db.Delete(&entity.Message{}, req.IDs).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete messages"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Messages deleted successfully", "count": len(req.IDs)})
+}
+
 // // Message /////
 func GetMessages(c *gin.Context) {
 	var messages []entity.Message
@@ -101,6 +125,26 @@ func GetMessageByID(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, message)
+}
+
+func GetMessagesByUsername(c *gin.Context) {
+	username := c.Param("username")
+	var messages []entity.Message
+
+	db := config.DB()
+	result := db.Where("(`from` = ? AND `role` != 'admin') OR (`role` = 'admin' AND `from` = ?)", username, username).Find(&messages)
+
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error.Error()})
+		return
+	}
+
+	if len(messages) == 0 {
+		c.JSON(http.StatusNoContent, gin.H{"message": "No messages found for user"})
+		return
+	}
+
+	c.JSON(http.StatusOK, messages)
 }
 
 func DeleteMessage(c *gin.Context) {
@@ -223,11 +267,6 @@ func (c *ChatController) HandleWebSocket(w http.ResponseWriter, r *http.Request)
 				return
 			}
 
-			var message entity.Message
-			json.Unmarshal(msg, &message)
-			if err := SaveMessage(message); err != nil {
-				log.Println("Error saving message:", err)
-			}
 			c.handleIncomingMessage(conn, username, string(msg))
 		}
 	}
@@ -251,20 +290,21 @@ func SaveUserSocket(user entity.UserSocket) error {
 	return nil
 }
 
-func (c *ChatController) WriteMessageToUser(conn *websocket.Conn, Smessage string) {
-	var message entity.Message
-	if err := json.Unmarshal([]byte(Smessage), &message); err != nil {
-		log.Println("Error parsing message:", err)
+func (c *ChatController) WriteMessageToUser(conn *websocket.Conn, message entity.Message) {
+	msgJSON, err := json.Marshal(message)
+	if err != nil {
+		log.Println("Error marshaling message:", err)
 		return
 	}
-	err := conn.WriteMessage(websocket.TextMessage, []byte(message.Content+"-"+message.From+"-"+message.Role))
+
+	err = conn.WriteMessage(websocket.TextMessage, msgJSON)
 	if err != nil {
 		log.Println("Error writing message:", err)
 		conn.Close()
 	}
 }
 
-func SaveMessage(message entity.Message) error {
+func SaveMessage(message entity.Message) (entity.Message, error) {
 	db := config.DB()
 	newMessage := entity.Message{
 		From:    message.From,
@@ -274,11 +314,11 @@ func SaveMessage(message entity.Message) error {
 
 	if err := db.Create(&newMessage).Error; err != nil {
 		log.Println("Error saving message to DB:", err)
-		return err
+		return entity.Message{}, err
 	}
 
 	log.Println("Message saved successfully:", newMessage)
-	return nil
+	return newMessage, nil
 }
 
 func (c *ChatController) handleIncomingMessage(_ *websocket.Conn, senderUsername string, rawMessage string) {
@@ -294,7 +334,14 @@ func (c *ChatController) handleIncomingMessage(_ *websocket.Conn, senderUsername
 		return
 	}
 
-	// ตรวจสอบว่ามี admin ออนไลน์อยู่หรือไม่
+	// บันทึกและรับข้อความที่มี ID
+	savedMessage, err := SaveMessage(message)
+	if err != nil {
+		log.Println("Error saving message:", err)
+		return
+	}
+
+	// ตรวจสอบว่ามี admin ออนไลน์
 	adminOnline := false
 	for _, user := range c.ChatService.Users {
 		if user.Role == "admin" {
@@ -303,20 +350,26 @@ func (c *ChatController) handleIncomingMessage(_ *websocket.Conn, senderUsername
 		}
 	}
 
-	// ส่งข้อความให้ผู้ส่ง (sender) และ admin (แต่ไม่ให้ส่งซ้ำ)
+	// ส่งกลับข้อความในรูปแบบ JSON
+	msgJSON, err := json.Marshal(savedMessage)
+	if err != nil {
+		log.Println("Error marshaling message:", err)
+		return
+	}
+
 	for wsConn, user := range c.ChatService.Users {
 		if user.Username == senderUsername || (user.Role == "admin" && user.Username != senderUsername) {
-			err := wsConn.WriteMessage(websocket.TextMessage, []byte(message.Content+"-"+message.From+"-"+message.Role))
+			err := wsConn.WriteMessage(websocket.TextMessage, msgJSON)
 			if err != nil {
 				log.Println("Error sending message to", user.Username, err)
 			}
 		}
 	}
 
-	// หากไม่มี admin ออนไลน์ ส่งอีเมลแจ้งเตือน
+	// หากไม่มี admin ออนไลน์ ส่งอีเมล
 	if !adminOnline {
 		emailBody := "New message received from " + senderUsername + ":\n\n" + message.Content
-		err := SendEmailNotification("nuttaya.n@tsubaki.co.th", senderUsername+" sent message!", emailBody)
+		err := SendEmailNotification("nopphakorn.d@tsubaki.co.th", senderUsername+" sent message!", emailBody)
 		if err != nil {
 			log.Println("Failed to send email notification:", err)
 		}

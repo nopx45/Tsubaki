@@ -6,7 +6,7 @@ import { RiChatNewLine, RiMoonFill, RiSparkling2Fill } from "react-icons/ri";
 import { IoMdNotifications } from "react-icons/io";
 import { motion, AnimatePresence } from 'framer-motion';
 import useWebSocket from '../../socket';
-import { getAuthToken } from '../../services/https';
+import { DeleteMessagesByMany, getAuthToken, GetMessagesByUsername } from '../../services/https';
 import { jwtDecode } from 'jwt-decode';
 import { WS_URL } from '../../socket';
 
@@ -18,31 +18,73 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ isLoggedIn }) => {
   const chatBodyRef = useRef<HTMLDivElement>(null);
   const { messages, sendMessage } = useWebSocket(WS_URL);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [chatMessages, setChatMessages] = useState<Array<{ text: string; sender: string; role: 'user' | 'admin'; time: string }>>([]);
+  const [chatMessages, setChatMessages] = useState<Array<{ID: number; text: string; sender: string; role: 'user' | 'admin'; time: string }>>([]);
   const [newMessage, setNewMessage] = useState("");
   const [unreadCount, setUnreadCount] = useState(0);
   const [username, setUsername] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [pulse, setPulse] = useState(false);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      const token = await getAuthToken();
-      if (token) {
-        const decoded = jwtDecode(token);
-        setUsername((decoded as any).username);
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIndexes, setSelectedIndexes] = useState<number[]>([]);
+
+
+useEffect(() => {
+  if (isChatOpen) {
+    setTimeout(() => {
+      if (chatBodyRef.current) {
+        chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
       }
-    };
-    fetchUser();
-  }, []);
+    }, 100);
+  }
+}, [isChatOpen]);
+
+useEffect(() => {
+  const fetchUserAndChat = async () => {
+    const token = await getAuthToken();
+    if (token) {
+      const decoded = jwtDecode(token);
+      const username = (decoded as any).username;
+      setUsername(username);
+
+      // ⬇️ ดึงข้อความย้อนหลังจาก backend
+      try {
+        const response = await GetMessagesByUsername(username);
+        const formattedMessages = response.data.map((msg: any) => ({
+          ID: msg.ID,
+          text: msg.content,
+          sender: msg.from,
+          role: msg.role === 'admin' ? 'admin' : 'user',
+          time: new Date(msg.created_at || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        }));
+
+        setChatMessages(formattedMessages);
+        // scroll to bottom after setting history
+        setTimeout(() => {
+          if (chatBodyRef.current) {
+            chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
+          }
+        }, 200);
+      } catch (err) {
+        console.error("Failed to fetch chat history:", err);
+      }
+    }
+  };
+  fetchUserAndChat();
+}, []);
+
 
   useEffect(() => {
     if (messages.length === 0) return;
   
     const lastMessage = messages[messages.length - 1];
   
+    if (!lastMessage?.ID) {
+  console.warn("🟡 WebSocket message has no ID:", lastMessage);
+}
     try {
       const formattedMessage = {
+        ID: lastMessage.ID,
         text: lastMessage.content,
         sender: lastMessage.from,
         role: lastMessage.role === "admin" ? "admin" : "user" as "user" | "admin",
@@ -94,6 +136,22 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ isLoggedIn }) => {
       handleSendMessage();
     }
   };
+
+ const handleDeleteSelectedMessages = async () => {
+  try {
+    const selectedMessages = selectedIndexes.map(i => chatMessages[i]);
+    const selectedIds = selectedMessages.map(m => m.ID);
+
+    await DeleteMessagesByMany(selectedIds);
+
+    const remaining = chatMessages.filter((_, i) => !selectedIndexes.includes(i));
+    setChatMessages(remaining);
+    setSelectMode(false);
+    setSelectedIndexes([]);
+  } catch (err) {
+    console.error("Failed to delete messages:", err);
+  }
+};
 
   if (!isLoggedIn) {
     return null;
@@ -239,16 +297,41 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ isLoggedIn }) => {
 
               {chatMessages.map((msg, index) => (
                 <motion.div 
-                  key={index}
+                  key={msg.ID}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2 }}
                   className={`message-container ${msg.role === 'user' ? 'user-message-container' : 'system-message-container'}`}
                 >
                   <div className={`message ${msg.role === 'user' ? 'user-message' : 'system-message'}`}>
+                    {/* ถ้าอยู่ใน selectMode ให้แสดง checkbox */}
+                    {selectMode ? (
+                      <input 
+                        type="checkbox" 
+                        checked={selectedIndexes.includes(index)}
+                        onChange={() => {
+                          setSelectedIndexes((prev) =>
+                            prev.includes(index)
+                              ? prev.filter(i => i !== index)
+                              : [...prev, index]
+                          );
+                        }}
+                        style={{ marginRight: 8 }}
+                      />
+                    ) : (
+                      msg.role === "user" && (
+                        <div 
+                          style={{ position: "absolute", left: -24, top: 8, cursor: "pointer", color: "#888" }}
+                          onClick={() => setSelectMode(true)}
+                        >
+                          ...
+                        </div>
+                      )
+                    )}
+
                     {msg.role === 'admin' && (
                       <div className="message-sender">
-                        {msg.sender}
+                        Admin Support
                         <RiSparkling2Fill className="sender-icon" />
                       </div>
                     )}
@@ -257,7 +340,7 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ isLoggedIn }) => {
                       {msg.time}
                       {msg.role === 'user' && (
                         <span className="message-status">
-                          ✓✓
+                          
                           <motion.span
                             animate={{ opacity: [0.6, 1, 0.6] }}
                             transition={{ repeat: Infinity, duration: 1.5 }}
@@ -271,6 +354,27 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ isLoggedIn }) => {
                 </motion.div>
               ))}
             </div>
+
+            {selectMode && (
+              <div style={{ padding: '8px 16px', display: 'flex', justifyContent: 'space-between' }}>
+                <Button 
+                  type="default" 
+                  danger 
+                  onClick={handleDeleteSelectedMessages}
+                >
+                  Delete Selected
+                </Button>
+                <Button 
+                  style={{ marginLeft: 8 }} 
+                  onClick={() => {
+                    setSelectMode(false);
+                    setSelectedIndexes([]);
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            )}
 
             <div className="chat-footer">
               <Input.TextArea
@@ -356,6 +460,10 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ isLoggedIn }) => {
         overflow: hidden;
         z-index: 1000;
         border: none;
+      }
+
+      .message input[type="checkbox"] {
+        transform: scale(1.2);
       }
 
       /* Chat Header */

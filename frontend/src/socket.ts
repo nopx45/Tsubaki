@@ -4,9 +4,16 @@ import { getAuthToken } from "./services/https";
 
 export const WS_URL = "ws://192.168.0.85:8080/ws";
 
+type Message = {
+  ID: number;
+  from: string;
+  role: string;
+  content: string;
+};
+
 const useWebSocket = (url: string) => {
   const [ws, setWs] = useState<WebSocket | null>(null);
-  const [messages, setMessages] = useState<{ from: string; role: string; content: string }[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   let pingInterval: ReturnType<typeof setInterval> | null = null;
   useEffect(() => {
     const socket = new WebSocket(url);
@@ -30,11 +37,13 @@ const useWebSocket = (url: string) => {
     };
 
     socket.onmessage = (event) => {
-      const parts = event.data.split("-");
-      const content = parts[0];
-      const from = parts[1];
-      const role = parts[2];
-      setMessages((prev) => [...prev, { from, role, content }]);
+      try {
+        const data = JSON.parse(event.data); // ✅ parse JSON object
+
+        setMessages(prev => [...prev, data]);
+      } catch (err) {
+        console.error("❌ WebSocket parse error:", err);
+      }
     };
 
     socket.onerror = (error) => {

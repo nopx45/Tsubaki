@@ -174,6 +174,9 @@ func main() {
 		userRouter.GET("/pagevisitors", logvisitpage.GetAllPageVisitors)
 		userRouter.GET("/toppagevisitors", logvisitpage.GetTopPages)
 
+		userRouter.POST("/messages/delete-many", chat.DeleteMultipleMessages)
+		userRouter.GET("/messages/:username", chat.GetMessagesByUsername)
+
 	}
 
 	// 📌 Route สำหรับ GET (ไม่ต้องใช้สิทธิ์พิเศษ)

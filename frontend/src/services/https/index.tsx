@@ -672,12 +672,28 @@ async function GetMessagesById(id: string) {
     .then((res) => res)
     .catch((e) => e.response);
 }
+async function GetMessagesByUsername(username: string) {
+  return await axios
+    .get(`${apiUrl}/messages/${username}`, { withCredentials: true })
+    .then((res) => res)
+    .catch((e) => e.response);
+}
 
 async function DeleteMessagesById(id: string) {
   return await axios
     .delete(`${apiUrl}/message/${id}`)
     .then((res) => res)
     .catch((e) => e.response);
+}
+
+async function DeleteMessagesByMany(ids: number[]) {
+  try {
+    const res = await axios.post(`${apiUrl}/messages/delete-many`, { ids });
+    return res.data;
+  } catch (e: any) {
+    console.error("API Delete Error:", e);
+    throw e;
+  }
 }
 
 // Calendar
@@ -912,7 +928,9 @@ export {
 
   GetMessages,
   GetMessagesById,
+  GetMessagesByUsername,
   DeleteMessagesById,
+  DeleteMessagesByMany,
 
   UploadICS,
   GetEvents,
