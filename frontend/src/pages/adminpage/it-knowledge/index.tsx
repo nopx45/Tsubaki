@@ -123,7 +123,7 @@ function ITKnowledges() {
           <div className="table-container">
             {currentKnowledge.length === 0 ? (
               <div className="no-results">
-                <img src="/images/no-results.svg" alt="No results" className="no-results-image" />
+                <img src="/no-results.png" alt="No results" className="no-results-image" />
                 <h3>ไม่พบข้อมูลข่าวสารที่ตรงกับการค้นหา</h3>
                 <p>ลองเปลี่ยนคำค้นหาหรือสร้างข่าวสารใหม่</p>
               </div>

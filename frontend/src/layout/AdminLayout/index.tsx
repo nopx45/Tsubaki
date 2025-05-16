@@ -6,6 +6,7 @@ import logo from "../../assets/logo.png";
 import { stopvisit, Logouts } from "../../services/https";
 import Chat from "../../components/chat/chat";
 import Swal from "sweetalert2";
+import { MdModelTraining } from "react-icons/md";
 
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
@@ -55,6 +56,9 @@ const AdminLayout: React.FC = () => {
           </Menu.Item>
           <Menu.Item key="announce" icon={<NotificationOutlined />}>
             <Link to="/admin/announcement">ประกาศ</Link>
+          </Menu.Item>
+          <Menu.Item key="training" icon={<MdModelTraining />}>
+            <Link to="/admin/training">อบรม</Link>
           </Menu.Item>
           <Menu.Item key="activity" icon={<RocketOutlined />}>
             <Link to="/admin/activity">กิจกรรม</Link>

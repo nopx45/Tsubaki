@@ -36,7 +36,7 @@ func RecordlogVisit(c *gin.Context) {
 	}
 
 	// ✅ เฉพาะ PageName ที่อยู่ในลิสต์นี้เท่านั้นที่สามารถบันทึกได้
-	validPages := []string{"activity", "announcement", "it-knowledge", "article"}
+	validPages := []string{"activity", "announcement", "it-knowledge", "article", "security", "regulation", "training", "calendar"}
 	isValid := false
 	for _, validPage := range validPages {
 		if page == validPage {
@@ -87,7 +87,6 @@ func GetTopPages(c *gin.Context) {
 	month, err1 := strconv.Atoi(monthStr)
 	year, err2 := strconv.Atoi(yearStr)
 
-	fmt.Println("Month:", month, "Year:", year)
 	if err1 != nil || err2 != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid month or year"})
 		return

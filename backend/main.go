@@ -26,6 +26,7 @@ import (
 	"github.com/webapp/controller/regulation"
 	"github.com/webapp/controller/section"
 	"github.com/webapp/controller/security"
+	"github.com/webapp/controller/training"
 	"github.com/webapp/controller/users"
 	"github.com/webapp/entity"
 	"github.com/webapp/middlewares"
@@ -131,6 +132,10 @@ func main() {
 		adminHRRouter.POST("/regulation", regulation.UploadRegulation)
 		adminHRRouter.PUT("/regulation/:id", regulation.Update)
 		adminHRRouter.DELETE("/regulation/:id", regulation.Delete)
+		// Training Route
+		adminHRRouter.POST("/training", training.Upload)
+		adminHRRouter.PUT("/training/:id", training.Update)
+		adminHRRouter.DELETE("/training/:id", training.Delete)
 
 	}
 
@@ -201,6 +206,8 @@ func main() {
 	r.GET("/form/:id", formgen.GetID)
 	r.GET("/regulations", regulation.GetAll)
 	r.GET("/regulation/:id", regulation.GetID)
+	r.GET("/trainings", training.GetAll)
+	r.GET("/training/:id", training.GetID)
 	r.GET("/visitors", logs.GetTotalVisitors)
 	r.GET("/usersockets", chat.GetAll)
 	r.GET("/usersocket/:username", chat.GetUserByUsername)

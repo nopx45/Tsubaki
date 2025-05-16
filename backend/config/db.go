@@ -33,6 +33,7 @@ func SetupDatabase() {
 		&entity.Activity{},
 		&entity.Article{},
 		&entity.Knowledge{},
+		&entity.Training{},
 		&entity.Link{},
 		&entity.Section{},
 		&entity.Formgen{},
@@ -53,7 +54,7 @@ func SeedUser() {
 		LastName:  "User",
 		Username:  "admin",
 		Email:     "admin@example.com",
-		Phone:     "1234567890",
+		Phone:     "123",
 		Password:  hashedPassword,
 		Role:      "admin",
 	}

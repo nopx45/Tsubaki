@@ -52,7 +52,16 @@ function ActivityEdit() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const selectedFiles = Array.from(e.target.files);
-      setAllImages(prev => [...prev, ...selectedFiles]); // append ไฟล์ใหม่เข้า allImages
+      // รวมไฟล์ใหม่กับไฟล์เก่า
+      const updatedFiles = [...allImages, ...selectedFiles];
+
+      // ตรวจสอบไม่ให้เกิน 50 รูป
+      if (updatedFiles.length > 50) {
+        showNotification("error", "ไม่สามารถอัปโหลดเกิน 50 รูปได้");
+        return;
+      }
+
+      setAllImages(updatedFiles); // ถ้าไม่เกิน 50 ก็อัปเดต
     }
   };  
 
@@ -145,7 +154,7 @@ function ActivityEdit() {
           <div className="form-group">
             <label htmlFor="image">
               <FaImage className="input-icon" />
-              รูปภาพกิจกรรม
+              รูปภาพกิจกรรม (สูงสุด 50 รูป)
             </label>
             <div className="image-upload-container">
               <label htmlFor="image-upload" className="upload-button">

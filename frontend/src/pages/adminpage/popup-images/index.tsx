@@ -98,7 +98,12 @@ const ImagePopupManager = () => {
 
   const handleFileChange = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
-
+    // ตรวจสอบรูปไม่เกิน 10 รูป
+     const totalImages = images.length + files.length;
+      if (totalImages > 10) {
+        Swal.fire('แจ้งเตือน', 'คุณสามารถอัปโหลดได้สูงสุด 10 รูปเท่านั้น', 'warning');
+        return;
+      }
     const response = await UploadPopupImage(files);
     if (response.success) {
       setImages((prev) => [...response.paths, ...prev]);
@@ -194,7 +199,7 @@ const ImagePopupManager = () => {
               ) : (
                 <>
                   <FaCloudUploadAlt className="upload-icon" />
-                  <span>ลากและวางไฟล์ที่นี่ หรือคลิกเพื่อเลือกไฟล์</span>
+                  <span>ลากและวางไฟล์ที่นี่ หรือคลิกเพื่อเลือกไฟล์ (สูงสุดไม่เกิน 10 รูป)</span>
                   <p className="upload-hint">รองรับไฟล์รูปภาพขนาด 1200x1500 เท่านั้น (JPG, PNG, GIF)</p>
                 </>
               )}

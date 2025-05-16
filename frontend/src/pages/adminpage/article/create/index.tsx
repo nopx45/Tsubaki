@@ -66,6 +66,12 @@ function ArticleCreate() {
   const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+     // เช็คขนาดไม่เกิน 500MB
+      if (file.size > 524288000) {
+        showNotification("error", "ขนาดไฟล์วิดีโอต้องไม่เกิน 500MB");
+        return;
+      }
+
       setVideoFile(file);
       setPreviewVideo(URL.createObjectURL(file));
     }
@@ -82,6 +88,12 @@ function ArticleCreate() {
   const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      // เช็คขนาดไม่เกิน 500MB
+      if (file.size > 52428800) {
+        showNotification("error", "ขนาดไฟล์ต้องไม่เกิน 50MB");
+        return;
+      }
+
       setPdfFile(file);
     }
   };
@@ -255,7 +267,7 @@ function ArticleCreate() {
             <div className="form-group">
               <label htmlFor="video">
                 <FaUpload className="input-icon" />
-                วิดีโอ (.mp4)
+                วิดีโอ (.mp4 ไม่เกิน 500 MB)
               </label>
               <div className="image-upload-container">
                 <label htmlFor="video-upload" className="upload-button">
@@ -308,7 +320,7 @@ function ArticleCreate() {
           <div className="form-group">
             <label htmlFor="pdf">
               <FaUpload className="input-icon" />
-              ไฟล์ PDF (.pdf)
+              ไฟล์ PDF (.pdf ไม่เกิน 50 MB)
             </label>
             <div className="image-upload-container">
               <label htmlFor="pdf-upload" className="upload-button">

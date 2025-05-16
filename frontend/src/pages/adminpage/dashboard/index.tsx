@@ -330,7 +330,7 @@ function Dashboard() {
               <div className="card-content">
                 {toppagevisitors && toppagevisitors.length > 0 ? (
                   <ul className="top-list">
-                    {toppagevisitors.map((visitors, index) => (
+                    {toppagevisitors.slice(0, 4).map((visitors, index) => (
                       <li key={index} className={`top-item ${index % 2 === 0 ? 'even' : 'odd'}`}>
                         <span className="item-name">
                           {index === 0 && <span className="rank-badge">🥇</span>}
@@ -427,7 +427,7 @@ function Dashboard() {
               <div className="card-content">
                 {topvisitors && topvisitors.length > 0 ? (
                   <ul className="top-list">
-                    {topvisitors.map((visitor, index) => (
+                    {topvisitors.slice(0,4).map((visitor, index) => (
                       <li key={index} className={`top-item ${index % 2 === 0 ? 'even' : 'odd'}`}>
                         <span className="item-name">
                           {index === 0 && <span className="rank-badge">👑</span>}

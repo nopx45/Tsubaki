@@ -16,9 +16,10 @@ const EditCustomer = Loadable(lazy(() => import("../pages/adminpage/customer/edi
 const File = Loadable(lazy(() => import("../pages/adminpage/file")));
 const UploadFile = Loadable(lazy(() => import("../pages/adminpage/file/create")));
 const ITKnowledges = Loadable(lazy(() => import("../pages/adminpage/it-knowledge")));
-const ITKnowledgeDetail = Loadable(lazy(() => import("../pages/userpages/it-knowledge/detail/detail")));
-const AllITKnowledges = Loadable(lazy(() => import("../pages/userpages/it-knowledge/detail/view_all")));
 const EditITKnowledges = Loadable(lazy(() => import("../pages/adminpage/it-knowledge/edit")));
+const Trainings = Loadable(lazy(() => import("../pages/adminpage/training")));
+const CreateTrainings = Loadable(lazy(() => import("../pages/adminpage/training/create")));
+const EditTrainings = Loadable(lazy(() => import("../pages/adminpage/training/edit")));
 const Security = Loadable(lazy(() => import("../pages/adminpage/security")));
 const EditSecurity = Loadable(lazy(() => import("../pages/adminpage/security/edit")));
 const SecurityCreate = Loadable(lazy(() => import("../pages/adminpage/security/create")));
@@ -117,15 +118,24 @@ const AdminRoutes = (isLoggedIn: boolean): RouteObject => {
           {
             path: "edit/:id",
             element: <EditITKnowledges />,
+          }
+        ],
+      },
+      {
+        path: "training",
+        children: [
+          {
+            index: true,
+            element: <Trainings />,
           },
           {
-            path: "all",
-            element: <AllITKnowledges />,
+            path: "create",
+            element: <CreateTrainings />,
           },
           {
-            path: "detail/:id",
-            element: <ITKnowledgeDetail />,
-          },
+            path: "edit/:id",
+            element: <EditTrainings />,
+          }
         ],
       },
       {

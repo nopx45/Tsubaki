@@ -151,7 +151,7 @@ function Article() {
                 <tr>
                   <td colSpan={5}>
                     <div className="no-results">
-                      <img src="/no-results.jpg" className="no-results-image" alt="No Data" />
+                      <img src="/no-results.png" className="no-results-image" alt="No Data" />
                       <h3>ไม่พบข้อมูลบทความ</h3>
                       <p>กรุณาเพิ่มบทความใหม่</p>
                     </div>

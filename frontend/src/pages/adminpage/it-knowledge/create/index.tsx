@@ -70,11 +70,18 @@ function ITKnowledgeCreate() {
   const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
+
+      // เช็คขนาดไม่เกิน 500MB
+      if (selectedFile.size > 524288000) {
+        showNotification("error", "ขนาดไฟล์วิดีโอต้องไม่เกิน 500MB");
+        return;
+      }
+
       setVideoFile(selectedFile);
       setPreviewVideo(URL.createObjectURL(selectedFile));
     }
   };
-  
+
   const handleGifChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
@@ -86,6 +93,12 @@ function ITKnowledgeCreate() {
   const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
+      // เช็คขนาดไม่เกิน 500MB
+      if (selectedFile.size > 52428800) {
+        showNotification("error", "ขนาดไฟล์ต้องไม่เกิน 50MB");
+        return;
+      }
+
       setPdfFile(selectedFile);
     }
   };
@@ -259,7 +272,7 @@ function ITKnowledgeCreate() {
             <div className="form-group">
               <label htmlFor="video">
                 <FaUpload className="input-icon" />
-                วิดีโอ (.mp4)
+                วิดีโอ (.mp4 ไม่เกิน 500MB)
               </label>
               <div className="image-upload-container">
                 <label htmlFor="video-upload" className="upload-button">
@@ -311,7 +324,7 @@ function ITKnowledgeCreate() {
             <div className="form-group">
               <label htmlFor="pdf">
                 <FaUpload className="input-icon" />
-                ไฟล์ PDF (.pdf)
+                ไฟล์ PDF (ไม่เกิน 50 MB)
               </label>
               <div className="image-upload-container">
                 <label htmlFor="pdf-upload" className="upload-button">

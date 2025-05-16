@@ -46,7 +46,7 @@ const UserLayout: React.FC = () => {
   const [links, setLinks] = useState<LinksInterface[]>([]);
   const [sections, setSections] = useState<Record<string, SectionsInterface[]>>({});
 
-  const [openKeys, setOpenKeys] = useState<string[]>(["link", "other-web"]);
+  const [openKeys, setOpenKeys] = useState<string[]>(["link", "other-web","knowledge-center"]);
 
   // Popup welcome
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -358,7 +358,6 @@ const UserLayout: React.FC = () => {
               <h3>อัพโหลดรูปภาพใหม่ (ขนาด 1200 x 1500 px เท่านั้น)</h3>
               <Upload.Dragger
                 name="images"
-                multiple
                 listType="picture-card"
                 customRequest={async (options: UploadRequestOption) => {
                   const { file, onSuccess, onError } = options;
@@ -1013,44 +1012,75 @@ const UserLayout: React.FC = () => {
                 </div>
               </Menu.Item>
 
-              {/* IT Knowledge Menu Item */}
-              <Menu.Item 
-                style={{
-                  backgroundColor: "rgba(24, 144, 255, 0.1)",
-                  borderBottom: "1px solid rgba(24, 144, 255, 0.2)",
-                  borderRadius: "8px",
-                  margin: "12px 8px",
-                  padding: "12px 16px",
-                  transition: "all 0.3s ease",
-                }}
-                className="custom-menu-item it-knowledge-item"
-                key="it-knowledge" 
-                icon={
-                  <BulbOutlined style={{
-                    color: "#faad14",
-                    fontSize: "22px",
-                    transition: "all 0.3s ease"
-                  }} />
-                }
+              {/* Knowledge Menu Item */}
+               <Menu
+                openKeys={openKeys}
+                onOpenChange={(keys) => setOpenKeys(keys)}
+                theme="dark"
+                style={{ backgroundColor: "rgba(0, 21, 41, 0.4)" }}
+                mode="inline"
               >
-                <Link to="/it-knowledge" style={{ textDecoration: "none" }}>
-                  <div style={{ 
-                    display: "flex", 
-                    alignItems: "center", 
-                    gap: "12px" 
-                  }}>
+                <SubMenu
+                  key="knowledge-center"
+                  title={
                     <Title level={5} style={{ 
+                      margin: 0, 
                       color: "#79d9ff", 
-                      margin: 0,
-                      fontWeight: 400,
-                      transition: "all 0.3s ease"
+                      fontWeight: 600 
                     }}>
-                      {t("it_knowledge")}
+                      {t("knowledge_center")}
                     </Title>
-                  </div>
-                </Link>
-              </Menu.Item>
+                  }
+                  style={{
+                    borderRadius: "8px",
+                  }}
+                >
+                  {/* IT Knowledge */}
+                  <Menu.Item 
+                    key="it-knowledge"
+                    style={{
+                      backgroundColor: "rgb(206, 231, 240)",
+                      borderBottom: "1px solid rgba(0, 132, 255, 0.69)",
+                      borderRadius: "8px",
+                      margin: "0px 12px",
+                      padding: "0px 16px",
+                      transition: "all 0.3s ease",
+                    }}
+                    className="custom-menu-item"
+                    icon={<BulbOutlined style={{ color: "#faad14", fontSize: "20px" }} />}
+                  >
+                    <Link to="/it-knowledge" style={{ textDecoration: "none" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <Title level={5} style={{ color: "#000", margin: 0, fontWeight: 400 }}>
+                          {t("it_knowledge")}
+                        </Title>
+                      </div>
+                    </Link>
+                  </Menu.Item>
 
+                  {/* Training Knowledge */}
+                  <Menu.Item 
+                    key="training-knowledge"
+                    style={{
+                      backgroundColor: "rgb(206, 231, 240)",
+                      borderBottom: "1px solid rgba(0, 132, 255, 0.69)",
+                      margin: "8px 12px",
+                      padding: "12px 16px",
+                      transition: "all 0.3s ease",
+                    }}
+                    className="custom-menu-item"
+                    icon={<BulbOutlined style={{ color: "#1890ff", fontSize: "20px" }} />}
+                  >
+                    <Link to="/training" style={{ textDecoration: "none" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <Title level={5} style={{ color: "#000", margin: 0, fontWeight: 400 }}>
+                          {t("training_knowledge")}
+                        </Title>
+                      </div>
+                    </Link>
+                  </Menu.Item>
+                </SubMenu>
+              </Menu>
               {/* Security Menu Item */}
               <Menu.Item 
                 style={{
@@ -1136,7 +1166,7 @@ const UserLayout: React.FC = () => {
               /* เอฟเฟกต์ Menu.Item เมื่อโฮเวอร์ */
               .custom-menu-item:hover {
                 transform: translateX(5px);
-                background-color: rgba(54, 207, 201, 0.25) !important;
+                background-color: rgb(92, 180, 210) !important;
                 box-shadow: 0 2px 8px rgba(54, 207, 201, 0.2) !important;
               }
 

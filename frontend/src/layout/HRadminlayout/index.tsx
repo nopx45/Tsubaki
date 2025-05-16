@@ -5,6 +5,7 @@ import { Layout, Menu, Button, message, Typography } from "antd";
 import logo from "../../assets/logo.png";
 import { Logouts, stopvisit } from "../../services/https";
 import Swal from "sweetalert2";
+import { MdModelTraining } from "react-icons/md";
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -53,6 +54,9 @@ const HRadminLayout: React.FC = () => {
           </Menu.Item>
           <Menu.Item key="calendar" icon={<CalendarFilled />}>
             <Link to="/admin/calendar">ปฏิทิน</Link>
+          </Menu.Item>
+          <Menu.Item key="training" icon={<MdModelTraining />}>
+            <Link to="/admin/training">อบรม</Link>
           </Menu.Item>
           <Menu.Item key="activity" icon={<RocketOutlined />}>
             <Link to="/admin/activity">กิจกรรม</Link>

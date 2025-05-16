@@ -62,6 +62,12 @@ function SecurityEdit() {
   const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      // เช็คขนาดไม่เกิน 500MB
+      if (file.size > 524288000) {
+        showNotification("error", "ขนาดไฟล์วิดีโอต้องไม่เกิน 500MB");
+        return;
+      }
+
       setVideoFile(file);
       setPreviewVideo(URL.createObjectURL(file));
     }
@@ -78,6 +84,12 @@ function SecurityEdit() {
   const handlePdfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      // เช็คขนาดไม่เกิน 50MB
+      if (file.size > 52428800) {
+        showNotification("error", "ขนาดไฟล์ต้องไม่เกิน 50MB");
+        return;
+      }
+
       setPdfFile(file);
     }
   };
@@ -294,7 +306,7 @@ function SecurityEdit() {
           <div className="form-group">
             <label htmlFor="video">
               <FaImage className="input-icon" />
-              วิดีโอ (mp4)
+              วิดีโอ (mp4 ไม่เกิน 500 MB)
             </label>
             <div className="image-upload-container">
               <label htmlFor="video-upload" className="upload-button">
@@ -377,7 +389,7 @@ function SecurityEdit() {
           <div className="form-group">
             <label htmlFor="pdf">
               <FaImage className="input-icon" />
-              ไฟล์ pdf
+              ไฟล์ pdf (ไม่เกิน 50 MB)
             </label>
             <div className="image-upload-container">
               <label htmlFor="pdf-upload" className="upload-button">

@@ -308,6 +308,49 @@ async function CreateArticle(data: FormData) {
   }
 }
 
+async function GetTrainings() {
+  return await axios
+    .get(`${apiUrl}/trainings`)
+    .then((res) => res)
+    .catch((e) => e.response);
+}
+
+async function GetTrainingsById(id: string) {
+  return await axios
+    .get(`${apiUrl}/training/${id}`)
+    .then((res) => res)
+    .catch((e) => e.response);
+}
+
+async function UpdateTrainingsById(id: string, data: FormData) {
+  return await axios
+    .put(`${apiUrl}/training/${id}`, data)
+    .then((res) => res)
+    .catch((e) => e.response);
+}
+
+async function DeleteTrainingsById(id: string) {
+  return await axios
+    .delete(`${apiUrl}/training/${id}`)
+    .then((res) => res)
+    .catch((e) => e.response);
+}
+
+async function CreateTraining(data: FormData) {
+  try {
+    const res = await axios.post(`${apiUrl}/training`, data, {
+      withCredentials: true,
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return res.data;
+  } catch (e: any) {
+    console.error("Upload error:", e.response?.data);
+    return e.response?.data || { error: "Unknown error occurred" };
+  }
+}
+
 async function GetKnowledges() {
   return await axios
     .get(`${apiUrl}/knowledges`)
@@ -874,6 +917,12 @@ export {
   GetKnowledgesById,
   UpdateKnowledgesById,
   DeleteKnowledgesById,
+  // Training API
+  CreateTraining,
+  GetTrainings,
+  GetTrainingsById,
+  UpdateTrainingsById,
+  DeleteTrainingsById,
   // Security API
   CreateSecurity,
   GetSecurity,

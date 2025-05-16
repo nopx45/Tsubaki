@@ -33,6 +33,13 @@ function ActivityCreate() {
 
       // รวมไฟล์ใหม่กับไฟล์เก่า
       const updatedFiles = [...file, ...selectedFiles];
+      
+      // ตรวจสอบไม่ให้เกิน 50 รูป
+      if (updatedFiles.length > 50) {
+        showNotification("error", "ไม่สามารถอัปโหลดเกิน 50 รูปได้");
+        return;
+      }
+
       setFile(updatedFiles);
 
       // สร้างพรีวิวสำหรับไฟล์ที่เลือกใหม่ทั้งหมด
@@ -131,7 +138,7 @@ function ActivityCreate() {
           <div className="form-group">
             <label htmlFor="image">
               <FaImage className="input-icon" />
-              รูปภาพกิจกรรม
+              รูปภาพกิจกรรม (สูงสุด 50 รูป)
             </label>
             <div className="image-upload-container">
               <label htmlFor="image-upload" className="upload-button">
