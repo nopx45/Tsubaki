@@ -3,7 +3,7 @@ export interface TrainingsInterface {
     ID?: number;
     title?: string;
     content?: string;
-    Image?: string;
+    image?: string;
     thumbnail?: string;
     video?: string;
     gif?: string;

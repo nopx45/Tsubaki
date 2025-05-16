@@ -82,7 +82,7 @@ const TrainingDetail: React.FC = () => {
       </motion.div>
 
       <div className="training-media">
-        {training.Image && (
+        {training.image && (
           <motion.div 
             className="media-block image-block"
             whileHover={{ scale: 1.01 }}
@@ -92,7 +92,7 @@ const TrainingDetail: React.FC = () => {
               <h3>รูปภาพประกอบ</h3>
             </div>
             <img 
-              src={training.Image} 
+              src={training.image} 
               alt="Image" 
               className="media-image" 
               loading="lazy"
