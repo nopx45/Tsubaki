@@ -44,7 +44,7 @@ const Training: React.FC = () => {
   return (
     <div className="training-container">
       <div className="training-header-right">
-        <Regulations text={t("training")} />
+        <Regulations text={t("Training")} />
       </div>
 
       <div className="articles-list">
