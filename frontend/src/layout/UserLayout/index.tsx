@@ -158,15 +158,26 @@ const UserLayout: React.FC = () => {
     }
   };
 
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
   useEffect(() => {
     const fetchPopup = async () => {
       const res = await GetPopupImages();
       if (res.success) {
-        setImgPopup(res.image);
+        const randomized = shuffleArray(res.image as string[]);
+        setImgPopup(randomized);
       } else {
         console.error(res.error);
       }
     };
+
   
     fetchPopup();
 

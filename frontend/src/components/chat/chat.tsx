@@ -2,7 +2,7 @@ import React, { useState, CSSProperties, useEffect, useRef } from 'react';
 import { Badge, Avatar, Button, Input } from 'antd';
 import { CloseOutlined, SendOutlined } from '@ant-design/icons';
 import useWebSocket from '../../socket';
-import { getAuthToken, GetUserByUsername } from '../../services/https';
+import { getAuthToken, GetMessages, GetUserByUsername } from '../../services/https';
 import { jwtDecode } from 'jwt-decode';
 import { TiMessages } from "react-icons/ti";
 import {WS_URL} from '../../socket'
@@ -10,6 +10,17 @@ import {WS_URL} from '../../socket'
 interface ChatComponentProps {
   isLoggedIn: boolean;
 }
+
+const stringToColor = (str: string) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const color = `hsl(${hash % 360}, 50%, 90%)`; // HSL สีสดใส
+  return color;
+};
+
+const ADMIN_COLOR = '#cce5ff';
 
 const Chat: React.FC<ChatComponentProps> = ({ isLoggedIn }) => {
   const chatBodyRef = useRef<HTMLDivElement>(null);
@@ -20,6 +31,9 @@ const Chat: React.FC<ChatComponentProps> = ({ isLoggedIn }) => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [sendto, setSendto] = useState("");
   const [role, setRole] = useState("");
+
+  const [userColors, setUserColors] = useState<Record<string, string>>({});
+
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -33,39 +47,80 @@ const Chat: React.FC<ChatComponentProps> = ({ isLoggedIn }) => {
   }, []);
 
   useEffect(() => {
-    if (messages.length === 0) return;
-  
-    const lastMessage = messages[messages.length - 1];
-  
+  const fetchMessages = async () => {
     try {
-      const formattedMessage = {
-        text: lastMessage.content,
-        sender: lastMessage.from,
-        role: lastMessage.role === "admin" ? "admin" : "user" as "user" | "admin",
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      };
-  
-      setChatMessages(prevMessages => [...prevMessages, formattedMessage]);
-      setSendto(formattedMessage.sender);
+      const allMessages = await GetMessages(); // ✅ API ดึงข้อความทั้งหมด
+      const formatted = allMessages.data.map((msg: any) => ({
+        text: msg.content,
+        sender: msg.from,
+        role: (msg.role === "admin" ? "admin" : "user") as "admin" | "user",
+        time: new Date(msg.created_at || Date.now()).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      }));
 
-      if (!isChatOpen) {
-        setUnreadCount(prev => prev + 1);
-      }
-    } catch (error) {
-      console.error("Error formatting message:", error);
+      const userColorMap: Record<string, string> = {};
+      formatted.forEach((m: { sender: string; }) => {
+        if (!userColorMap[m.sender]) {
+          userColorMap[m.sender] = stringToColor(m.sender);
+        }
+      });
+
+      setUserColors(userColorMap);
+      setChatMessages(formatted);
+    } catch (err) {
+      console.error("Failed to load messages:", err);
     }
-    
+  };
+
+  fetchMessages();
+}, []);
+
+useEffect(() => {
+  if (messages.length === 0) return;
+
+  const lastMessage = messages[messages.length - 1];
+
+  const formattedMessage = {
+    text: lastMessage.content,
+    sender: lastMessage.from,
+    role: (lastMessage.role === "admin" ? "admin" : "user") as "admin" | "user",
+    time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+  };
+
+  setUserColors((prev) => {
+    if (!prev[lastMessage.from]) {
+      return { ...prev, [lastMessage.from]: stringToColor(lastMessage.from) };
+    }
+    return prev;
+  });
+
+  setChatMessages((prevMessages) => [...prevMessages, formattedMessage]);
+  setSendto(formattedMessage.sender);
+
+  if (!isChatOpen) {
+    setUnreadCount((prev) => prev + 1);
+  }
+
+  setTimeout(() => {
+    if (chatBodyRef.current) {
+      chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
+    }
+  }, 100);
+}, [messages]);
+
+useEffect(() => {
+  if (isChatOpen) {
     setTimeout(() => {
       if (chatBodyRef.current) {
         chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
       }
     }, 100);
+  }
+}, [isChatOpen]);
 
-  }, [messages]);
-  
-  
-  
-
+   
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);
     if (!isChatOpen) {
@@ -119,15 +174,31 @@ const Chat: React.FC<ChatComponentProps> = ({ isLoggedIn }) => {
           </div>
           <div style={chatStyles.chatBody} ref={chatBodyRef}>
           {chatMessages.map((msg, index) => (
-            <div key={index} 
-                 style={{ ...chatStyles.messageContainer, justifyContent: msg.role === 'admin' ? 'flex-end' : 'flex-start' }}
-                 onClick={() => handleSelectRecipient(msg.sender)}>
-              <div style={{ ...chatStyles.message, ...(msg.role === 'admin' ? chatStyles.userMessage : chatStyles.systemMessage) }}>
+            <div
+              key={index}
+              style={{
+                ...chatStyles.messageContainer,
+                justifyContent: msg.role === 'admin' ? 'flex-end' : 'flex-start'
+              }}
+              onClick={() => handleSelectRecipient(msg.sender)}
+            >
+              <div
+                style={{
+                  ...chatStyles.message,
+                  backgroundColor: msg.role === 'admin'
+                    ? ADMIN_COLOR
+                    : userColors[msg.sender] || '#f0f0f0',
+                  color: '#333',
+                  borderBottomRightRadius: msg.role === 'admin' ? '5px' : undefined,
+                  borderBottomLeftRadius: msg.role !== 'admin' ? '5px' : undefined
+                }}
+              >
                 <strong>{msg.sender}:</strong>
                 <div style={chatStyles.messageText}>{msg.text}</div>
                 <div style={chatStyles.messageTime}>{msg.time}</div>
               </div>
             </div>
+
           ))}
           </div>
           <div style={chatStyles.chatFooter}>
