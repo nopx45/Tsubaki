@@ -121,56 +121,164 @@ func GetID(c *gin.Context) {
 }
 
 func Update(c *gin.Context) {
-	id := c.Param("id")
+	TrainingID := c.Param("id")
 	db := config.DB()
 	var training entity.Training
 
-	if err := db.First(&training, id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Training not found"})
+	if err := db.First(&training, TrainingID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "id not found"})
 		return
 	}
 
 	title := c.PostForm("title")
 	content := c.PostForm("content")
-	dirs := map[string]string{
-		"thumbnail": "uploads/images/training/thumbnails/",
-		"image":     "uploads/images/training/",
-		"video":     "uploads/videos/training/",
-		"gif":       "uploads/gifs/training/",
-		"pdf":       "uploads/pdfs/training/",
-	}
 
-	for key, dir := range dirs {
-		removeKey := "remove" + key[:1] + key[1:] // removeThumbnail, removeImage, etc.
-		if c.PostForm(removeKey) == "true" {
-			field := trainingFieldPointer(&training, key)
-			if *field != "" {
-				var count int64
-				db.Model(&entity.Training{}).Where(key+" = ?", *field).Count(&count)
-				if count <= 1 {
-					os.Remove(*field)
-				}
-				*field = ""
+	// ======== CHECK REMOVE THUMBNAIL =========
+	if c.PostForm("removeThumbnail") == "true" {
+		if training.Thumbnail != "" {
+			var count int64
+			db.Model(&entity.Training{}).Where("thumbnail = ?", training.Thumbnail).Count(&count)
+			if count <= 1 {
+				os.Remove(training.Thumbnail)
 			}
-		}
-		if file, err := c.FormFile(key); err == nil {
-			field := trainingFieldPointer(&training, key)
-			if *field != "" {
-				var count int64
-				db.Model(&entity.Training{}).Where(key+" = ?", *field).Count(&count)
-				if count <= 1 {
-					os.Remove(*field)
-				}
-			}
-			path := filepath.Join(dir, file.Filename)
-			if err := c.SaveUploadedFile(file, path); err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save " + key})
-				return
-			}
-			*field = path
+			training.Thumbnail = ""
 		}
 	}
 
+	// ======== CHECK REMOVE IMAGE =========
+	if c.PostForm("removeImage") == "true" {
+		if training.Image != "" {
+			var count int64
+			db.Model(&entity.Training{}).Where("image = ?", training.Image).Count(&count)
+			if count <= 1 {
+				os.Remove(training.Image)
+			}
+			training.Image = ""
+		}
+	}
+
+	// ======== CHECK REMOVE VIDEO =========
+	if c.PostForm("removeVideo") == "true" {
+		if training.Video != "" {
+			var count int64
+			db.Model(&entity.Training{}).Where("video = ?", training.Video).Count(&count)
+			if count <= 1 {
+				os.Remove(training.Video)
+			}
+			training.Video = ""
+		}
+	}
+
+	// ======== CHECK REMOVE GIF =========
+	if c.PostForm("removeGif") == "true" {
+		if training.Gif != "" {
+			var count int64
+			db.Model(&entity.Training{}).Where("gif = ?", training.Gif).Count(&count)
+			if count <= 1 {
+				os.Remove(training.Gif)
+			}
+			training.Gif = ""
+		}
+	}
+
+	// ======== CHECK REMOVE PDF =========
+	if c.PostForm("removePdf") == "true" {
+		if training.Pdf != "" {
+			var count int64
+			db.Model(&entity.Training{}).Where("pdf = ?", training.Pdf).Count(&count)
+			if count <= 1 {
+				os.Remove(training.Pdf)
+			}
+			training.Pdf = ""
+		}
+	}
+
+	// ======== UPLOAD NEW THUMBNAIL =========
+	if file, err := c.FormFile("thumbnail"); err == nil {
+		if training.Thumbnail != "" {
+			var count int64
+			db.Model(&entity.Training{}).Where("thumbnail = ?", training.Thumbnail).Count(&count)
+			if count <= 1 {
+				os.Remove(training.Thumbnail)
+			}
+		}
+		thumbPath := filepath.Join("uploads/images/training/thumbnails/", file.Filename)
+		if err := c.SaveUploadedFile(file, thumbPath); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save thumbnail"})
+			return
+		}
+		training.Thumbnail = thumbPath
+	}
+
+	// ======== UPLOAD NEW IMAGE =========
+	if file, err := c.FormFile("image"); err == nil {
+		if training.Image != "" {
+			var count int64
+			db.Model(&entity.Training{}).Where("image = ?", training.Image).Count(&count)
+			if count <= 1 {
+				os.Remove(training.Image)
+			}
+		}
+		imagePath := filepath.Join("uploads/images/training/", file.Filename)
+		if err := c.SaveUploadedFile(file, imagePath); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save image"})
+			return
+		}
+		training.Image = imagePath
+	}
+
+	// ======== UPLOAD NEW VIDEO =========
+	if file, err := c.FormFile("video"); err == nil {
+		if training.Video != "" {
+			var count int64
+			db.Model(&entity.Training{}).Where("video = ?", training.Video).Count(&count)
+			if count <= 1 {
+				os.Remove(training.Video)
+			}
+		}
+		videoPath := filepath.Join("uploads/videos/training/", file.Filename)
+		if err := c.SaveUploadedFile(file, videoPath); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save video"})
+			return
+		}
+		training.Video = videoPath
+	}
+
+	// ======== UPLOAD NEW GIF =========
+	if file, err := c.FormFile("gif"); err == nil {
+		if training.Gif != "" {
+			var count int64
+			db.Model(&entity.Training{}).Where("gif = ?", training.Gif).Count(&count)
+			if count <= 1 {
+				os.Remove(training.Gif)
+			}
+		}
+		gifPath := filepath.Join("uploads/gifs/training/", file.Filename)
+		if err := c.SaveUploadedFile(file, gifPath); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save gif"})
+			return
+		}
+		training.Gif = gifPath
+	}
+
+	// ======== UPLOAD NEW PDF =========
+	if file, err := c.FormFile("pdf"); err == nil {
+		if training.Pdf != "" {
+			var count int64
+			db.Model(&entity.Training{}).Where("pdf = ?", training.Pdf).Count(&count)
+			if count <= 1 {
+				os.Remove(training.Pdf)
+			}
+		}
+		pdfPath := filepath.Join("uploads/pdfs/training/", file.Filename)
+		if err := c.SaveUploadedFile(file, pdfPath); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save pdf"})
+			return
+		}
+		training.Pdf = pdfPath
+	}
+
+	// ======== UPDATE TITLE, CONTENT =========
 	training.Title = title
 	training.Content = content
 
@@ -180,23 +288,6 @@ func Update(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Updated successfully"})
-}
-
-func trainingFieldPointer(t *entity.Training, field string) *string {
-	switch field {
-	case "thumbnail":
-		return &t.Thumbnail
-	case "image":
-		return &t.Image
-	case "video":
-		return &t.Video
-	case "gif":
-		return &t.Gif
-	case "pdf":
-		return &t.Pdf
-	default:
-		return new(string)
-	}
 }
 
 func Delete(c *gin.Context) {
