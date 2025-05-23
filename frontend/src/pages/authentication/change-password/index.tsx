@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, KeyRound, Lock, ShieldCheck } from 'lucide-react';
 import { ChangesPassword, startvisit } from '../../../services/https';
+import Swal from 'sweetalert2';
 
 export interface ChangePasswordInterface {
   current_password?: string;
@@ -38,11 +39,19 @@ const ChangePassword: React.FC = () => {
     const res = await ChangesPassword(payload);
       if (res.status === 200) {
         await startvisit();
-        alert("Change Password success!");
-        setTimeout(() => {
-          localStorage.setItem("isLoggedIn", "true");
-          window.location.href = res.data.redirect_url;
-        }, 100);
+
+        await Swal.fire({
+          icon: "success",
+          title: "เปลี่ยนรหัสผ่านสำเร็จ",
+          text: "กำลังเปลี่ยนเส้นทาง...",
+          timer: 1800,
+          showConfirmButton: false,
+          timerProgressBar: true,
+          willClose: () => {
+            localStorage.setItem("isLoggedIn", "true");
+            window.location.href = res.data.redirect_url;
+          },
+        });
       } else {
         throw new Error("Password change failed");
       }

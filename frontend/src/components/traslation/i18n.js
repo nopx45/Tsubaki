@@ -41,7 +41,7 @@ const resources = {
         viewallimage : "View all images",
         visit : "Viewers",
         centralweb : "Central Web",
-        security : "Security",
+        security : "Information Security",
         no_activity: "No Activities",
         no_activity_detail: "There are currently no activities to display. Check back later!",
         no_article: "No Articles",

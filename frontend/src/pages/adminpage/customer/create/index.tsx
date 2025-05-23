@@ -17,7 +17,8 @@ function CustomerCreate() {
       email: (form.elements.namedItem("email") as HTMLInputElement).value,
       phone: (form.elements.namedItem("phone") as HTMLInputElement).value,
       password: (form.elements.namedItem("password") as HTMLInputElement).value,
-      role: (form.elements.namedItem("role") as HTMLSelectElement).value
+      role: (form.elements.namedItem("role") as HTMLSelectElement).value,
+      force_password_change: true,
     };    
 
     const res = await CreateUser(values);

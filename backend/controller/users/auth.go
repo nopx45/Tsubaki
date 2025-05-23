@@ -29,13 +29,14 @@ type (
 	}
 
 	signUp struct {
-		FirstName string `json:"first_name"`
-		LastName  string `json:"last_name"`
-		Username  string `json:"username" binding:"required,max=20"`
-		Email     string `json:"email"`
-		Phone     string `json:"phone"`
-		Password  string `json:"password"`
-		Role      string `json:"role"`
+		FirstName           string `json:"first_name"`
+		LastName            string `json:"last_name"`
+		Username            string `json:"username" binding:"required,max=20"`
+		Email               string `json:"email"`
+		Phone               string `json:"phone"`
+		Password            string `json:"password"`
+		Role                string `json:"role"`
+		ForcePasswordChange bool   `json:"force_password_change" gorm:"default:false"`
 	}
 )
 
@@ -95,13 +96,14 @@ func SignUp(c *gin.Context) {
 
 	// Create a new user
 	user := entity.Users{
-		FirstName: payload.FirstName,
-		LastName:  payload.LastName,
-		Username:  payload.Username,
-		Email:     payload.Email,
-		Phone:     payload.Phone,
-		Password:  hashedPassword,
-		Role:      role,
+		FirstName:           payload.FirstName,
+		LastName:            payload.LastName,
+		Username:            payload.Username,
+		Email:               payload.Email,
+		Phone:               payload.Phone,
+		Password:            hashedPassword,
+		Role:                role,
+		ForcePasswordChange: payload.ForcePasswordChange,
 	}
 
 	if _, err := govalidator.ValidateStruct(user); err != nil {
