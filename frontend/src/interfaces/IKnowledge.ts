@@ -1,6 +1,7 @@
 
 export interface KnowledgesInterface {
     ID?: number;
+    roleaccess?: string;
     title?: string;
     content?: string;
     Image?: string;

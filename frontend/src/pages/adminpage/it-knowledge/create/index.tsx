@@ -3,6 +3,7 @@ import { CreateKnowledge } from "../../../../services/https";
 import { useNavigate, Link } from "react-router-dom";
 import { FaPlus, FaTimes, FaNewspaper, FaAlignLeft, FaImage, FaUpload } from "react-icons/fa";
 import Swal from "sweetalert2";
+import { RiAdminFill } from "react-icons/ri";
 
 function ITKnowledgeCreate() {
   const navigate = useNavigate();
@@ -112,6 +113,7 @@ function ITKnowledgeCreate() {
   
     formData.append("title", (form.elements.namedItem("title") as HTMLInputElement).value);
     formData.append("content", (form.elements.namedItem("content") as HTMLInputElement).value);
+    formData.append("roleaccess", (form.elements.namedItem("roleaccess") as HTMLInputElement).value);
   
     if (!thumbnailFile) {
       await Swal.fire({
@@ -202,6 +204,21 @@ function ITKnowledgeCreate() {
                 required
               ></textarea>
               <span className="input-focus"></span>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="roleaccess">
+              <RiAdminFill className="input-icon" />
+              ผู้ใช้ที่มีสิทธิ์เห็นข้อมูล
+            </label>
+            <div className="select-wrapper">
+              <select id="roleaccess" name="roleaccess" required>
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+                <option value="adminit">Admin IT</option>
+              </select>
+              <span className="select-focus"></span>
             </div>
           </div>
 
@@ -516,7 +533,37 @@ function ITKnowledgeCreate() {
           box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
         }
         
-        .input-focus {
+        .input-wrapper, .select-wrapper {
+          position: relative;
+        }
+        
+        input, select {
+          width: 100%;
+          padding: 12px 15px 12px 40px;
+          border: 1px solid #e0e0e0;
+          border-radius: 8px;
+          font-size: 16px;
+          transition: all 0.3s ease;
+          background-color: #f9f9f9;
+        }
+        
+        select {
+          appearance: none;
+          background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+          background-repeat: no-repeat;
+          background-position: right 10px center;
+          background-size: 15px;
+          width: 25%;
+        }
+        
+        input:focus, select:focus {
+          outline: none;
+          border-color: #6a11cb;
+          background-color: white;
+          box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+        }
+        
+        .input-focus, .select-focus {
           position: absolute;
           bottom: 0;
           left: 0;
@@ -527,8 +574,8 @@ function ITKnowledgeCreate() {
         }
         
         input:focus ~ .input-focus, 
-        textarea:focus ~ .input-focus {
-          width: 100%;
+        select:focus ~ .select-focus {
+          width: 25%;
         }
         
         .image-upload-container {

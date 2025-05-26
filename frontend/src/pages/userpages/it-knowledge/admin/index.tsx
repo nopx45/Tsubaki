@@ -1,42 +1,28 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { KnowledgesInterface } from "../../../interfaces/IKnowledge";
-import { getAuthToken, GetKnowledges } from "../../../services/https";
+import { KnowledgesInterface } from "../../../../interfaces/IKnowledge";
+import { GetKnowledges } from "../../../../services/https";
 import { useTranslation } from "react-i18next";
 import { FaLaptopCode, FaCalendarAlt, FaUserTie, FaExternalLinkAlt } from "react-icons/fa";
 import { IoIosRocket } from "react-icons/io";
 import { BsFillLightbulbFill } from "react-icons/bs";
 import { RiNotification3Fill } from "react-icons/ri";
-import Regulations from "../../../components/ranbow-text/ranbow_text";
+import Regulations from "../../../../components/ranbow-text/ranbow_text";
 
-const ITKnowledge: React.FC = () => {
+const AdminITKnowledge: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [knowledges, setKnowledges] = useState<KnowledgesInterface[]>([]);
-  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchRole = async () => {
-      try {
-        const token = await getAuthToken();
-        if (token) {
-          // decode token หรือดึง profile จาก API
-          const payload = JSON.parse(atob(token.split(".")[1]));
-          setUserRole(payload?.role ?? null);
-        }
-      } catch (err) {
-        console.error("Error decoding token:", err);
-      }
-    };
-    fetchRole();
     const fetchData = async () => {
     try {
       const response = await GetKnowledges();
       const allData = response.data;
 
-      // แสดงเฉพาะ knowledge ที่กำหนด roleaccess === "user"
+      // แสดงเฉพาะ knowledge ที่กำหนด roleaccess === "admin || adminit"
       const filteredData = allData.filter(
-        (k: KnowledgesInterface) => k.roleaccess === "user"
+        (k: KnowledgesInterface) => k.roleaccess === "admin" || k.roleaccess === "adminit"
       );
 
       const sortedData = filteredData.sort(
@@ -66,16 +52,8 @@ const ITKnowledge: React.FC = () => {
   return (
     <div className="knowledge-container">
       <div className="knowledge-header-right">
-        {(userRole === "admin" || userRole === "adminit") && (
-          <button
-            onClick={() => navigate("admin")}
-            className="admin-button"
-          >
-            🛠 Admin Knowledge
-          </button>
-        )}
+        <Regulations text="IT Knowledge (Admin)" />
       </div>
-      <Regulations text={t("it_knowledge")} />
 
       <div className="articles-list">
         {knowledges.slice(0, 10).map((knowledge, index) => {
@@ -129,7 +107,7 @@ const ITKnowledge: React.FC = () => {
       </div>
 
       <button
-        onClick={() => navigate(`/it-knowledge/all`)}
+        onClick={() => navigate(`/it-knowledge/admin/all`)}
         className="more-button"
       >
         {t("view_all")} <FaExternalLinkAlt className="arrow" />
@@ -146,25 +124,6 @@ const ITKnowledge: React.FC = () => {
           display: flex;
           justify-content: flex-end;
           padding-right: 20px;
-        }
-
-        .admin-button {
-          margin-left: auto;
-          background: linear-gradient(90deg,rgb(65, 141, 255),rgb(43, 61, 255));
-          color: white;
-          border: none;
-          height: 20%;
-          padding: 10px 20px;
-          border-radius: 25px;
-          font-weight: bold;
-          font-size: 0.95rem;
-          cursor: pointer;
-          box-shadow: 0 4px 12px rgba(255, 65, 108, 0.3);
-          transition: transform 0.2s ease;
-        }
-
-        .admin-button:hover {
-          transform: translateY(-2px);
         }
 
         .articles-list {
@@ -318,4 +277,4 @@ const ITKnowledge: React.FC = () => {
   );
 };
 
-export default ITKnowledge;
+export default AdminITKnowledge;

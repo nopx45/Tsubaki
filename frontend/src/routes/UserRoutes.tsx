@@ -20,6 +20,8 @@ import AllSecurities from "../pages/userpages/security/detail/view_all";
 import Training from "../pages/userpages/training";
 import TrainingDetail from "../pages/userpages/training/detail/detail";
 import AllTrainings from "../pages/userpages/training/detail/view-all";
+import AdminITKnowledge from "../pages/userpages/it-knowledge/admin";
+import AllAdminITKnowledges from "../pages/userpages/it-knowledge/admin/view_all";
 
 const NotPage = Loadable(lazy(() => import("../pages/notpage")));
 
@@ -54,6 +56,14 @@ const UserRoutes = (isLoggedIn: boolean): RouteObject[] => {
           {
             path: "all",
             element: <AllITKnowledges />,
+          },
+          {
+              path: "admin",
+              element: <AdminITKnowledge />,
+          },
+          {
+              path: "admin/all",
+              element: <AllAdminITKnowledges />,
           },
         ],
       },

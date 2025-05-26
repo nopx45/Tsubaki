@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { GetKnowledgesById, UpdateKnowledgesById } from "../../../../services/https/index";
 import { useNavigate, Link, useParams } from "react-router-dom";
 import { FaSave, FaTimes, FaNewspaper, FaAlignLeft, FaImage, FaUpload } from "react-icons/fa";
+import { RiAdminFill } from "react-icons/ri";
 
 function ITKnowledgeEdit() {
   const navigate = useNavigate();
@@ -129,6 +130,7 @@ function ITKnowledgeEdit() {
         setPrevGifFile(res.data.gif);
         setPrevPdfFile(res.data.pdf);
         setFormValues({
+          roleaccess: res.data.roleaccess,
           title: res.data.title,
           content: res.data.content,
         });
@@ -142,7 +144,7 @@ function ITKnowledgeEdit() {
     }
   };
 
-  const [formValues, setFormValues] = useState({ title: "", content: "" });
+  const [formValues, setFormValues] = useState({ roleaccess: "",title: "", content: "" });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -254,6 +256,21 @@ function ITKnowledgeEdit() {
                 required
               ></textarea>
               <span className="input-focus"></span>
+            </div>
+          </div>
+
+          <div className="form-group">
+              <label htmlFor="roleaccess">
+              <RiAdminFill className="input-icon" />
+              ผู้ใช้ที่มีสิทธิ์เห็นข้อมูล
+            </label>
+            <div className="select-wrapper">
+              <select id="roleaccess" name="roleaccess" required value={formValues.roleaccess}>
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+                <option value="adminit">Admin IT</option>
+              </select>
+              <span className="select-focus"></span>
             </div>
           </div>
 
@@ -661,6 +678,51 @@ function ITKnowledgeEdit() {
           width: 100%;
         }
         
+        .input-wrapper, .select-wrapper {
+          position: relative;
+        }
+        
+        input, select {
+          width: 100%;
+          padding: 12px 15px 12px 40px;
+          border: 1px solid #e0e0e0;
+          border-radius: 8px;
+          font-size: 16px;
+          transition: all 0.3s ease;
+          background-color: #f9f9f9;
+        }
+        
+        select {
+          appearance: none;
+          background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+          background-repeat: no-repeat;
+          background-position: right 10px center;
+          background-size: 15px;
+          width: 25%;
+        }
+        
+        input:focus, select:focus {
+          outline: none;
+          border-color: #6a11cb;
+          background-color: white;
+          box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.1);
+        }
+        
+        .input-focus, .select-focus {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          width: 0;
+          height: 2px;
+          background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+          transition: width 0.3s ease;
+        }
+        
+        input:focus ~ .input-focus, 
+        select:focus ~ .select-focus {
+          width: 25%;
+        }
+          
         .image-upload-container {
           display: flex;
           flex-direction: column;

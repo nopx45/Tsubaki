@@ -5,7 +5,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { FaNewspaper, FaIdBadge, FaImage, FaSearch, FaSpinner, FaPaperPlane } from "react-icons/fa";
 import Pagination from "../../../../components/Pagination/Pagination";
 
-function AllITKnowledges() {
+function AllAdminITKnowledges() {
   const navigate = useNavigate();
   const [knowledges, setKnowledges] = useState<KnowledgesInterface[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,7 +56,7 @@ function AllITKnowledges() {
     
           // แสดงเฉพาะ knowledge ที่กำหนด roleaccess === "admin || adminit"
           const filteredData = allData.filter(
-            (k: KnowledgesInterface) => k.roleaccess === "user"
+            (k: KnowledgesInterface) => k.roleaccess === "admin" || k.roleaccess === "adminit"
           );
     
           const sortedData = filteredData.sort(
@@ -90,7 +90,7 @@ function AllITKnowledges() {
             <div className="header-icon">
               <FaNewspaper />
             </div>
-            <h1>หน้ารวมข่าวสารไอที</h1>
+            <h1>หน้ารวมข่าวสารไอที (เฉพาะ Admin IT)</h1>
           </div>
           <div className="header-actions">
             <div className="search-container">
@@ -707,4 +707,4 @@ function AllITKnowledges() {
   );
 }
 
-export default AllITKnowledges;
+export default AllAdminITKnowledges;
