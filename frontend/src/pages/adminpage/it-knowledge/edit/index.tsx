@@ -151,11 +151,19 @@ function ITKnowledgeEdit() {
     setFormValues(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFormValues({
+      ...formValues,
+      [e.target.name]: e.target.value
+    });
+  };
+
   const onFinish = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     const formData = new FormData();
+    formData.append("roleaccess", formValues.roleaccess);
     formData.append("title", formValues.title);
     formData.append("content", formValues.content);
 
@@ -264,14 +272,20 @@ function ITKnowledgeEdit() {
               <RiAdminFill className="input-icon" />
               ผู้ใช้ที่มีสิทธิ์เห็นข้อมูล
             </label>
-            <div className="select-wrapper">
-              <select id="roleaccess" name="roleaccess" required value={formValues.roleaccess}>
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
-                <option value="adminit">Admin IT</option>
-              </select>
-              <span className="select-focus"></span>
-            </div>
+           <div className="select-wrapper">
+            <select
+              id="roleaccess"
+              name="roleaccess"
+              required
+              value={formValues.roleaccess || "user"}
+              onChange={handleSelectChange}
+            >
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+              <option value="adminit">Admin IT</option>
+            </select>
+            <span className="select-focus"></span>
+          </div>
           </div>
 
           <div className="form-group">

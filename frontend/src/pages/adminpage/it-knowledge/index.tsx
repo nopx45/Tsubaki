@@ -151,6 +151,12 @@ function ITKnowledges() {
                     </th>
                     <th>
                       <div className="header-cell">
+                        <FaNewspaper className="column-icon" />
+                        <span>ผู้มีสิทธิ์เข้าดู</span>
+                      </div>
+                    </th>
+                    <th>
+                      <div className="header-cell">
                         <FaImage className="column-icon" />
                         <span>รูปหน้าปก</span>
                       </div>
@@ -181,6 +187,11 @@ function ITKnowledges() {
                               ? knowledge.content.substring(0, 30) + "..." 
                               : knowledge.content
                             : "-"}
+                        </span>
+                      </td>
+                      <td>
+                        <span className="title-cell">
+                          {knowledge.roleaccess || "-"}
                         </span>
                       </td>
                       <td>

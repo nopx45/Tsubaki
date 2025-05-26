@@ -10,7 +10,7 @@ import { SignInInterface } from "../../interfaces/SignIn";
 import axios from "axios";
 import Swal from "sweetalert2";
 
-export const apiUrl = "http://localhost:8080";
+export const apiUrl = "http://tat-webcenter:8080";
 axios.defaults.withCredentials = true;
 
 axios.interceptors.response.use(
