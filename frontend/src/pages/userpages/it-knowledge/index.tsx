@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { KnowledgesInterface } from "../../../interfaces/IKnowledge";
-import { getAuthToken, GetKnowledges } from "../../../services/https";
+import { getAuthToken, GetUserKnowledges } from "../../../services/https";
 import { useTranslation } from "react-i18next";
 import { FaLaptopCode, FaCalendarAlt, FaUserTie, FaExternalLinkAlt } from "react-icons/fa";
 import { IoIosRocket } from "react-icons/io";
@@ -16,41 +16,32 @@ const ITKnowledge: React.FC = () => {
   const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchRole = async () => {
-      try {
-        const token = await getAuthToken();
-        if (token) {
-          // decode token หรือดึง profile จาก API
-          const payload = JSON.parse(atob(token.split(".")[1]));
-          setUserRole(payload?.role ?? null);
-        }
-      } catch (err) {
-        console.error("Error decoding token:", err);
-      }
-    };
-    fetchRole();
-    const fetchData = async () => {
+  const fetchRole = async () => {
     try {
-      const response = await GetKnowledges();
-      const allData = response.data;
+      const token = await getAuthToken();
+      if (token) {
+        const payload = JSON.parse(atob(token.split(".")[1]));
+        setUserRole(payload?.role ?? null);
+      }
+    } catch (err) {
+      console.error("Error decoding token:", err);
+    }
+  };
+  fetchRole();
+}, []);
 
-      // แสดงเฉพาะ knowledge ที่กำหนด roleaccess === "user"
-      const filteredData = allData.filter(
-        (k: KnowledgesInterface) => k.roleaccess === "user"
-      );
-
-      const sortedData = filteredData.sort(
-        (a: KnowledgesInterface, b: KnowledgesInterface) =>
-          new Date(b.created_at!).getTime() - new Date(a.created_at!).getTime()
-      );
-
-      setKnowledges(sortedData);
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const response = await GetUserKnowledges();
+      setKnowledges(response.data);
     } catch (error) {
       console.error("Error fetching knowledges:", error);
     }
   };
+
   fetchData();
-  }, []);
+}, [userRole]);
 
   const icons = [
     <FaLaptopCode style={{ color: "#6a5acd" }} />, 

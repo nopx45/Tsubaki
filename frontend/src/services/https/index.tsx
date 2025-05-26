@@ -358,6 +358,20 @@ async function GetKnowledges() {
     .catch((e) => e.response);
 }
 
+async function GetUserKnowledges() {
+  return await axios
+    .get(`${apiUrl}/knowledge/user`)
+    .then((res) => res)
+    .catch((e) => e.response);
+}
+
+async function GetAdminKnowledges() {
+  return await axios
+    .get(`${apiUrl}/knowledge/admin`)
+    .then((res) => res)
+    .catch((e) => e.response);
+}
+
 async function GetKnowledgesById(id: string) {
   return await axios
     .get(`${apiUrl}/knowledge/${id}`)
@@ -914,6 +928,8 @@ export {
   // Knowledge API
   CreateKnowledge,
   GetKnowledges,
+  GetUserKnowledges,
+  GetAdminKnowledges,
   GetKnowledgesById,
   UpdateKnowledgesById,
   DeleteKnowledgesById,

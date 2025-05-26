@@ -2,7 +2,6 @@ import { lazy } from "react";
 import { RouteObject } from "react-router-dom";
 import Loadable from "../components/third-patry/Loadable";
 import UserLayout from "../layout/UserLayout";
-import ITKnowledge from "../pages/userpages/it-knowledge";
 import Announcement from "../pages/userpages/announcement";
 import Activity from "../pages/userpages/activity";
 import ActivityDetails from "../pages/adminpage/activity/indetail";
@@ -24,6 +23,7 @@ const NotPage = Loadable(lazy(() => import("../pages/notpage")));
 const MainPages = Loadable(lazy(() => import("../pages/userpages/dashboard/index")));
 const RegisterPages = Loadable(lazy(() => import("../pages/authentication/Register")));
 const SignInPages = Loadable(lazy(() => import("../pages/authentication/Login")));
+const ITKnowledge = Loadable(lazy(() => import("../pages/userpages/it-knowledge")));
 
 const MainRoutes = (): RouteObject[] => {
   return [

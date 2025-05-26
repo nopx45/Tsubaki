@@ -174,6 +174,78 @@ func GetID(c *gin.Context) {
 	c.JSON(http.StatusOK, knowledge)
 }
 
+func GetUserAccess(c *gin.Context) {
+	var knowledge []entity.Knowledge
+	db := config.DB()
+
+	results := db.Where("role_access = ?", "user").Find(&knowledge)
+	if results.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": results.Error.Error()})
+		return
+	}
+
+	baseURL := c.Request.Host
+	for i := range knowledge {
+		if knowledge[i].Thumbnail != "" {
+			knowledge[i].Thumbnail = "http://" + baseURL + "/" + knowledge[i].Thumbnail
+		}
+		if knowledge[i].Image != "" {
+			knowledge[i].Image = "http://" + baseURL + "/" + knowledge[i].Image
+		}
+		if knowledge[i].Video != "" {
+			knowledge[i].Video = "http://" + baseURL + "/" + knowledge[i].Video
+		}
+		if knowledge[i].Gif != "" {
+			knowledge[i].Gif = "http://" + baseURL + "/" + knowledge[i].Gif
+		}
+		if knowledge[i].Pdf != "" {
+			knowledge[i].Pdf = "http://" + baseURL + "/" + knowledge[i].Pdf
+		}
+		knowledge[i].CreatedAt = knowledge[i].CreatedAt.Local()
+	}
+
+	c.JSON(http.StatusOK, knowledge)
+}
+
+func GetAdminAccess(c *gin.Context) {
+	// ดึง role จาก token (สมมุติว่าคุณมี middleware ที่ set ไว้ใน context)
+	role, exists := c.Get("role")
+	if !exists || (role != "admin" && role != "adminit") {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Access denied"})
+		return
+	}
+
+	var knowledge []entity.Knowledge
+	db := config.DB()
+	results := db.Find(&knowledge)
+	if results.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": results.Error.Error()})
+		return
+	}
+
+	baseURL := c.Request.Host
+	for i := range knowledge {
+		if knowledge[i].Thumbnail != "" {
+			knowledge[i].Thumbnail = "http://" + baseURL + "/" + knowledge[i].Thumbnail
+		}
+		if knowledge[i].Image != "" {
+			knowledge[i].Image = "http://" + baseURL + "/" + knowledge[i].Image
+		}
+		if knowledge[i].Video != "" {
+			knowledge[i].Video = "http://" + baseURL + "/" + knowledge[i].Video
+		}
+		if knowledge[i].Gif != "" {
+			knowledge[i].Gif = "http://" + baseURL + "/" + knowledge[i].Gif
+		}
+		if knowledge[i].Pdf != "" {
+			knowledge[i].Pdf = "http://" + baseURL + "/" + knowledge[i].Pdf
+		}
+		knowledge[i].CreatedAt = knowledge[i].CreatedAt.Local()
+	}
+
+	c.JSON(http.StatusOK, knowledge)
+}
+
 func Update(c *gin.Context) {
 	KnowledgeID := c.Param("id")
 	db := config.DB()

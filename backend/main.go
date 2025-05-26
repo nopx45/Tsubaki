@@ -104,6 +104,7 @@ func main() {
 		adminITRouter.POST("/knowledge", knowledge.Upload)
 		adminITRouter.PUT("/knowledge/:id", knowledge.Update)
 		adminITRouter.DELETE("/knowledge/:id", knowledge.Delete)
+		adminITRouter.GET("/knowledge/admin", knowledge.GetAdminAccess)
 
 		adminITRouter.POST("/security", security.Upload)
 		adminITRouter.PUT("/security/:id", security.Update)
@@ -196,6 +197,7 @@ func main() {
 	r.GET("/article/:id", article.GetID)
 	r.GET("/knowledges", knowledge.GetAll)
 	r.GET("/knowledge/:id", knowledge.GetID)
+	r.GET("/knowledge/user", knowledge.GetUserAccess)
 	r.GET("/securities", security.GetAll)
 	r.GET("/security/:id", security.GetID)
 	r.GET("/links", link.GetAll)
