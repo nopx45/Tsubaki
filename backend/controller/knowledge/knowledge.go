@@ -12,6 +12,7 @@ import (
 )
 
 func Upload(c *gin.Context) {
+	roleaccess := c.PostForm("roleaccess")
 	title := c.PostForm("title")
 	content := c.PostForm("content")
 	CreatedAt := time.Now()
@@ -80,14 +81,15 @@ func Upload(c *gin.Context) {
 	// Save DB
 	db := config.DB()
 	knowledge := entity.Knowledge{
-		Title:     title,
-		Content:   content,
-		Thumbnail: thumbPath,
-		Image:     imagePath,
-		Video:     videoPath,
-		Gif:       gifPath,
-		Pdf:       pdfPath,
-		CreatedAt: CreatedAt,
+		RoleAccess: roleaccess,
+		Title:      title,
+		Content:    content,
+		Thumbnail:  thumbPath,
+		Image:      imagePath,
+		Video:      videoPath,
+		Gif:        gifPath,
+		Pdf:        pdfPath,
+		CreatedAt:  CreatedAt,
 	}
 
 	if err := db.Create(&knowledge).Error; err != nil {
@@ -182,6 +184,7 @@ func Update(c *gin.Context) {
 		return
 	}
 
+	roleaccess := c.PostForm("roleaccess")
 	title := c.PostForm("title")
 	content := c.PostForm("content")
 
@@ -331,6 +334,7 @@ func Update(c *gin.Context) {
 	}
 
 	// ======== UPDATE TITLE, CONTENT =========
+	knowledge.RoleAccess = roleaccess
 	knowledge.Title = title
 	knowledge.Content = content
 
