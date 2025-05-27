@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
@@ -6,7 +6,7 @@ import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
 
-import { Button, Form, Input, Layout, Menu, message, Modal, Upload, Typography} from "antd";
+import { Button, Form, Input, Layout, Menu, message, Modal, Upload, Typography } from "antd";
 import { GlobalOutlined, SearchOutlined, SolutionOutlined, BulbOutlined,
 InboxOutlined, UserOutlined, SafetyOutlined, 
 ExportOutlined,
@@ -31,6 +31,7 @@ import ChatComponent from "../../components/chat-component/chat";
 import CustomCalendar from "../../components/carlendar/Carlendar";
 import Swal from "sweetalert2";
 import { NavigationOptions } from "swiper/types";
+import { useRegisterTourRef } from "../../hooks/useRegisterTourRef";
 
 const { Content, Footer } = Layout;
 const { Title } = Typography;
@@ -60,6 +61,29 @@ const UserLayout: React.FC = () => {
   const [matchedUsers, setMatchedUsers] = useState<UsersInterface[]>([]);
   const [isListVisible, setIsListVisible] = useState(false);
   const [isRegulationModalVisible, setIsRegulationModalVisible] = useState(false);
+
+  const ref5 = useRef<HTMLDivElement>(null!);
+  const ref6 = useRef<HTMLDivElement>(null!);
+  const ref7 = useRef<HTMLDivElement>(null!);
+  const ref8 = useRef<HTMLButtonElement>(null!);
+  const ref9 = useRef<HTMLDivElement>(null!);
+  const ref10 = useRef<HTMLDivElement>(null!);
+  const ref11 = useRef<HTMLDivElement>(null!);
+  const ref12 = useRef<HTMLDivElement>(null!);
+  const ref13 = useRef<HTMLDivElement>(null!);
+  const ref14 = useRef<HTMLDivElement>(null!);
+  const ref15 = useRef<HTMLDivElement>(null!);
+  useRegisterTourRef("central-web", ref5);
+  useRegisterTourRef("section-web", ref6);
+  useRegisterTourRef("other-web", ref7);
+  useRegisterTourRef("login", ref8);
+  useRegisterTourRef("viewer", ref9);
+  useRegisterTourRef("search-user", ref10);
+  useRegisterTourRef("regulation", ref11);
+  useRegisterTourRef("it-knowledge", ref12);
+  useRegisterTourRef("training-knowledge", ref13);
+  useRegisterTourRef("information-security", ref14);
+  useRegisterTourRef("calendar", ref15);
 
   const checkLoginAndShowPopup = async () => {
     const token = await getAuthToken();
@@ -405,88 +429,88 @@ const UserLayout: React.FC = () => {
             style={{ backgroundColor: "rgba(0, 21, 41, 0.4)" }}
             mode="inline"
           >
-            <SubMenu
-              key={"link"}
-              icon={<GlobalOutlined style={{ 
-                color: "#1890ff",
-                fontSize: "16px",
-                transition: "all 0.3s ease",
-              }} />}
-              title={
-                <div style={{ 
-                  display: "flex",
-                  alignItems: "center", 
-                  height: "100%", 
-                  paddingLeft: 0, 
-                  color: "white" 
-                }}>
-                  <Title level={5} style={{ margin: 0, color: "white" }}>
-                  {t("centralweb")}
-                  </Title>
-                </div>
-              }
-              style={{
-                borderBottom: "1px solid #00a0a0",
-                borderRadius: "0px",
-                margin: "0 8px",
-                padding: "8px 0",
-              }}
-              popupClassName="custom-submenu"
-            >
-              {links && links.length > 0 ? (
-                links.map((item, index) => (
-                  <Menu.Item
-                    key={item.ID}
-                    style={{
-                      backgroundColor: index % 2 === 0 ? 'rgb(206, 231, 240)' : 'rgb(255, 255, 255)',
-                      borderRadius: "8px",
-                      margin: "4px 8px",
-                      padding: "8px 16px 8px 20px",
-                      position: "relative",
-                      transition: "all 0.3s ease",
-                      borderLeft: "4px solid #1890ff",
-                      color: index % 2 === 0 ? '#2f54eb' : '#1890ff',
-                      fontWeight: 500,
-                      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.05)"
-                    }}
-                    className="custom-menu-item"
-                  >
-                    <a href={item.link_url} target="_blank" rel="noopener noreferrer"
+              <SubMenu
+                key={"link"}
+                icon={<GlobalOutlined style={{ 
+                  color: "#1890ff",
+                  fontSize: "16px",
+                  transition: "all 0.3s ease",
+                }} />}
+                title={
+                  <div ref={ref5} style={{ 
+                    display: "flex",
+                    alignItems: "center", 
+                    height: "100%", 
+                    paddingLeft: 0, 
+                    color: "white" 
+                  }}>
+                    <Title level={5} style={{ margin: 0, color: "white" }}>
+                    {t("centralweb")}
+                    </Title>
+                  </div>
+                }
+                style={{
+                  borderBottom: "1px solid #00a0a0",
+                  borderRadius: "0px",
+                  margin: "0 8px",
+                  padding: "8px 0",
+                }}
+                popupClassName="custom-submenu"
+              >
+                {links && links.length > 0 ? (
+                  links.map((item, index) => (
+                    <Menu.Item
+                      key={item.ID}
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        color: "inherit",
-                        textDecoration: "none"
+                        backgroundColor: index % 2 === 0 ? 'rgb(206, 231, 240)' : 'rgb(255, 255, 255)',
+                        borderRadius: "8px",
+                        margin: "4px 8px",
+                        padding: "8px 16px 8px 20px",
+                        position: "relative",
+                        transition: "all 0.3s ease",
+                        borderLeft: "4px solid #1890ff",
+                        color: index % 2 === 0 ? '#2f54eb' : '#1890ff',
+                        fontWeight: 500,
+                        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.05)"
                       }}
-                      >
-                      <span style={{ position: "relative" }}>
-                        {item.name}
-                        {/* เอฟเฟกต์ขีดเส้นใต้เมื่อโฮเวอร์ */}
-                        <span className="link-underline" style={{
-                          position: "absolute",
-                          bottom: "-2px",
-                          left: 0,
-                          width: "0%",
-                          height: "2px",
-                          backgroundColor: "#1890ff",
-                          transition: "width 0.3s ease"
-                        }}></span>
-                      </span>
-                      <ExportOutlined style={{ 
-                        fontSize: "14px", 
-                        marginLeft: "8px",
-                        opacity: 0.7,
-                        transition: "all 0.3s ease"
-                      }} />
-                    </a>
+                      className="custom-menu-item"
+                    >
+                      <a href={item.link_url} target="_blank" rel="noopener noreferrer"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          color: "inherit",
+                          textDecoration: "none"
+                        }}
+                        >
+                        <span style={{ position: "relative" }}>
+                          {item.name}
+                          {/* เอฟเฟกต์ขีดเส้นใต้เมื่อโฮเวอร์ */}
+                          <span className="link-underline" style={{
+                            position: "absolute",
+                            bottom: "-2px",
+                            left: 0,
+                            width: "0%",
+                            height: "2px",
+                            backgroundColor: "#1890ff",
+                            transition: "width 0.3s ease"
+                          }}></span>
+                        </span>
+                        <ExportOutlined style={{ 
+                          fontSize: "14px", 
+                          marginLeft: "8px",
+                          opacity: 0.7,
+                          transition: "all 0.3s ease"
+                        }} />
+                      </a>
+                    </Menu.Item>
+                    ))
+                  ) : (
+                  <Menu.Item key="no-links" disabled>
+                    {t("nodata")}
                   </Menu.Item>
-                  ))
-                ) : (
-                <Menu.Item key="no-links" disabled>
-                  {t("nodata")}
-                </Menu.Item>
-              )}
-            </SubMenu>
+                )}
+              </SubMenu>
             </Menu>
             <Menu
             openKeys={openKeys}
@@ -503,7 +527,7 @@ const UserLayout: React.FC = () => {
                 transition: "all 0.3s ease",
               }} />}
               title={
-                <div style={{ 
+                <div ref={ref6} style={{ 
                   display: "flex", 
                   alignItems: "center", 
                   height: "100%", 
@@ -631,7 +655,7 @@ const UserLayout: React.FC = () => {
                 transition: "all 0.3s ease"
               }} />}
               title={
-                <div style={{ 
+                <div ref={ref7} style={{ 
                   display: "flex", 
                   alignItems: "center", 
                   height: "100%", 
@@ -769,117 +793,133 @@ const UserLayout: React.FC = () => {
           <Outlet />
         </Content>
         <Sider theme="dark" style={{ backgroundColor: "rgba(0, 21, 41, 0.9)" }} collapsible width={270}>
-        <Button 
-            onClick={handleAuthClick}
-            style={{ 
-              margin: "10px 5px", 
-              width: "90%",
-              height: "40px",
-              borderRadius: "6px",
-              border: "none",
-              fontWeight: 500,
-              fontSize: "15px",
-              transition: "all 0.3s ease",
-              boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-              // เงื่อนไขสีตามสถานะการล็อกอิน
-              backgroundColor: isLoggedIn ? "#ff4d4f" : "#1890ff",
-              color: "white",
-              // เอฟเฟกต์กราดิเอนต์เมื่อโฮเวอร์
-              backgroundImage: isLoggedIn 
-                ? "linear-gradient(to right, #ff4d4f, #ff7875)" 
-                : "linear-gradient(to right, #1890ff, #69c0ff)"
-            }}
-            className="auth-button"
-            icon={
-              isLoggedIn ? (
-                <LogoutOutlined style={{ fontSize: "16px" }} />
+            <Button
+              ref={ref8}
+              onClick={handleAuthClick}
+              style={{ 
+                margin: "10px 5px", 
+                width: "90%",
+                height: "40px",
+                borderRadius: "6px",
+                border: "none",
+                fontWeight: 500,
+                fontSize: "15px",
+                transition: "all 0.3s ease",
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                // เงื่อนไขสีตามสถานะการล็อกอิน
+                backgroundColor: isLoggedIn ? "#ff4d4f" : "#1890ff",
+                color: "white",
+                // เอฟเฟกต์กราดิเอนต์เมื่อโฮเวอร์
+                backgroundImage: isLoggedIn 
+                  ? "linear-gradient(to right, #ff4d4f, #ff7875)" 
+                  : "linear-gradient(to right, #1890ff, #69c0ff)"
+              }}
+              className="auth-button"
+              icon={
+                isLoggedIn ? (
+                  <LogoutOutlined style={{ fontSize: "16px" }} />
+                ) : (
+                  <LoginOutlined style={{ fontSize: "16px" }} />
+                )
+              }
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-2px)";
+                e.currentTarget.style.boxShadow = isLoggedIn 
+                  ? "0 6px 12px rgba(255, 77, 79, 0.3)" 
+                  : "0 6px 12px rgba(24, 144, 255, 0.3)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.1)";
+              }}
+              onMouseDown={(e) => {
+                e.currentTarget.style.transform = "scale(0.98)";
+              }}
+              onMouseUp={(e) => {
+                e.currentTarget.style.transform = "translateY(-2px)";
+              }}
+            >
+              {isLoggedIn ? (
+                <span style={{ marginLeft: "8px" }}>{t("logout")}</span>
               ) : (
-                <LoginOutlined style={{ fontSize: "16px" }} />
-              )
-            }
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = "translateY(-2px)";
-              e.currentTarget.style.boxShadow = isLoggedIn 
-                ? "0 6px 12px rgba(255, 77, 79, 0.3)" 
-                : "0 6px 12px rgba(24, 144, 255, 0.3)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = "translateY(0)";
-              e.currentTarget.style.boxShadow = "0 4px 8px rgba(0, 0, 0, 0.1)";
-            }}
-            onMouseDown={(e) => {
-              e.currentTarget.style.transform = "scale(0.98)";
-            }}
-            onMouseUp={(e) => {
-              e.currentTarget.style.transform = "translateY(-2px)";
-            }}
-          >
-            {isLoggedIn ? (
-              <span style={{ marginLeft: "8px" }}>{t("logout")}</span>
-            ) : (
-              <span style={{ marginLeft: "8px" }}>{t("login")}</span>
-            )}
-          </Button>
-          <Menu theme="dark" style={{ 
-                borderRight: "1px solid #00b4b4", 
-                boxShadow: "0 0 15px rgba(0, 180, 180, 0.3)"
-              }} mode="inline">
-          <div 
+                <span style={{ marginLeft: "8px" }}>{t("login")}</span>
+              )}
+            </Button>
+          <Menu
+            theme="dark"
             style={{
-              margin: 5, 
-              display: "flex",
-              alignItems: "center",
-              width: "90% ",
-              height: "3%",
-              padding: "8px 12px",
-              backgroundColor: "rgba(255, 255, 255, 0.95)",
-              borderRadius: "8px",
-              boxShadow: "0 2px 8px rgba(24, 144, 255, 0.1)",
-              transition: "all 0.3s ease",
-              borderLeft: "3px solid #1890ff",
-              gap: "30%"
+              borderRight: "1px solid #00b4b4",
+              boxShadow: "0 0 15px rgba(0, 180, 180, 0.3)",
             }}
-            className="compact-visitor-card"
+            mode="inline"
           >
-            {/* ไอคอนผู้ใช้ */}
-            <div style={{
-              width: "32px",
-              height: "32px",
-              borderRadius: "50%",
-              backgroundColor: "#e6f7ff",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-              border: "1px solid #1890ff"
-            }}>
-              <UserOutlined style={{ 
-                fontSize: "14px", 
-                color: "#1890ff"
-              }} />
-            </div>
+            <Menu.Item
+              key="viewer"
+              style={{
+                paddingInline: 0, // ไม่มี padding ซ้ายขวา
+                marginLeft: 5,
+                width: "90%"
+              }}
+            >
+              <div
+                ref={ref9}
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "8px 16px",
+                  backgroundColor: "rgba(255, 255, 255, 0.95)",
+                  borderRadius: "8px",
+                  boxShadow: "0 2px 8px rgba(24, 144, 255, 0.1)",
+                  borderLeft: "3px solid #1890ff",
+                }}
+              >
+                {/* ไอคอนผู้ใช้ */}
+                <div
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    borderRadius: "50%",
+                    backgroundColor: "#e6f7ff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                    border: "1px solid #1890ff",
+                  }}
+                >
+                  <UserOutlined style={{ fontSize: "14px", color: "#1890ff" }} />
+                </div>
 
-            {/* ข้อมูลผู้เยี่ยมชม */}
-            <div style={{ 
-              display: "flex",
-              alignItems: "baseline",
-            }}>
-              <span style={{
-                fontSize: "24px",
-                color: "#096dd9",
-                fontWeight: 600,
-                marginRight: 20,
-              }}>
-                {visitors.toLocaleString()}
-              </span>
-              <span style={{
-                fontSize: "18px",
-                color: "#595959",
-              }}>
-                {t("visit")}
-              </span>
-            </div>
-          </div>
+                {/* ข้อมูลผู้เยี่ยมชม */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "baseline",
+                    gap: "8px",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "24px",
+                      color: "#096dd9",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {visitors.toLocaleString()}
+                  </span>
+                  <span
+                    style={{
+                      fontSize: "18px",
+                      color: "#595959",
+                    }}
+                  >
+                    {t("visit")}
+                  </span>
+                </div>
+              </div>
+            </Menu.Item>
           </Menu>
           <Menu theme="dark" style={{ 
                 borderRight: "1px solid #00b4b4", 
@@ -899,7 +939,7 @@ const UserLayout: React.FC = () => {
               }}
               className="custom-menu-popup"
             >
-              <div style={{ 
+              <div ref={ref10} style={{ 
                 width: "100%",
                 padding: "12px",
                 backgroundColor: "rgba(255, 255, 255, 0.9)",
@@ -992,7 +1032,7 @@ const UserLayout: React.FC = () => {
                   }} />
                 }
               >
-                <div 
+                <div ref={ref11}
                   style={{ 
                     display: "flex", 
                     alignItems: "center", 
@@ -1045,12 +1085,13 @@ const UserLayout: React.FC = () => {
                       margin: "0px 12px",
                       padding: "0px 16px",
                       transition: "all 0.3s ease",
+                      width: '88%'
                     }}
                     className="custom-menu-item"
                     icon={<BulbOutlined style={{ color: "#faad14", fontSize: "20px" }} />}
                   >
                     <Link to="/it-knowledge" style={{ textDecoration: "none" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                      <div ref={ref12} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                         <Title level={5} style={{ color: "#000", margin: 0, fontWeight: 400 }}>
                           {t("it_knowledge")}
                         </Title>
@@ -1067,12 +1108,13 @@ const UserLayout: React.FC = () => {
                       margin: "8px 12px",
                       padding: "12px 16px",
                       transition: "all 0.3s ease",
+                      width: '88%'
                     }}
                     className="custom-menu-item"
                     icon={<BulbOutlined style={{ color: "#1890ff", fontSize: "20px" }} />}
                   >
                     <Link to="/training" style={{ textDecoration: "none" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                      <div ref={ref13} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                         <Title level={5} style={{ color: "#000", margin: 0, fontWeight: 400 }}>
                           {t("training_knowledge")}
                         </Title>
@@ -1102,7 +1144,7 @@ const UserLayout: React.FC = () => {
                 }
               >
                 <Link to="/security" style={{ textDecoration: "none" }}>
-                  <div style={{ 
+                  <div ref={ref14} style={{ 
                     display: "flex", 
                     alignItems: "center", 
                     gap: "12px" 
@@ -1128,10 +1170,10 @@ const UserLayout: React.FC = () => {
                 padding: 0,
                 height: "auto",
                 cursor: "pointer",
-                overflow: "hidden"
+                overflow: "hidden",
               }}
             >
-              <CustomCalendar />
+                <CustomCalendar ref={ref15} />
             </Menu.Item>
           </Menu>
         </Sider>

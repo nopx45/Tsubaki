@@ -6,6 +6,7 @@ import "./App.css";
 import { getAuthToken, StartPageVisit } from "./services/https";
 import ScrollToTop from "./components/ScrollToTop/ScrollToTop";
 import { apiUrl } from "../src/services/https";
+import GlobalTour from "./GlobalTour";
 
 const PageVisitLogger = () => {
   const location = useLocation();
@@ -52,6 +53,7 @@ const App: React.FC = () => {
       <ScrollToTop />
       <AuthProvider>
         <PageVisitLogger />
+        <GlobalTour />
         <ConfigRoutes />
         <ExitListener />
       </AuthProvider>

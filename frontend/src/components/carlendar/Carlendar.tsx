@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, forwardRef } from 'react';
 import {
   format, addMonths, subMonths, startOfMonth, endOfMonth,
   isSameMonth, isSameDay, parseISO, addDays, startOfWeek, endOfWeek
@@ -20,14 +20,14 @@ interface CalendarEvent {
   summary?: string;
 }
 
-const TUICalendar: React.FC<TUICalendarProps> = ({
+const TUICalendar = forwardRef<HTMLDivElement, TUICalendarProps>(({
   onDateSelect,
   initialDate = new Date(),
   className = '',
   events = []
-}) => {
+}, ref) => {
   const navigate = useNavigate();
-  
+
   const [dbEvents, setDbEvents] = useState<CalendarEvent[]>([]);
   const [userRole, setUserRole] = useState<string>('');
 
@@ -71,7 +71,6 @@ const TUICalendar: React.FC<TUICalendarProps> = ({
     typeof initialDate === 'string' ? parseISO(initialDate) : initialDate
   );
 
-  // ✅ Merge and memoize events
   const mergedEvents = useMemo(() => [
     ...(Array.isArray(events) ? events : []),
     ...dbEvents
@@ -148,6 +147,7 @@ const TUICalendar: React.FC<TUICalendarProps> = ({
 
         const eventForDay = parsedEvents.find(e => isSameDay(e.date, day));
         const isHoliday = ['holiday', 'training', 'meeting', 'other'].includes(eventForDay?.type?.toLowerCase?.() ?? '');
+
         days.push(
           <div
             className={`tui-calendar-day 
@@ -181,7 +181,7 @@ const TUICalendar: React.FC<TUICalendarProps> = ({
   };
 
   return (
-    <div className={`tui-calendar-container ${className}`}>
+    <div ref={ref} className={`tui-calendar-container ${className}`}>
       {renderHeader()}
       {renderDays()}
       {renderCells()}
@@ -413,6 +413,5 @@ const TUICalendar: React.FC<TUICalendarProps> = ({
       `}</style>
     </div>
   );
-};
-
+});
 export default TUICalendar;
