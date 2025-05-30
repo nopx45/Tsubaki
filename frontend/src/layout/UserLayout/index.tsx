@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
+import type { Swiper as SwiperType } from 'swiper';
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
@@ -53,6 +54,7 @@ const UserLayout: React.FC = () => {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [imgpopup, setImgPopup] = useState<string[]>([])
+  const [swiperInstance, setSwiperInstance] = useState<SwiperType | null>(null);
 
   // search user value
   const [searchValue, setSearchValue] = useState("");
@@ -315,7 +317,9 @@ const UserLayout: React.FC = () => {
         <div className="modal-content-container">
           {/* ส่วนแสดงผลรูปภาพ */}
           {imgpopup.length > 0 && (
-            <div className="swiper-container">
+            <div className="swiper-container"
+            onMouseEnter={() => swiperInstance?.autoplay?.stop()}
+            onMouseLeave={() => swiperInstance?.autoplay?.start()}>
               <Swiper
                 modules={[Autoplay, Pagination, Navigation]}
                 spaceBetween={30}
@@ -334,6 +338,7 @@ const UserLayout: React.FC = () => {
                 }}
                 loop={true}
                 onSwiper={(swiper) => {
+                  setSwiperInstance(swiper);
                   setTimeout(() => {
                     const navigation = swiper.params.navigation as NavigationOptions;
                     navigation.prevEl = '.swiper-button-prev-custom';
