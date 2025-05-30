@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnnouncementsInterface } from "../../../interfaces/IAnnouncement";
 import { GetAnnouncements, DownloadFile, GetActivities, GetArticles, getAuthToken, UpdateMarquee, GetMarquee } from "../../../services/https";
@@ -134,6 +134,21 @@ export default function Announcements() {
   const handleMoreArtClick = () => navigate("/article");
   const handleActivityClick = (id: number) => navigate(`/activity/detail/${id}`);
   const handleArticleClick = (id: number) => navigate(`/article/detail/${id}`);
+  const [isHovered, setIsHovered] = useState(false);
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const [repeatCount, setRepeatCount] = useState(1);
+
+  useEffect(() => {
+  if (contentRef.current) {
+    const container = contentRef.current.parentElement;
+    if (!container) return;
+
+    const contentWidth = contentRef.current.scrollWidth;
+    const containerWidth = container.clientWidth;
+    const minRepeat = Math.ceil((containerWidth * 2) / contentWidth);
+    setRepeatCount(minRepeat);
+  }
+}, [marqueeText]);
 
   return (
     <div className="dashboard-container">
@@ -145,18 +160,37 @@ export default function Announcements() {
       {/* Marquee Notification */}
       <div className="marquee-notification">
         <div className="marquee-container">
-          <div className="marquee-content">
-            <IoMdNotifications className="marquee-icon" style={{
-              marginRight: '10px',
-              fontSize: '20px',
-              color: '#f39c12'
-            }} />
-            <span style={{
-              fontSize: '1.2rem',
-              fontWeight: '700'
-            }}>{marqueeText}</span>
+          <div
+            className="marquee-content"
+            ref={contentRef}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            style={{
+              display: 'inline-block',
+              whiteSpace: 'nowrap',
+              animation: 'marquee 20s linear infinite',
+              animationPlayState: isHovered ? 'paused' : 'running'
+            }}
+          >
+            {Array.from({ length: repeatCount }).map((_, index) => (
+              <span key={index} style={{ marginRight: '3rem' }}>
+                <IoMdNotifications
+                  className="marquee-icon"
+                  style={{
+                    marginRight: '10px',
+                    fontSize: '20px',
+                    color: '#f39c12'
+                  }}
+                />
+                <span style={{
+                  fontSize: '1.2rem',
+                  fontWeight: '700'
+                }}>
+                  {marqueeText}
+                </span>
+              </span>
+            ))}
           </div>
-
           {(userRole === "admin" || userRole === "adminhr" || userRole === "adminit") && (
             <button
               onClick={async () => {
@@ -202,8 +236,8 @@ export default function Announcements() {
           <style>
             {`
               @keyframes marquee {
-                0% { transform: translateX(100%); }
-                100% { transform: translateX(-100%); }
+                0% { transform: translateX(0); }
+                100% { transform: translateX(-50%); }
               }
             `}
           </style>
