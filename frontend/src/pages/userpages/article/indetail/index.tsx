@@ -85,7 +85,22 @@ const ArticleDetails: React.FC = () => {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2, duration: 0.5 }}
       >
-        <pre className="formatted-content">{article.content}</pre>
+        <div className="formatted-content">
+          {(article.content ?? "")
+            .split('\n')
+            .filter(line => line.trim() !== '')
+            .map((line, index) => (
+              <p
+                key={index}
+                dangerouslySetInnerHTML={{
+                  __html: line.replace(
+                    /(https?:\/\/[^\s]+)/g,
+                    '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
+                  )
+                }}
+              ></p>
+            ))}
+        </div>
       </motion.div>
 
       {article.Image && (
@@ -218,10 +233,17 @@ const ArticleDetails: React.FC = () => {
 
         .formatted-content {
           white-space: pre-wrap;
+          font-family: sans-serif;
           font-size: 1rem;
-          line-height: 1.6;
+          color: #333;
         }
-        
+
+        .formatted-content a {
+          color: #1a0dab;
+          text-decoration: underline;
+          word-break: break-word;
+        }
+  
         .knowledge-meta {
           display: flex;
           gap: 1.5rem;
