@@ -88,15 +88,16 @@ const ArticleDetails: React.FC = () => {
         <div className="formatted-content">
           {(article.content ?? "")
             .split('\n')
-            .filter(line => line.trim() !== '')
             .map((line, index) => (
               <p
                 key={index}
                 dangerouslySetInnerHTML={{
-                  __html: line.replace(
-                    /(https?:\/\/[^\s]+)/g,
-                    '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
-                  )
+                  __html: line
+                    ? line.replace(
+                        /(https?:\/\/[^\s]+)/g,
+                        '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
+                      )
+                    : '&nbsp;'
                 }}
               ></p>
             ))}
