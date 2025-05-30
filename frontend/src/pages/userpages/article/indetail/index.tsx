@@ -85,7 +85,7 @@ const ArticleDetails: React.FC = () => {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2, duration: 0.5 }}
       >
-        {article.content}
+        <pre className="formatted-content">{article.content}</pre>
       </motion.div>
 
       {article.Image && (
@@ -214,6 +214,12 @@ const ArticleDetails: React.FC = () => {
           height: 4px;
           background: var(--gradient-blue);
           border-radius: 2px;
+        }
+
+        .formatted-content {
+          white-space: pre-wrap;
+          font-size: 1rem;
+          line-height: 1.6;
         }
         
         .knowledge-meta {

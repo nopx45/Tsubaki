@@ -78,7 +78,7 @@ const TrainingDetail: React.FC = () => {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2, duration: 0.5 }}
       >
-        {training.content}
+        <pre className="formatted-content">{training.content}</pre>
       </motion.div>
 
       <div className="training-media">
@@ -210,6 +210,12 @@ const TrainingDetail: React.FC = () => {
           height: 4px;
           background: var(--gradient-blue);
           border-radius: 2px;
+        }
+
+        .formatted-content {
+          white-space: pre-wrap;
+          font-size: 1rem;
+          line-height: 1.6;
         }
         
         .training-meta {

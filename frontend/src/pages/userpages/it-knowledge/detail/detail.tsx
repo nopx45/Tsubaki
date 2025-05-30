@@ -78,7 +78,7 @@ const ITKnowledgeDetail: React.FC = () => {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2, duration: 0.5 }}
       >
-        {knowledge.content}
+        <pre className="formatted-content">{knowledge.content}</pre>
       </motion.div>
 
       <div className="knowledge-media">
@@ -212,6 +212,12 @@ const ITKnowledgeDetail: React.FC = () => {
           border-radius: 2px;
         }
         
+        .formatted-content {
+          white-space: pre-wrap;
+          font-size: 1rem;
+          line-height: 1.6;
+        }
+
         .knowledge-meta {
           display: flex;
           gap: 1.5rem;
