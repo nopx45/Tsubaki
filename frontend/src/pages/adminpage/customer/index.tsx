@@ -86,7 +86,7 @@ function Customers() {
           ) : (
             <FaLockOpen
               className="lock-icon"
-              style={{ color: "green", marginLeft: "8px" }}
+              style={{ color: "#2de330", marginLeft: "8px" }}
               title="บัญชีเปิดใช้งาน"
             />
           )}
