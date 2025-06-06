@@ -192,7 +192,7 @@ function SecurityEdit() {
                 onChange={handleInputChange}
                 placeholder="กรอกหัวข้อข่าวสาร IT"
                 required
-                maxLength={55}
+                maxLength={150}
               />
               <span className="input-focus"></span>
             </div>
