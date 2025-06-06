@@ -37,6 +37,7 @@ type (
 		Password            string `json:"password"`
 		Role                string `json:"role"`
 		ForcePasswordChange bool   `json:"force_password_change" gorm:"default:false"`
+		Locked              bool   `json:"locked" gorm:"default:false"`
 	}
 )
 
@@ -104,6 +105,7 @@ func SignUp(c *gin.Context) {
 		Password:            hashedPassword,
 		Role:                role,
 		ForcePasswordChange: payload.ForcePasswordChange,
+		Locked:              payload.Locked,
 	}
 
 	if _, err := govalidator.ValidateStruct(user); err != nil {
@@ -121,6 +123,7 @@ func SignUp(c *gin.Context) {
 func SignIn(c *gin.Context) {
 	var payload Authen
 	var user entity.Users
+	db := config.DB()
 
 	if err := c.ShouldBindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -132,12 +135,14 @@ func SignIn(c *gin.Context) {
 	// ถ้ามีการบล็อกการเข้าใช้งาน
 	if unblockTime, exists := blockedUntil[username]; exists {
 		if time.Now().Before(unblockTime) {
+			db.Model(&user).Update("locked", true)
 			c.JSON(http.StatusTooManyRequests, gin.H{
 				"error": fmt.Sprintf("Account locked. Try again at %s", unblockTime.Format("15:04:05")),
 			})
 			return
 		}
 		// ครบเวลาแล้ว ยกเลิกบล็อก
+		db.Model(&user).Update("locked", false)
 		delete(blockedUntil, username)
 		delete(loginAttempts, username)
 	}
@@ -148,6 +153,7 @@ func SignIn(c *gin.Context) {
 		loginAttempts[username]++
 		if loginAttempts[username] >= maxLoginAttempts {
 			blockedUntil[username] = time.Now().Add(blockDuration)
+			db.Model(&user).Update("locked", true)
 			c.JSON(http.StatusTooManyRequests, gin.H{"error": "Too many login attempts. Try again later."})
 			return
 		}
@@ -161,6 +167,7 @@ func SignIn(c *gin.Context) {
 		loginAttempts[username]++
 		if loginAttempts[username] >= maxLoginAttempts {
 			blockedUntil[username] = time.Now().Add(blockDuration)
+			db.Model(&user).Update("locked", true)
 			c.JSON(http.StatusTooManyRequests, gin.H{"error": "Too many login attempts. Try again later."})
 			return
 		}
@@ -169,6 +176,7 @@ func SignIn(c *gin.Context) {
 	}
 
 	// ล้างความพยายามเมื่อเข้าสู่ระบบสำเร็จ
+	db.Model(&user).Update("locked", false)
 	delete(loginAttempts, username)
 	delete(blockedUntil, username)
 
@@ -339,4 +347,29 @@ func ChangePassword(c *gin.Context) {
 		"message":      "Password changed successfully",
 		"redirect_url": "/",
 	})
+}
+
+func UnlockUser(c *gin.Context) {
+
+	Username := c.Param("username")
+	db := config.DB()
+	var user entity.Users
+
+	// ค้นหาผู้ใช้
+	if err := db.Where("username = ?", Username).First(&user).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	// ปลดล็อก
+	if err := db.Model(&user).Update("locked", false).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unlock user"})
+		return
+	}
+
+	// เคลียร์การนับความพยายามล็อกอิน
+	delete(loginAttempts, Username)
+	delete(blockedUntil, Username)
+
+	c.JSON(http.StatusOK, gin.H{"message": "User unlocked successfully"})
 }

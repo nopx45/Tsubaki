@@ -19,6 +19,7 @@ type UpdateUserInput struct {
 	Role                string `json:"role"`
 	Password            string `json:"password"` // optional
 	ForcePasswordChange *bool  `json:"force_password_change"`
+	Locked              bool   `json:"locked"`
 }
 
 func GetAll(c *gin.Context) {

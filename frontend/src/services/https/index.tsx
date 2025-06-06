@@ -83,13 +83,11 @@ async function ChangesPassword(data: ChangePasswordInterface) {
     .catch((e) => e.response);
 }
 
-async function AutoLogin() {
+async function UnlockUser(username: string) {
   return await axios
-  .post(`${apiUrl}/auto/login`, {
-    withCredentials: true,
-  })
-  .then((res) => res)
-  .catch((e) => e.response);
+    .post(`${apiUrl}/userunlock/${username}`)
+    .then((res) => res)
+    .catch((e) => e.response);
 }
 
 async function GetUsers() {
@@ -893,7 +891,7 @@ export {
   Logouts,
   SignIn,
   ChangesPassword,
-  AutoLogin,
+  UnlockUser,
   GetUsers,
   GetNUsers,
   GetUsersById,

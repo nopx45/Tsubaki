@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { UsersInterface } from "../../../interfaces/IUser";
 import { Link, useNavigate } from "react-router-dom";
-import { GetUsers, DeleteUsersById, getAuthToken } from "../../../services/https/index";
-import { FaUserPlus, FaEdit, FaTrash, FaUsers, FaIdBadge, FaUserTag, FaEnvelope, FaSearch } from "react-icons/fa";
+import { GetUsers, DeleteUsersById, getAuthToken, UnlockUser } from "../../../services/https/index";
+import { FaUserPlus, FaEdit, FaTrash, FaUsers, FaIdBadge, FaUserTag, FaEnvelope, FaSearch, FaLock, FaLockOpen } from "react-icons/fa";
 import { RiAdminFill } from "react-icons/ri";
 import { IoMdPerson } from "react-icons/io";
 import Pagination from "../../../components/Pagination/Pagination";
+import Swal from "sweetalert2";
 
 function Customers() {
   const navigate = useNavigate();
@@ -54,9 +55,43 @@ function Customers() {
           <span>ลำดับ</span>
         </div>
       ),
-      dataIndex: "ID",
-      key: "id",
-      render: (text: UsersInterface) => <span className="id-cell">{text.ID}</span>,
+      key: "index",
+      render: (record: UsersInterface) => (
+        <div className="id-cell-with-lock">
+          <span>{record.index ?? 0 + 1}</span>
+          {record.locked ? (
+            <FaLock
+              className="lock-icon"
+              style={{ color: "red", marginLeft: "8px", cursor: userRole === "admin" ? "pointer" : "default" }}
+              title="บัญชีถูกล็อก"
+              onClick={() => {
+                if (userRole === "admin") {
+                  Swal.fire({
+                    title: "ปลดล็อกบัญชีนี้?",
+                    text: `คุณต้องการปลดล็อกบัญชีของผู้ใช้ ${record.username} ใช่หรือไม่?`,
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonText: "ใช่, ปลดล็อก",
+                    cancelButtonText: "ยกเลิก",
+                  }).then((result) => {
+                    if (result.isConfirmed) {
+                      if (record.username) {
+                        unlockUser(record.username);
+                      }
+                    }
+                  });
+                }
+              }}
+            />
+          ) : (
+            <FaLockOpen
+              className="lock-icon"
+              style={{ color: "green", marginLeft: "8px" }}
+              title="บัญชีเปิดใช้งาน"
+            />
+          )}
+        </div>
+      ),
     },
     {
       title: (
@@ -200,6 +235,34 @@ function Customers() {
     }
   };
 
+  const unlockUser = async (username: string) => {
+    try {
+      const res = await UnlockUser(username);
+      if (res.status === 200) {
+        await Swal.fire({
+          icon: "success",
+          title: "ปลดล็อกสำเร็จ",
+          text: res.data.message,
+          timer: 2000,
+          showConfirmButton: false,
+        });
+        await getUsers();
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "เกิดข้อผิดพลาด",
+          text: res.data.error || "ปลดล็อกไม่สำเร็จ",
+        });
+      }
+    } catch {
+      Swal.fire({
+        icon: "error",
+        title: "เกิดข้อผิดพลาด",
+        text: "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้",
+      });
+    }
+  };
+
   useEffect(() => {
     getUsers();
     const fetchRole = async () => {
@@ -268,18 +331,20 @@ function Customers() {
                     </tr>
                   </thead>
                   <tbody>
-                    {currentUsers.map((user) => (
-                      <tr key={user.ID} className="user-row">
-                        {columns.map((column, colIndex) => (
-                          <td key={colIndex}>
-                            {column.render
-                              ? column.render(user)
-                              : user[column.dataIndex as keyof UsersInterface]}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
+                  {currentUsers.map((user, rowIndex) => (
+                    <tr key={user.ID} className="user-row">
+                      {columns.map((column, colIndex) => (
+                        <td key={colIndex}>
+                          {column.render
+                            ? column.key === "index"
+                              ? column.render({ ...user, index: (currentPage - 1) * usersPerPage + rowIndex + 1 })
+                              : column.render(user)
+                            : user[column.dataIndex as keyof UsersInterface]}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
                 </table>
                 <Pagination
                   currentPage={currentPage}

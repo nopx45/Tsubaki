@@ -75,6 +75,7 @@ func main() {
 		adminRouter.Use(middlewares.Authorizes("admin"))
 		// User Route
 		adminRouter.DELETE("/user/:id", users.Delete)
+		adminRouter.POST("/userunlock/:username", users.UnlockUser)
 		// Link Route
 		adminRouter.POST("/link", link.Upload)
 		adminRouter.PUT("/link/:id", link.Update)
