@@ -243,7 +243,7 @@ func GetAuthToken(c *gin.Context) {
 
 func Logout(c *gin.Context) {
 	// Secure = true ใน production (HTTPS) / false ใน localhost
-	secureFlag := false
+	secureFlag := true
 	if c.Request.TLS != nil { // ใช้ HTTPS เท่านั้น
 		secureFlag = true
 	}
