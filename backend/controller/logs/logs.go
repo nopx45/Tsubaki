@@ -34,10 +34,16 @@ func RecordExit(c *gin.Context) {
 	db := config.DB()
 	sessionID := c.GetString("session_id")
 
+	//ถ้าไม่มี session_id ให้ตอบ OK แล้วไม่ทำอะไร
+	if sessionID == "" {
+		c.JSON(http.StatusOK, gin.H{"message": "No session ID, skip recording"})
+		return
+	}
+
 	var visit entity.Visit
 	result := db.Where("session_id = ?", sessionID).Order("start_time DESC").First(&visit)
 	if result.Error != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Visit not found"})
+		c.JSON(http.StatusOK, gin.H{"message": "No visit found for session, skip recording"})
 		return
 	}
 
