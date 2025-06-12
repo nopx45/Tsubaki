@@ -12,8 +12,19 @@ const SignInPages: React.FC = () => {
   const navigate = useNavigate();
 
   const onFinish = async (values: SignInInterface) => {
+    Swal.fire({
+      title: "กำลังเข้าสู่ระบบ...",
+      text: "กรุณารอสักครู่",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
     let res = await SignIn(values);
-  
+
+    Swal.close(); // ปิด loading ทันทีเมื่อได้ response
+
     if (res.status === 200) {
       await Swal.fire({
         icon: "success",
@@ -23,30 +34,27 @@ const SignInPages: React.FC = () => {
         showConfirmButton: false,
         timerProgressBar: true,
       });
-  
+
       localStorage.removeItem("exit_sent");
       localStorage.setItem("isLoggedIn", "true");
       await startvisit();
-  
+
       if (res.data.force_password_change) {
         navigate("/change-password", { replace: true });
         window.location.reload();
       } else {
         window.location.href = res.data.redirect_url;
       }
-  
+
     } else if (res.status === 429) {
-      // รหัสถูกล็อค
-      const errorMsg = res.data?.error || "Too many login attempts.";
       Swal.fire({
         icon: "error",
         title: "บัญชีถูกล็อกชั่วคราว",
-        text: `${errorMsg}`, // เช่น "Account locked. Try again at 15:45:00"
+        text: res.data?.error || "Too many login attempts.",
         confirmButtonText: "ตกลง",
       });
-  
+
     } else {
-      // กรณีอื่น เช่น รหัสผิดธรรมดา
       Swal.fire({
         icon: "error",
         title: "เข้าสู่ระบบล้มเหลว",
@@ -54,7 +62,7 @@ const SignInPages: React.FC = () => {
         confirmButtonText: "ลองใหม่อีกครั้ง",
       });
     }
-  };  
+  }; 
 
   return (
     <div className="signin-container">
