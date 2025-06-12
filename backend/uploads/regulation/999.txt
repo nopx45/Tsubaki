@@ -1,3 +1,0 @@
-192.168.56.4 -t
-admin-tsubaki
-0penfw@441
