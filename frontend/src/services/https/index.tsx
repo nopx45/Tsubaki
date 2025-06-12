@@ -10,7 +10,7 @@ import { SignInInterface } from "../../interfaces/SignIn";
 import axios from "axios";
 import Swal from "sweetalert2";
 
-export const apiUrl = "https://tsubaki.onrender.com:8080";
+export const apiUrl = "https://tsubaki.onrender.com";
 axios.defaults.withCredentials = true;
 
 axios.interceptors.response.use(

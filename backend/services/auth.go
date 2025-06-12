@@ -12,8 +12,8 @@ import (
 
 // JwtWrapper wraps the signing key and the issuer
 type JwtWrapper struct {
-	SecretKey         string
-	Issuer            string
+	SecretKey       string
+	Issuer          string
 	ExpirationHours int64
 }
 
@@ -47,8 +47,8 @@ func (j *JwtWrapper) GenerateToken(w http.ResponseWriter, userID uint, username 
 		Name:     "auth_token",
 		Value:    signedToken,
 		HttpOnly: true,
-		Secure:   false,
-		SameSite: http.SameSiteLaxMode,
+		Secure:   true,
+		SameSite: http.SameSiteNoneMode,
 		// Expires:  time.Now().Add(time.Hour * time.Duration(j.ExpirationHours)),
 	})
 
@@ -57,8 +57,8 @@ func (j *JwtWrapper) GenerateToken(w http.ResponseWriter, userID uint, username 
 		Name:     "session_id",
 		Value:    sessionID,
 		HttpOnly: true,
-		Secure:   false,
-		SameSite: http.SameSiteLaxMode,
+		Secure:   true,
+		SameSite: http.SameSiteNoneMode,
 		// Expires:  time.Now().Add(24 * time.Hour),
 	})
 

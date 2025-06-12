@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import { getAuthToken } from "./services/https";
 
-export const WS_URL = "ws://192.168.0.85:8080/ws";
+export const WS_URL = "wss://tsubaki.onrender.com//ws";
 
 type Message = {
   ID: number;
