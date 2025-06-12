@@ -257,7 +257,7 @@ func Logout(c *gin.Context) {
 		MaxAge:   -1,
 		Secure:   secureFlag,
 		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode, // http = Lax , https = None
+		SameSite: http.SameSiteNoneMode, // http = Lax , https = None
 	})
 	http.SetCookie(c.Writer, &http.Cookie{
 		Name:     "session_id",
@@ -267,7 +267,7 @@ func Logout(c *gin.Context) {
 		MaxAge:   -1,
 		Secure:   secureFlag,
 		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode, // http = Lax , https = None
+		SameSite: http.SameSiteNoneMode, // http = Lax , https = None
 	})
 
 	c.JSON(http.StatusOK, gin.H{"message": "Logout successful"})
