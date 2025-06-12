@@ -253,21 +253,21 @@ func Logout(c *gin.Context) {
 		Name:     "auth_token",
 		Value:    "",
 		Path:     "/",
-		Domain:   "demo-web-nopx.netlify.app",
+		Domain:   "https://demo-web-nopx.netlify.app",
 		MaxAge:   -1,
 		Secure:   secureFlag,
 		HttpOnly: true,
-		SameSite: http.SameSiteNoneMode, // http = Lax , https = None
+		SameSite: http.SameSiteLaxMode, // http = Lax , https = None
 	})
 	http.SetCookie(c.Writer, &http.Cookie{
 		Name:     "session_id",
 		Value:    "",
 		Path:     "/",
-		Domain:   "demo-web-nopx.netlify.app",
+		Domain:   "https://demo-web-nopx.netlify.app",
 		MaxAge:   -1,
 		Secure:   secureFlag,
 		HttpOnly: true,
-		SameSite: http.SameSiteNoneMode, // http = Lax , https = None
+		SameSite: http.SameSiteLaxMode, // http = Lax , https = None
 	})
 
 	c.JSON(http.StatusOK, gin.H{"message": "Logout successful"})
