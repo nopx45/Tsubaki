@@ -2,9 +2,10 @@ package config
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/webapp/entity"
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -15,12 +16,13 @@ func DB() *gorm.DB {
 }
 
 func ConnectionDB() {
-	database, err := gorm.Open(sqlite.Open("tsubaki.db?cache=shared"), &gorm.Config{})
+	dsn := os.Getenv("postgresql://demo_database_vskz_user:brVDTySBPKqIvwwCj3Vyyce3er9XtKRN@dpg-d15sfl8dl3ps7384o9q0-a/demo_database_vskz")
+	dbs, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
 	fmt.Println("connected database")
-	db = database
+	db = dbs
 	SetupDatabase()
 	SeedUser()
 }
