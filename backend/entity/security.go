@@ -12,7 +12,7 @@ type Security struct {
 	Title     string    `json:"title"`
 	Content   string    `json:"content"`
 	Thumbnail string    `json:"thumbnail" binding:"required"`
-	Image     string    `gorm:"type:longtext"`
+	Image     string    `gorm:"type:text"`
 	Video     string    `json:"video"`
 	Gif       string    `json:"gif"`
 	Pdf       string    `json:"pdf"`
