@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 	"strings"
 
@@ -9,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"github.com/joho/godotenv"
 	"github.com/webapp/config"
 	"github.com/webapp/controller/activity"
 	announcetment "github.com/webapp/controller/announcements"
@@ -36,6 +38,10 @@ import (
 
 func main() {
 	// Open connection to database
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 	config.ConnectionDB()
 	config.SetupDatabase()
 
