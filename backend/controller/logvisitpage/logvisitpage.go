@@ -1,7 +1,6 @@
 package logvisitpage
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -81,23 +80,24 @@ func GetTopPages(c *gin.Context) {
 		PageName string `json:"page_name"`
 		Count    int64  `json:"count"`
 	}
+
 	monthStr := c.Query("month")
 	yearStr := c.Query("year")
 
 	month, err1 := strconv.Atoi(monthStr)
 	year, err2 := strconv.Atoi(yearStr)
-
 	if err1 != nil || err2 != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid month or year"})
 		return
-
 	}
-	db.Model(&entity.VisitPageLog{}).
-		Select("page_name AS PageName, COUNT(page_name) AS Count").
-		Where("strftime('%m', created_at) = ? AND strftime('%Y', created_at) = ?", fmt.Sprintf("%02d", month), strconv.Itoa(year)).
-		Group("page_name").
-		Order("Count DESC").
-		Scan(&results)
+
+	db.Raw(`
+		SELECT page_name AS page_name, COUNT(*) AS count
+		FROM visit_page_logs
+		WHERE EXTRACT(MONTH FROM created_at) = ? AND EXTRACT(YEAR FROM created_at) = ?
+		GROUP BY page_name
+		ORDER BY count DESC
+	`, month, year).Scan(&results)
 
 	c.JSON(http.StatusOK, results)
 }

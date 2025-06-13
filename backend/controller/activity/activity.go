@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/gin-gonic/gin"
 	"github.com/webapp/config"
 	"github.com/webapp/entity"
@@ -15,7 +16,6 @@ import (
 func Upload(c *gin.Context) {
 	title := c.PostForm("title")
 	content := c.PostForm("content")
-	CreatedAt := time.Now()
 
 	form, err := c.MultipartForm()
 	if err != nil {
@@ -29,31 +29,35 @@ func Upload(c *gin.Context) {
 		return
 	}
 
-	uploadDir := "uploads/images/activity/"
-	if _, err := os.Stat(uploadDir); os.IsNotExist(err) {
-		os.MkdirAll(uploadDir, os.ModePerm)
+	cld, err := config.CloudinaryInstance()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Cloudinary init failed"})
+		return
 	}
 
-	var filePaths []string
+	var imageURLs []string
 	for _, file := range files {
-		filePath := filepath.Join(uploadDir, file.Filename)
-
-		if err := c.SaveUploadedFile(file, filePath); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save file"})
+		f, err := file.Open()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to open image"})
 			return
 		}
-		filePaths = append(filePaths, filePath)
-	}
+		defer f.Close()
 
-	// แปลง slice เป็น string
-	joinedPaths := strings.Join(filePaths, ",")
+		uploadResp, err := cld.Upload.Upload(c, f, uploader.UploadParams{})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload to Cloudinary"})
+			return
+		}
+		imageURLs = append(imageURLs, uploadResp.SecureURL)
+	}
 
 	db := config.DB()
 	activity := entity.Activity{
 		Title:     title,
 		Content:   content,
-		Image:     joinedPaths, // เปลี่ยนตรงนี้
-		CreatedAt: CreatedAt,
+		Image:     strings.Join(imageURLs, ","),
+		CreatedAt: time.Now(),
 	}
 
 	if err := db.Create(&activity).Error; err != nil {
@@ -63,7 +67,7 @@ func Upload(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "Upload successful",
-		"images":  filePaths,
+		"images":  imageURLs,
 	})
 }
 
@@ -77,14 +81,9 @@ func GetAll(c *gin.Context) {
 		return
 	}
 
-	baseURL := c.Request.Host
 	for i := range activities {
-		// แปลง string เป็น slice ก่อน
 		if activities[i].Image != "" {
 			images := strings.Split(activities[i].Image, ",")
-			for j := range images {
-				images[j] = "http://" + baseURL + "/" + images[j]
-			}
 			activities[i].Image = strings.Join(images, ",")
 		}
 		activities[i].CreatedAt = activities[i].CreatedAt.Local()
@@ -150,17 +149,29 @@ func Update(c *gin.Context) {
 	// รับไฟล์ใหม่ (ถ้ามี)
 	form, err := c.MultipartForm()
 	if err == nil && len(form.File["image"]) > 0 {
+		cld, err := config.CloudinaryInstance()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Cloudinary init failed"})
+			return
+		}
+
 		for _, file := range form.File["image"] {
-			filePath := filepath.Join("uploads/images/activity", file.Filename)
-			if err := c.SaveUploadedFile(file, filePath); err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save image"})
+			f, err := file.Open()
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to open image"})
 				return
 			}
-			cleanPaths = append(cleanPaths, "uploads/images/activity/"+file.Filename)
+			defer f.Close()
+
+			uploadResp, err := cld.Upload.Upload(c, f, uploader.UploadParams{})
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload to Cloudinary"})
+				return
+			}
+			cleanPaths = append(cleanPaths, uploadResp.SecureURL)
 		}
 	}
 
-	// อัพเดต database
 	activity.Title = title
 	activity.Content = content
 	activity.Image = strings.Join(cleanPaths, ",")
@@ -213,29 +224,51 @@ func Delete(c *gin.Context) {
 
 	var activity entity.Activity
 	if err := db.First(&activity, id).Error; err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "file not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Activity not found"})
 		return
 	}
 
-	// ลบไฟล์
+	// ลบไฟล์ออกจาก Cloudinary ถ้าไม่มีการอ้างอิงที่อื่น
 	if activity.Image != "" {
 		images := strings.Split(activity.Image, ",")
-		for _, path := range images {
+
+		for _, url := range images {
 			var count int64
 			db.Model(&entity.Activity{}).
-				Where("image LIKE ?", "%"+path+"%").
+				Where("image LIKE ?", "%"+url+"%").
 				Where("id != ?", activity.ID).
 				Count(&count)
+
 			if count == 0 {
-				os.Remove(path)
+				publicID := extractPublicIDFromURL(url)
+
+				if publicID != "" {
+					cld, err := config.CloudinaryInstance()
+					if err == nil {
+						_, _ = cld.Upload.Destroy(c, uploader.DestroyParams{
+							PublicID: publicID,
+						})
+					}
+				}
 			}
 		}
 	}
 
 	if tx := db.Unscoped().Delete(&activity).RowsAffected; tx == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "id not found"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Delete failed"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Deleted successfully"})
+}
+
+func extractPublicIDFromURL(url string) string {
+	parts := strings.Split(url, "/upload/")
+	if len(parts) < 2 {
+		return ""
+	}
+
+	publicPath := parts[1]                             // v1718191823/activities/myphoto.jpg
+	publicPath = strings.SplitN(publicPath, ".", 2)[0] // ตัดนามสกุลออก
+	return publicPath
 }

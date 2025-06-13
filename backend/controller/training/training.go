@@ -2,9 +2,9 @@ package training
 
 import (
 	"net/http"
-	"os"
-	"path/filepath"
+	"strings"
 
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/gin-gonic/gin"
 	"github.com/webapp/config"
 	"github.com/webapp/entity"
@@ -13,40 +13,47 @@ import (
 func Upload(c *gin.Context) {
 	title := c.PostForm("title")
 	content := c.PostForm("content")
-
-	dirs := map[string]string{
-		"thumbnail": "uploads/images/training/thumbnails/",
-		"image":     "uploads/images/training/",
-		"video":     "uploads/videos/training/",
-		"gif":       "uploads/gifs/training/",
-		"pdf":       "uploads/pdfs/training/",
-	}
-
-	for _, dir := range dirs {
-		os.MkdirAll(dir, os.ModePerm)
-	}
-
-	var paths = make(map[string]string)
-	for key, dir := range dirs {
-		if file, err := c.FormFile(key); err == nil {
-			path := filepath.Join(dir, file.Filename)
-			if err := c.SaveUploadedFile(file, path); err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save " + key})
-				return
-			}
-			paths[key] = path
-		}
-	}
-
 	db := config.DB()
+
+	cld, err := config.CloudinaryInstance()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Cloudinary init failed"})
+		return
+	}
+
+	uploaded := make(map[string]string)
+	upload := func(field string) string {
+		file, err := c.FormFile(field)
+		if err != nil {
+			return ""
+		}
+		f, err := file.Open()
+		if err != nil {
+			return ""
+		}
+		defer f.Close()
+
+		uploadResp, err := cld.Upload.Upload(c, f, uploader.UploadParams{Folder: "training"})
+		if err != nil {
+			return ""
+		}
+		return uploadResp.SecureURL
+	}
+
+	uploaded["thumbnail"] = upload("thumbnail")
+	uploaded["image"] = upload("image")
+	uploaded["video"] = upload("video")
+	uploaded["gif"] = upload("gif")
+	uploaded["pdf"] = upload("pdf")
+
 	training := entity.Training{
 		Title:     title,
 		Content:   content,
-		Thumbnail: paths["thumbnail"],
-		Image:     paths["image"],
-		Video:     paths["video"],
-		Gif:       paths["gif"],
-		Pdf:       paths["pdf"],
+		Thumbnail: uploaded["thumbnail"],
+		Image:     uploaded["image"],
+		Video:     uploaded["video"],
+		Gif:       uploaded["gif"],
+		Pdf:       uploaded["pdf"],
 	}
 
 	if err := db.Create(&training).Error; err != nil {
@@ -66,23 +73,7 @@ func GetAll(c *gin.Context) {
 		return
 	}
 
-	baseURL := c.Request.Host
 	for i := range trainings {
-		if trainings[i].Thumbnail != "" {
-			trainings[i].Thumbnail = "http://" + baseURL + "/" + trainings[i].Thumbnail
-		}
-		if trainings[i].Image != "" {
-			trainings[i].Image = "http://" + baseURL + "/" + trainings[i].Image
-		}
-		if trainings[i].Video != "" {
-			trainings[i].Video = "http://" + baseURL + "/" + trainings[i].Video
-		}
-		if trainings[i].Gif != "" {
-			trainings[i].Gif = "http://" + baseURL + "/" + trainings[i].Gif
-		}
-		if trainings[i].Pdf != "" {
-			trainings[i].Pdf = "http://" + baseURL + "/" + trainings[i].Pdf
-		}
 		trainings[i].CreatedAt = trainings[i].CreatedAt.Local()
 	}
 
@@ -99,22 +90,6 @@ func GetID(c *gin.Context) {
 		return
 	}
 
-	baseURL := c.Request.Host
-	if training.Thumbnail != "" {
-		training.Thumbnail = "http://" + baseURL + "/" + training.Thumbnail
-	}
-	if training.Image != "" {
-		training.Image = "http://" + baseURL + "/" + training.Image
-	}
-	if training.Video != "" {
-		training.Video = "http://" + baseURL + "/" + training.Video
-	}
-	if training.Gif != "" {
-		training.Gif = "http://" + baseURL + "/" + training.Gif
-	}
-	if training.Pdf != "" {
-		training.Pdf = "http://" + baseURL + "/" + training.Pdf
-	}
 	training.CreatedAt = training.CreatedAt.Local()
 
 	c.JSON(http.StatusOK, training)
@@ -133,152 +108,72 @@ func Update(c *gin.Context) {
 	title := c.PostForm("title")
 	content := c.PostForm("content")
 
-	// ======== CHECK REMOVE THUMBNAIL =========
+	cld, err := config.CloudinaryInstance()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Cloudinary init failed"})
+		return
+	}
+
+	upload := func(field string) string {
+		file, err := c.FormFile(field)
+		if err != nil {
+			return ""
+		}
+		f, err := file.Open()
+		if err != nil {
+			return ""
+		}
+		defer f.Close()
+
+		uploadResp, err := cld.Upload.Upload(c, f, uploader.UploadParams{Folder: "training"})
+		if err != nil {
+			return ""
+		}
+		return uploadResp.SecureURL
+	}
+
+	replace := func(field *string, newVal string) {
+		if newVal != "" {
+			if *field != "" {
+				var count int64
+				db.Model(&entity.Training{}).
+					Where("(thumbnail = ? OR image = ? OR video = ? OR gif = ? OR pdf = ?) AND id != ?", *field, *field, *field, *field, *field, training.ID).
+					Count(&count)
+				if count == 0 {
+					publicID := extractPublicIDFromURL(*field)
+					if publicID != "" {
+						cld.Upload.Destroy(c, uploader.DestroyParams{PublicID: publicID})
+					}
+				}
+			}
+			*field = newVal
+		}
+	}
+
+	// ตรวจลบ
 	if c.PostForm("removeThumbnail") == "true" {
-		if training.Thumbnail != "" {
-			var count int64
-			db.Model(&entity.Training{}).Where("thumbnail = ?", training.Thumbnail).Count(&count)
-			if count <= 1 {
-				os.Remove(training.Thumbnail)
-			}
-			training.Thumbnail = ""
-		}
+		replace(&training.Thumbnail, "")
 	}
-
-	// ======== CHECK REMOVE IMAGE =========
 	if c.PostForm("removeImage") == "true" {
-		if training.Image != "" {
-			var count int64
-			db.Model(&entity.Training{}).Where("image = ?", training.Image).Count(&count)
-			if count <= 1 {
-				os.Remove(training.Image)
-			}
-			training.Image = ""
-		}
+		replace(&training.Image, "")
 	}
-
-	// ======== CHECK REMOVE VIDEO =========
 	if c.PostForm("removeVideo") == "true" {
-		if training.Video != "" {
-			var count int64
-			db.Model(&entity.Training{}).Where("video = ?", training.Video).Count(&count)
-			if count <= 1 {
-				os.Remove(training.Video)
-			}
-			training.Video = ""
-		}
+		replace(&training.Video, "")
 	}
-
-	// ======== CHECK REMOVE GIF =========
 	if c.PostForm("removeGif") == "true" {
-		if training.Gif != "" {
-			var count int64
-			db.Model(&entity.Training{}).Where("gif = ?", training.Gif).Count(&count)
-			if count <= 1 {
-				os.Remove(training.Gif)
-			}
-			training.Gif = ""
-		}
+		replace(&training.Gif, "")
 	}
-
-	// ======== CHECK REMOVE PDF =========
 	if c.PostForm("removePdf") == "true" {
-		if training.Pdf != "" {
-			var count int64
-			db.Model(&entity.Training{}).Where("pdf = ?", training.Pdf).Count(&count)
-			if count <= 1 {
-				os.Remove(training.Pdf)
-			}
-			training.Pdf = ""
-		}
+		replace(&training.Pdf, "")
 	}
 
-	// ======== UPLOAD NEW THUMBNAIL =========
-	if file, err := c.FormFile("thumbnail"); err == nil {
-		if training.Thumbnail != "" {
-			var count int64
-			db.Model(&entity.Training{}).Where("thumbnail = ?", training.Thumbnail).Count(&count)
-			if count <= 1 {
-				os.Remove(training.Thumbnail)
-			}
-		}
-		thumbPath := filepath.Join("uploads/images/training/thumbnails/", file.Filename)
-		if err := c.SaveUploadedFile(file, thumbPath); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save thumbnail"})
-			return
-		}
-		training.Thumbnail = thumbPath
-	}
+	// อัปโหลดใหม่ถ้ามี
+	replace(&training.Thumbnail, upload("thumbnail"))
+	replace(&training.Image, upload("image"))
+	replace(&training.Video, upload("video"))
+	replace(&training.Gif, upload("gif"))
+	replace(&training.Pdf, upload("pdf"))
 
-	// ======== UPLOAD NEW IMAGE =========
-	if file, err := c.FormFile("image"); err == nil {
-		if training.Image != "" {
-			var count int64
-			db.Model(&entity.Training{}).Where("image = ?", training.Image).Count(&count)
-			if count <= 1 {
-				os.Remove(training.Image)
-			}
-		}
-		imagePath := filepath.Join("uploads/images/training/", file.Filename)
-		if err := c.SaveUploadedFile(file, imagePath); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save image"})
-			return
-		}
-		training.Image = imagePath
-	}
-
-	// ======== UPLOAD NEW VIDEO =========
-	if file, err := c.FormFile("video"); err == nil {
-		if training.Video != "" {
-			var count int64
-			db.Model(&entity.Training{}).Where("video = ?", training.Video).Count(&count)
-			if count <= 1 {
-				os.Remove(training.Video)
-			}
-		}
-		videoPath := filepath.Join("uploads/videos/training/", file.Filename)
-		if err := c.SaveUploadedFile(file, videoPath); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save video"})
-			return
-		}
-		training.Video = videoPath
-	}
-
-	// ======== UPLOAD NEW GIF =========
-	if file, err := c.FormFile("gif"); err == nil {
-		if training.Gif != "" {
-			var count int64
-			db.Model(&entity.Training{}).Where("gif = ?", training.Gif).Count(&count)
-			if count <= 1 {
-				os.Remove(training.Gif)
-			}
-		}
-		gifPath := filepath.Join("uploads/gifs/training/", file.Filename)
-		if err := c.SaveUploadedFile(file, gifPath); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save gif"})
-			return
-		}
-		training.Gif = gifPath
-	}
-
-	// ======== UPLOAD NEW PDF =========
-	if file, err := c.FormFile("pdf"); err == nil {
-		if training.Pdf != "" {
-			var count int64
-			db.Model(&entity.Training{}).Where("pdf = ?", training.Pdf).Count(&count)
-			if count <= 1 {
-				os.Remove(training.Pdf)
-			}
-		}
-		pdfPath := filepath.Join("uploads/pdfs/training/", file.Filename)
-		if err := c.SaveUploadedFile(file, pdfPath); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save pdf"})
-			return
-		}
-		training.Pdf = pdfPath
-	}
-
-	// ======== UPDATE TITLE, CONTENT =========
 	training.Title = title
 	training.Content = content
 
@@ -293,46 +188,54 @@ func Update(c *gin.Context) {
 func Delete(c *gin.Context) {
 	id := c.Param("id")
 	db := config.DB()
-	var training entity.Training
 
+	var training entity.Training
 	if err := db.First(&training, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Training not found"})
 		return
 	}
 
-	fields := []string{"Thumbnail", "Image", "Video", "Gif", "Pdf"}
-	for _, field := range fields {
-		val := trainingFieldValue(&training, field)
-		if val != "" {
-			var count int64
-			db.Model(&entity.Training{}).Where(field+" = ? AND id != ?", val, id).Count(&count)
-			if count == 0 {
-				os.Remove(val)
+	cld, err := config.CloudinaryInstance()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Cloudinary init failed"})
+		return
+	}
+
+	removeIfUnused := func(field string) {
+		if field == "" {
+			return
+		}
+		var count int64
+		db.Model(&entity.Training{}).
+			Where("(thumbnail = ? OR image = ? OR video = ? OR gif = ? OR pdf = ?) AND id != ?", field, field, field, field, field, training.ID).
+			Count(&count)
+		if count == 0 {
+			publicID := extractPublicIDFromURL(field)
+			if publicID != "" {
+				cld.Upload.Destroy(c, uploader.DestroyParams{PublicID: publicID})
 			}
 		}
 	}
 
-	if tx := db.Delete(&training); tx.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Delete failed"})
+	removeIfUnused(training.Thumbnail)
+	removeIfUnused(training.Image)
+	removeIfUnused(training.Video)
+	removeIfUnused(training.Gif)
+	removeIfUnused(training.Pdf)
+
+	if tx := db.Unscoped().Delete(&training); tx.Error != nil || tx.RowsAffected == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Delete failed"})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Deleted successfully"})
 }
 
-func trainingFieldValue(t *entity.Training, field string) string {
-	switch field {
-	case "Thumbnail":
-		return t.Thumbnail
-	case "Image":
-		return t.Image
-	case "Video":
-		return t.Video
-	case "Gif":
-		return t.Gif
-	case "Pdf":
-		return t.Pdf
-	default:
+func extractPublicIDFromURL(url string) string {
+	parts := strings.Split(url, "/upload/")
+	if len(parts) < 2 {
 		return ""
 	}
+	publicPath := strings.SplitN(parts[1], ".", 2)[0]
+	return publicPath
 }

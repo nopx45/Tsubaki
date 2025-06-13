@@ -2,10 +2,10 @@ package article
 
 import (
 	"net/http"
-	"os"
-	"path/filepath"
+	"strings"
 	"time"
 
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/gin-gonic/gin"
 	"github.com/webapp/config"
 	"github.com/webapp/entity"
@@ -16,76 +16,46 @@ func Upload(c *gin.Context) {
 	content := c.PostForm("content")
 	CreatedAt := time.Now()
 
-	// Upload Directory
-	thumbDir := "uploads/images/article/thumbnails/"
-	imageDir := "uploads/images/article/"
-	videoDir := "uploads/videos/article/"
-	gifDir := "uploads/gifs/article/"
-	pdfDir := "uploads/pdfs/article/"
-
-	// Create directory if not exists
-	os.MkdirAll(thumbDir, os.ModePerm)
-	os.MkdirAll(imageDir, os.ModePerm)
-	os.MkdirAll(videoDir, os.ModePerm)
-	os.MkdirAll(gifDir, os.ModePerm)
-	os.MkdirAll(pdfDir, os.ModePerm)
-
-	var thumbPath, imagePath, videoPath, gifPath, pdfPath string
-
-	// Thumbnail
-	if file, err := c.FormFile("thumbnail"); err == nil {
-		thumbPath = filepath.Join(thumbDir, file.Filename)
-		if err := c.SaveUploadedFile(file, thumbPath); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save thumbnail"})
-			return
-		}
+	cld, err := config.CloudinaryInstance()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Cloudinary init failed"})
+		return
 	}
 
-	// Image
-	if file, err := c.FormFile("image"); err == nil {
-		imagePath = filepath.Join(imageDir, file.Filename)
-		if err := c.SaveUploadedFile(file, imagePath); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save image"})
-			return
+	uploadFile := func(field string) string {
+		file, err := c.FormFile(field)
+		if err != nil {
+			return ""
 		}
+		f, err := file.Open()
+		if err != nil {
+			return ""
+		}
+		defer f.Close()
+
+		resp, err := cld.Upload.Upload(c, f, uploader.UploadParams{})
+		if err != nil {
+			return ""
+		}
+		return resp.SecureURL
 	}
 
-	// Video
-	if file, err := c.FormFile("video"); err == nil {
-		videoPath = filepath.Join(videoDir, file.Filename)
-		if err := c.SaveUploadedFile(file, videoPath); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save video"})
-			return
-		}
-	}
-
-	// GIF
-	if file, err := c.FormFile("gif"); err == nil {
-		gifPath = filepath.Join(gifDir, file.Filename)
-		if err := c.SaveUploadedFile(file, gifPath); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save gif"})
-			return
-		}
-	}
-
-	// PDF
-	if file, err := c.FormFile("pdf"); err == nil {
-		pdfPath = filepath.Join(pdfDir, file.Filename)
-		if err := c.SaveUploadedFile(file, pdfPath); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save pdf"})
-			return
-		}
-	}
+	// Upload แต่ละไฟล์ไปยัง Cloudinary
+	thumbURL := uploadFile("thumbnail")
+	imageURL := uploadFile("image")
+	videoURL := uploadFile("video")
+	gifURL := uploadFile("gif")
+	pdfURL := uploadFile("pdf")
 
 	db := config.DB()
 	article := entity.Article{
 		Title:     title,
 		Content:   content,
-		Image:     imagePath,
-		Thumbnail: thumbPath,
-		Video:     videoPath,
-		Gif:       gifPath,
-		Pdf:       pdfPath,
+		Thumbnail: thumbURL,
+		Image:     imageURL,
+		Video:     videoURL,
+		Gif:       gifURL,
+		Pdf:       pdfURL,
 		CreatedAt: CreatedAt,
 	}
 
@@ -101,36 +71,20 @@ func Upload(c *gin.Context) {
 }
 
 func GetAll(c *gin.Context) {
-	var article []entity.Article
+	var articles []entity.Article
 	db := config.DB()
 
-	results := db.Find(&article)
+	results := db.Find(&articles)
 	if results.Error != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": results.Error.Error()})
 		return
 	}
 
-	baseURL := c.Request.Host
-	for i := range article {
-		if article[i].Thumbnail != "" {
-			article[i].Thumbnail = "http://" + baseURL + "/" + article[i].Thumbnail
-		}
-		if article[i].Image != "" {
-			article[i].Image = "http://" + baseURL + "/" + article[i].Image
-		}
-		if article[i].Video != "" {
-			article[i].Video = "http://" + baseURL + "/" + article[i].Video
-		}
-		if article[i].Gif != "" {
-			article[i].Gif = "http://" + baseURL + "/" + article[i].Gif
-		}
-		if article[i].Pdf != "" {
-			article[i].Pdf = "http://" + baseURL + "/" + article[i].Pdf
-		}
-		article[i].CreatedAt = article[i].CreatedAt.Local()
+	for i := range articles {
+		articles[i].CreatedAt = articles[i].CreatedAt.Local()
 	}
 
-	c.JSON(http.StatusOK, article)
+	c.JSON(http.StatusOK, articles)
 }
 
 func GetID(c *gin.Context) {
@@ -184,159 +138,79 @@ func Update(c *gin.Context) {
 	title := c.PostForm("title")
 	content := c.PostForm("content")
 
-	// Directories
-	thumbDir := "uploads/images/article/thumbnails"
-	imageDir := "uploads/images/article/"
-	videoDir := "uploads/videos/article/"
-	gifDir := "uploads/gifs/article/"
-	pdfDir := "uploads/pdfs/article/"
+	cld, err := config.CloudinaryInstance()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Cloudinary init failed"})
+		return
+	}
 
-	// ======== CHECK REMOVE THUMBNAIL =========
-	if c.PostForm("removeThumbnail") == "true" {
-		if article.Thumbnail != "" {
+	// helper
+	uploadFile := func(field string) string {
+		file, err := c.FormFile(field)
+		if err != nil {
+			return ""
+		}
+		f, err := file.Open()
+		if err != nil {
+			return ""
+		}
+		defer f.Close()
+
+		resp, err := cld.Upload.Upload(c, f, uploader.UploadParams{})
+		if err != nil {
+			return ""
+		}
+		return resp.SecureURL
+	}
+
+	// ===== Remove old if requested =====
+	removeField := func(field string, value *string) {
+		if c.PostForm(field) == "true" && *value != "" {
 			var count int64
-			db.Model(&entity.Article{}).Where("thumbnail = ?", article.Thumbnail).Count(&count)
-			if count <= 1 {
-				os.Remove(article.Thumbnail)
+			db.Model(&entity.Article{}).Where(field+" = ?", *value).Where("id != ?", article.ID).Count(&count)
+			if count == 0 {
+				publicID := extractPublicIDFromURL(*value)
+				if publicID != "" {
+					_, _ = cld.Upload.Destroy(c, uploader.DestroyParams{PublicID: publicID})
+				}
 			}
-			article.Thumbnail = ""
+			*value = ""
 		}
 	}
 
-	// ======== CHECK REMOVE IMAGE =========
-	if c.PostForm("removeImage") == "true" {
-		if article.Image != "" {
-			var count int64
-			db.Model(&entity.Article{}).Where("image = ?", article.Image).Count(&count)
-			if count <= 1 {
-				os.Remove(article.Image)
-			}
-			article.Image = ""
-		}
+	removeField("removeThumbnail", &article.Thumbnail)
+	removeField("removeImage", &article.Image)
+	removeField("removeVideo", &article.Video)
+	removeField("removeGif", &article.Gif)
+	removeField("removePdf", &article.Pdf)
+
+	// ===== Upload new if exists =====
+	newThumb := uploadFile("thumbnail")
+	if newThumb != "" {
+		removeField("Thumbnail", &article.Thumbnail)
+		article.Thumbnail = newThumb
+	}
+	newImage := uploadFile("image")
+	if newImage != "" {
+		removeField("Image", &article.Image)
+		article.Image = newImage
+	}
+	newVideo := uploadFile("video")
+	if newVideo != "" {
+		removeField("Video", &article.Video)
+		article.Video = newVideo
+	}
+	newGif := uploadFile("gif")
+	if newGif != "" {
+		removeField("Gif", &article.Gif)
+		article.Gif = newGif
+	}
+	newPdf := uploadFile("pdf")
+	if newPdf != "" {
+		removeField("Pdf", &article.Pdf)
+		article.Pdf = newPdf
 	}
 
-	// ======== CHECK REMOVE VIDEO =========
-	if c.PostForm("removeVideo") == "true" {
-		if article.Video != "" {
-			var count int64
-			db.Model(&entity.Article{}).Where("video = ?", article.Video).Count(&count)
-			if count <= 1 {
-				os.Remove(article.Video)
-			}
-			article.Video = ""
-		}
-	}
-
-	// ======== CHECK REMOVE GIF =========
-	if c.PostForm("removeGif") == "true" {
-		if article.Gif != "" {
-			var count int64
-			db.Model(&entity.Article{}).Where("gif = ?", article.Gif).Count(&count)
-			if count <= 1 {
-				os.Remove(article.Gif)
-			}
-			article.Gif = ""
-		}
-	}
-
-	// ======== CHECK REMOVE PDF =========
-	if c.PostForm("removePdf") == "true" {
-		if article.Pdf != "" {
-			var count int64
-			db.Model(&entity.Article{}).Where("pdf = ?", article.Pdf).Count(&count)
-			if count <= 1 {
-				os.Remove(article.Pdf)
-			}
-			article.Pdf = ""
-		}
-	}
-
-	// ======== UPLOAD NEW THUMBNAIL =========
-	if file, err := c.FormFile("thumbnail"); err == nil {
-		if article.Thumbnail != "" {
-			var count int64
-			db.Model(&entity.Article{}).Where("thumbnail = ?", article.Thumbnail).Count(&count)
-			if count <= 1 {
-				os.Remove(article.Thumbnail)
-			}
-		}
-		thumbPath := filepath.Join(thumbDir, file.Filename)
-		if err := c.SaveUploadedFile(file, thumbPath); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save thumbnail"})
-			return
-		}
-		article.Thumbnail = thumbPath
-	}
-
-	// ======== UPLOAD NEW IMAGE =========
-	if file, err := c.FormFile("image"); err == nil {
-		if article.Image != "" {
-			var count int64
-			db.Model(&entity.Article{}).Where("image = ?", article.Image).Count(&count)
-			if count <= 1 {
-				os.Remove(article.Image)
-			}
-		}
-		imagePath := filepath.Join(imageDir, file.Filename)
-		if err := c.SaveUploadedFile(file, imagePath); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save image"})
-			return
-		}
-		article.Image = imagePath
-	}
-
-	// ======== UPLOAD NEW VIDEO =========
-	if file, err := c.FormFile("video"); err == nil {
-		if article.Video != "" {
-			var count int64
-			db.Model(&entity.Article{}).Where("video = ?", article.Video).Count(&count)
-			if count <= 1 {
-				os.Remove(article.Video)
-			}
-		}
-		videoPath := filepath.Join(videoDir, file.Filename)
-		if err := c.SaveUploadedFile(file, videoPath); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save video"})
-			return
-		}
-		article.Video = videoPath
-	}
-
-	// ======== UPLOAD NEW GIF =========
-	if file, err := c.FormFile("gif"); err == nil {
-		if article.Gif != "" {
-			var count int64
-			db.Model(&entity.Article{}).Where("gif = ?", article.Gif).Count(&count)
-			if count <= 1 {
-				os.Remove(article.Gif)
-			}
-		}
-		gifPath := filepath.Join(gifDir, file.Filename)
-		if err := c.SaveUploadedFile(file, gifPath); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save gif"})
-			return
-		}
-		article.Gif = gifPath
-	}
-
-	// ======== UPLOAD NEW PDF =========
-	if file, err := c.FormFile("pdf"); err == nil {
-		if article.Pdf != "" {
-			var count int64
-			db.Model(&entity.Article{}).Where("pdf = ?", article.Pdf).Count(&count)
-			if count <= 1 {
-				os.Remove(article.Pdf)
-			}
-		}
-		pdfPath := filepath.Join(pdfDir, file.Filename)
-		if err := c.SaveUploadedFile(file, pdfPath); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to save pdf"})
-			return
-		}
-		article.Pdf = pdfPath
-	}
-
-	// ======== UPDATE TITLE & CONTENT =========
 	article.Title = title
 	article.Content = content
 
@@ -358,32 +232,47 @@ func Delete(c *gin.Context) {
 		return
 	}
 
-	// delete each file if no other records use them
-	var count int64
-	db.Model(&entity.Article{}).Where("thumbnail = ? AND id != ?", article.Thumbnail, id).Count(&count)
-	if count == 0 && article.Thumbnail != "" {
-		os.Remove(article.Thumbnail)
-	}
-	db.Model(&entity.Article{}).Where("image = ? AND id != ?", article.Image, id).Count(&count)
-	if count == 0 && article.Image != "" {
-		os.Remove(article.Image)
-	}
-	db.Model(&entity.Article{}).Where("video = ? AND id != ?", article.Video, id).Count(&count)
-	if count == 0 && article.Video != "" {
-		os.Remove(article.Video)
-	}
-	db.Model(&entity.Article{}).Where("gif = ? AND id != ?", article.Gif, id).Count(&count)
-	if count == 0 && article.Gif != "" {
-		os.Remove(article.Gif)
-	}
-	db.Model(&entity.Article{}).Where("pdf = ? AND id != ?", article.Pdf, id).Count(&count)
-	if count == 0 && article.Pdf != "" {
-		os.Remove(article.Pdf)
-	}
-
-	if tx := db.Exec("DELETE FROM articles WHERE id = ?", id); tx.RowsAffected == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "id not found"})
+	cld, err := config.CloudinaryInstance()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Cloudinary init failed"})
 		return
 	}
+
+	// ลบไฟล์จาก Cloudinary ถ้าไม่มีการอ้างอิงที่อื่น
+	removeIfNotUsed := func(fieldVal string) {
+		if fieldVal == "" {
+			return
+		}
+		var count int64
+		db.Model(&entity.Article{}).Where("id != ? AND (thumbnail = ? OR image = ? OR video = ? OR gif = ? OR pdf = ?)", article.ID, fieldVal, fieldVal, fieldVal, fieldVal, fieldVal).Count(&count)
+		if count == 0 {
+			publicID := extractPublicIDFromURL(fieldVal)
+			if publicID != "" {
+				_, _ = cld.Upload.Destroy(c, uploader.DestroyParams{PublicID: publicID})
+			}
+		}
+	}
+
+	removeIfNotUsed(article.Thumbnail)
+	removeIfNotUsed(article.Image)
+	removeIfNotUsed(article.Video)
+	removeIfNotUsed(article.Gif)
+	removeIfNotUsed(article.Pdf)
+
+	if tx := db.Unscoped().Delete(&article); tx.Error != nil || tx.RowsAffected == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Delete failed"})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "Deleted successfully"})
+}
+
+func extractPublicIDFromURL(url string) string {
+	parts := strings.Split(url, "/upload/")
+	if len(parts) < 2 {
+		return ""
+	}
+	publicPath := parts[1]
+	publicPath = strings.SplitN(publicPath, ".", 2)[0] // remove extension
+	return publicPath
 }
