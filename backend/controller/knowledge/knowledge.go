@@ -110,23 +110,7 @@ func GetUserAccess(c *gin.Context) {
 		return
 	}
 
-	baseURL := c.Request.Host
 	for i := range knowledge {
-		if knowledge[i].Thumbnail != "" {
-			knowledge[i].Thumbnail = "http://" + baseURL + "/" + knowledge[i].Thumbnail
-		}
-		if knowledge[i].Image != "" {
-			knowledge[i].Image = "http://" + baseURL + "/" + knowledge[i].Image
-		}
-		if knowledge[i].Video != "" {
-			knowledge[i].Video = "http://" + baseURL + "/" + knowledge[i].Video
-		}
-		if knowledge[i].Gif != "" {
-			knowledge[i].Gif = "http://" + baseURL + "/" + knowledge[i].Gif
-		}
-		if knowledge[i].Pdf != "" {
-			knowledge[i].Pdf = "http://" + baseURL + "/" + knowledge[i].Pdf
-		}
 		knowledge[i].CreatedAt = knowledge[i].CreatedAt.Local()
 	}
 
