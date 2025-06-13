@@ -74,9 +74,8 @@ func GetAll(c *gin.Context) {
 	var articles []entity.Article
 	db := config.DB()
 
-	results := db.Find(&articles)
-	if results.Error != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": results.Error.Error()})
+	if err := db.Find(&articles).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -92,32 +91,9 @@ func GetID(c *gin.Context) {
 	var article entity.Article
 	db := config.DB()
 
-	results := db.First(&article, ID)
-	if results.Error != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": results.Error.Error()})
+	if err := db.First(&article, ID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
-	}
-
-	if article.ID == 0 {
-		c.JSON(http.StatusNoContent, gin.H{})
-		return
-	}
-
-	baseURL := c.Request.Host
-	if article.Thumbnail != "" {
-		article.Thumbnail = "http://" + baseURL + "/" + article.Thumbnail
-	}
-	if article.Image != "" {
-		article.Image = "http://" + baseURL + "/" + article.Image
-	}
-	if article.Video != "" {
-		article.Video = "http://" + baseURL + "/" + article.Video
-	}
-	if article.Gif != "" {
-		article.Gif = "http://" + baseURL + "/" + article.Gif
-	}
-	if article.Pdf != "" {
-		article.Pdf = "http://" + baseURL + "/" + article.Pdf
 	}
 
 	article.CreatedAt = article.CreatedAt.Local()
